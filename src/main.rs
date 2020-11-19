@@ -1,4 +1,8 @@
 fn main() {
+    ingest_commands();
+}
+
+fn ingest_commands() {
     use std::process::Command;
 
     // ::new("") seems to not accept paths bridging from `~` out of the box.
@@ -10,7 +14,7 @@ fn main() {
         .expect("failed to execute command");
 
     // simple boolean that output succeeded, if false: panic
-    // maybe overlap with match check below.
+    // might overlap with match check below.
     assert!(cli_help_output.status.success());
 
     // confirm command exited successfully
@@ -20,7 +24,7 @@ fn main() {
         None => panic!("error! no exit code"),
     }
 
-    // output and output.stdout is type std::vec::Vec<u8>
+    // output and output.stdout are type std::vec::Vec<u8>
     // extract these u8 values from Result as a utf8 str
     let raw_help = match std::str::from_utf8(&cli_help_output.stdout) {
         Ok(x) => x,
@@ -32,7 +36,7 @@ fn main() {
     let mut help_lines = Vec::new();
 
     // select non-blank lines that do not begin with "=" to populate
-    // the vector of commands and their options
+    // the vector with commands and their options
     for li in help_lines_iter {
         if li != "" && !li.starts_with("=") {
             help_lines.push(li);
@@ -41,7 +45,7 @@ fn main() {
 
     // currently, 132.
     // this matches 151 (`zcash-cli | wc -l`) - 19 (manual count of
-    // empty lines or 'category' lines that begin with "="
+    // empty lines or 'category' lines that begin with "=")
     dbg!(&help_lines.len());
 
     let mut commands = Vec::new();
