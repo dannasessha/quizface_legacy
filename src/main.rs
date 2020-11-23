@@ -8,14 +8,15 @@ fn main() {
     let masterhelp_path = Path::new("./data/masterhelp/");
     let commandhelp_path = Path::new("./data/commandhelp/");
     let commands = ingest_commands(&zcash_cli, &masterhelp_path);
-    commands_help_dump(&zcash_cli, commandhelp_path, commands);
+    commands_help_dump(&zcash_cli, &commandhelp_path, commands);
+    println!("main() complete!");
     // TODO actually parse output to form json in new function
 }
 
 fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
     match create_data_dir(masterhelp_path) {
-        Ok(_) => println!("created masterhelp directory"), 
-        Err(_) => panic!("error creating directories!")
+        Ok(_) => (), 
+        Err(_) => panic!("Error creating directories!")
     }
 
     // Command::new() does not seem to accept paths from `~` by default.
@@ -24,11 +25,6 @@ fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
         .output()
         .expect("failed to execute zcash-cli help");
 
-    // simple boolean that output succeeded by spawning 
-    // and monitoring child process, if false: panic
-    assert!(cli_help_output.status.success());
-
-    // confirm command exited successfully by 
     check_success(&cli_help_output.status);
 
     // output and output.stdout are type std::vec::Vec<u8>
@@ -41,8 +37,10 @@ fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
     };
 
     // write the `zcash-cli help` output to `masterhelp.txt`
-    // TODO add `Err` handling
-    fs::write(format!("{}masterhelp.txt", masterhelp_path.to_str().unwrap()), &raw_help);
+    match fs::write(format!("{}masterhelp.txt", masterhelp_path.to_str().unwrap()), &raw_help){
+        Ok(_) => (),
+        Err(_) => panic!("panic during fs:write masterhelp!")
+    };
 
     // create an iterator split by new lines
     let help_lines_iter = raw_help.split("\n");
@@ -89,6 +87,7 @@ fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
         // c has type &str
         commands.push(c.to_string());
     }
+    println!("ingest_commands complete!");
 
     commands
 }
@@ -99,8 +98,10 @@ fn create_data_dir(masterhelp_path: &Path) -> std::io::Result<()> {
 } 
 
 fn commands_help_dump(zcash_cli: &Path, commandhelp_path: &Path, commands: Vec<String>) {
-    // TODO add `Err` handling 
-    fs::create_dir(commandhelp_path);
+    match fs::create_dir(commandhelp_path) {
+        Ok(_) => (),
+        Err(_) => panic!("error creating commands dir!")
+    }
     for cmd in commands {
         // TODO create get_command_help helper function with return type of string
         let command_help_output = Command::new(zcash_cli)
@@ -109,8 +110,6 @@ fn commands_help_dump(zcash_cli: &Path, commandhelp_path: &Path, commands: Vec<S
             .output()
             .expect("failed to execute command help");
         // command_help_output is type std::process::Output
-        // check that function has successful exit
-        assert!(command_help_output.status.success());
         
         check_success(&command_help_output.status);
 
@@ -118,20 +117,27 @@ fn commands_help_dump(zcash_cli: &Path, commandhelp_path: &Path, commands: Vec<S
             Ok(x) => x,
             Err(e) => panic!("Invalid, error: {}", e),
         };
-        // TODO add `Err` handling
-        fs::write(format!("{}{}.txt", commandhelp_path.to_str().unwrap(), &cmd), raw_command_help);
+        match fs::write(format!("{}{}.txt", commandhelp_path.to_str().unwrap(), &cmd), raw_command_help){
+            Ok(_) => (),
+            Err(_) => panic!("panic during fs::write command help!")
+        };
 
     }
+    println!("command_help_output complete!");
 }
 
 fn check_success(output: &std::process::ExitStatus){
+        // simple boolean that output succeeded by spawning 
+        // and monitoring child process, if false: panic
+        assert!(output.success());
+        // then match output exit code
         match output.code() {
-            // TODO make Some(0) a simple bypass
-            Some(0) => println!("success generating output from help command"),
+            Some(0) => (),
             Some(_) => panic!("exit code not 0"),
-            None => panic!("error! no exit code"),
+            None => panic!("error! no exit code")
         }
 }
+
 // for the future, perhaps categorize commands according to 
 // 'category' lines beginning with `==` ex: == Wallet ==
 // and/or color code according to usefulness or deprecation
