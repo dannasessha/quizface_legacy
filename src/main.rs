@@ -1,8 +1,8 @@
-use std::path::Path;
 use std::fs;
+use std::path::Path;
 use std::process::Command;
 fn main() {
-    // The path of quizface may need to be standardized against 
+    // The path of quizface may need to be standardized against
     // the `zcash` directory, or customized during development.
     let zcash_cli = Path::new("../../zcash/src/zcash-cli");
     let masterhelp_path = Path::new("./data/masterhelp/");
@@ -15,16 +15,16 @@ fn main() {
 
 fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
     match create_data_dir(masterhelp_path) {
-        Ok(_) => (), 
-        Err(_) => panic!("Error creating directories!")
+        Ok(_) => (),
+        Err(_) => panic!("Error creating directories!"),
     }
 
-    // Command::new() does not seem to accept paths from `~` by default.
-    let cli_help_output = Command::new(zcash_cli)
-        .arg("help")
-        .output()
-        .expect("failed to execute zcash-cli help");
+    // creating cmd as empty String in this scope becasue
+    // no additional argument needed with `zcash-cli help`
+    // to retrieve master help output
+    let cmd = String::from("");
 
+    let cli_help_output = get_command_help(zcash_cli, cmd);
     check_success(&cli_help_output.status);
 
     // output and output.stdout are type std::vec::Vec<u8>
@@ -37,15 +37,18 @@ fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
     };
 
     // write the `zcash-cli help` output to `masterhelp.txt`
-    match fs::write(format!("{}masterhelp.txt", masterhelp_path.to_str().unwrap()), &raw_help){
+    match fs::write(
+        format!("{}masterhelp.txt", masterhelp_path.to_str().unwrap()),
+        &raw_help,
+    ) {
         Ok(_) => (),
-        Err(_) => panic!("panic during fs:write masterhelp!")
+        Err(_) => panic!("panic during fs:write masterhelp!"),
     };
 
     // create an iterator split by new lines
     let help_lines_iter = raw_help.split("\n");
     // help_lines_iter is type std::str::Split<'_, &str>
-    
+
     let mut help_lines = Vec::new();
 
     // select non-blank lines that do not begin with "=" to populate
@@ -66,7 +69,7 @@ fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
 
     // for each &str in help_lines, create an iterator over values
     // separated by whitespace. Take the first value and push into
-    // commands. This pattern could be possibly extended for 
+    // commands. This pattern could be possibly extended for
     // command options from this 'master help' (help help) output.
     for line in help_lines {
         let mut temp_iter = line.split_ascii_whitespace();
@@ -95,50 +98,62 @@ fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
 fn create_data_dir(masterhelp_path: &Path) -> std::io::Result<()> {
     fs::create_dir_all(masterhelp_path)?;
     Ok(())
-} 
+}
+
+fn get_command_help(zcash_cli: &Path, cmd: String) -> std::process::Output {
+    // Command::new() does not seem to accept paths from `~` by default.
+    let command_help = Command::new(zcash_cli)
+        .arg("help")
+        .arg(&cmd)
+        .output()
+        .expect("failed to execute command help");
+    command_help
+}
+
+fn check_success(output: &std::process::ExitStatus) {
+    // simple boolean that output succeeded by spawning
+    // and monitoring child process, if false: panic
+    assert!(output.success());
+    // then match output exit code
+    match output.code() {
+        Some(0) => (),
+        Some(_) => panic!("exit code not 0"),
+        None => panic!("error! no exit code"),
+    }
+}
 
 fn commands_help_dump(zcash_cli: &Path, commandhelp_path: &Path, commands: Vec<String>) {
     match fs::create_dir(commandhelp_path) {
         Ok(_) => (),
-        Err(_) => panic!("error creating commands dir!")
+        Err(_) => panic!("error creating commands dir!"),
     }
-    for cmd in commands {
-        // TODO create get_command_help helper function with return type of string
-        let command_help_output = Command::new(zcash_cli)
-            .arg("help")
-            .arg(&cmd)
-            .output()
-            .expect("failed to execute command help");
+    for command in commands {
+        // define cmd as clone of command (type String) to pass into
+        // get_command_help
+        let cmd = command.clone();
+
+        let command_help_output = get_command_help(zcash_cli, cmd);
         // command_help_output is type std::process::Output
-        
+
         check_success(&command_help_output.status);
 
         let raw_command_help = match std::str::from_utf8(&command_help_output.stdout) {
             Ok(x) => x,
             Err(e) => panic!("Invalid, error: {}", e),
         };
-        match fs::write(format!("{}{}.txt", commandhelp_path.to_str().unwrap(), &cmd), raw_command_help){
-            Ok(_) => (),
-            Err(_) => panic!("panic during fs::write command help!")
-        };
 
+        match fs::write(
+            format!("{}{}.txt", commandhelp_path.to_str().unwrap(), &command),
+            raw_command_help,
+        ) {
+            Ok(_) => (),
+            Err(_) => panic!("panic during fs::write command help!"),
+        };
     }
     println!("command_help_output complete!");
 }
 
-fn check_success(output: &std::process::ExitStatus){
-        // simple boolean that output succeeded by spawning 
-        // and monitoring child process, if false: panic
-        assert!(output.success());
-        // then match output exit code
-        match output.code() {
-            Some(0) => (),
-            Some(_) => panic!("exit code not 0"),
-            None => panic!("error! no exit code")
-        }
-}
-
-// for the future, perhaps categorize commands according to 
+// for the future, perhaps categorize commands according to
 // 'category' lines beginning with `==` ex: == Wallet ==
 // and/or color code according to usefulness or deprecation
 
