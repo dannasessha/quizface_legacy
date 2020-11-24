@@ -2,6 +2,9 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 fn main() {
+    // TODO move create for loop to the main and then have multiple
+    // helpers in the loop
+    //
     // The path of quizface may need to be standardized against
     // the `zcash` directory, or customized during development.
     let zcash_cli = Path::new("../../zcash/src/zcash-cli");
@@ -14,10 +17,7 @@ fn main() {
 }
 
 fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
-    match create_data_dir(masterhelp_path) {
-        Ok(_) => (),
-        Err(_) => panic!("Error creating directories!"),
-    }
+    create_data_dir(masterhelp_path).expect("Error Creating directories!");
 
     // creating cmd as empty String in this scope becasue
     // no additional argument needed with `zcash-cli help`
@@ -37,13 +37,7 @@ fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
     };
 
     // write the `zcash-cli help` output to `masterhelp.txt`
-    match fs::write(
-        format!("{}masterhelp.txt", masterhelp_path.to_str().unwrap()),
-        &raw_help,
-    ) {
-        Ok(_) => (),
-        Err(_) => panic!("panic during fs:write masterhelp!"),
-    };
+    fs::write(format!("{}masterhelp.txt", masterhelp_path.to_str().unwrap()), &raw_help,).expect("panic during fs:write masterhelp!"); 
 
     // create an iterator split by new lines
     let help_lines_iter = raw_help.split("\n");
@@ -123,10 +117,8 @@ fn check_success(output: &std::process::ExitStatus) {
 }
 
 fn commands_help_dump(zcash_cli: &Path, commandhelp_path: &Path, commands: Vec<String>) {
-    match fs::create_dir(commandhelp_path) {
-        Ok(_) => (),
-        Err(_) => panic!("error creating commands dir!"),
-    }
+    // TODO move to main
+    fs::create_dir(commandhelp_path).expect("error creating commands dir!");
     for command in commands {
         // define cmd as clone of command (type String) to pass into
         // get_command_help
@@ -142,13 +134,7 @@ fn commands_help_dump(zcash_cli: &Path, commandhelp_path: &Path, commands: Vec<S
             Err(e) => panic!("Invalid, error: {}", e),
         };
 
-        match fs::write(
-            format!("{}{}.txt", commandhelp_path.to_str().unwrap(), &command),
-            raw_command_help,
-        ) {
-            Ok(_) => (),
-            Err(_) => panic!("panic during fs::write command help!"),
-        };
+        fs::write(format!("{}{}.txt", commandhelp_path.to_str().unwrap(), &command), &raw_command_help).expect("panic during fs::write command help!");
     }
     println!("command_help_output complete!");
 }
