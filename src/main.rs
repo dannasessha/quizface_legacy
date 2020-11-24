@@ -2,25 +2,44 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 fn main() {
-    // TODO move create for loop to the main and then have multiple
-    // helpers in the loop
+    let zcash_cli = Path::new("../../zcash/src/zcash-cli");
+
+    // TODO target path/build version variables:
+    // `response_data/v4.1.1_0.1.0/help_output/{raw, annotated}/getinfo`
     //
     // The path of quizface may need to be standardized against
     // the `zcash` directory, or customized during development.
-    let zcash_cli = Path::new("../../zcash/src/zcash-cli");
-    let masterhelp_path = Path::new("./data/masterhelp/");
-    let commandhelp_path = Path::new("./data/commandhelp/");
+    let masterhelp_path = Path::new("./response_data/versiontags/masterhelp_output/raw/");
+    let commandhelp_path = Path::new("./response_data/versiontags/help_output/raw/");
+
+    // ingest_commands() also logs the masterhelp.txt file
+    // from the same String from which commands are parsed
     let commands = ingest_commands(&zcash_cli, &masterhelp_path);
-    commands_help_dump(&zcash_cli, &commandhelp_path, commands);
+
+    for command in commands {
+        let command_help_output = get_command_help(zcash_cli, command.clone());
+        // command_help_output is type std::process::Output
+
+        check_success(&command_help_output.status);
+
+        // TODO determine if using String would be preferrable
+        let raw_command_help = match std::str::from_utf8(&command_help_output.stdout) {
+            Ok(x) => x,
+            Err(e) => panic!("Invalid, error: {}", e),
+        };
+
+        log_raw_output(&commandhelp_path, command.clone(), &raw_command_help);
+        // TODO actually parse output to form json in new helper function
+    }
+    println!("command_help_output complete!");
     println!("main() complete!");
-    // TODO actually parse output to form json in new function
 }
 
 fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
     create_data_dir(masterhelp_path).expect("Error Creating directories!");
 
     // creating cmd as empty String in this scope becasue
-    // no additional argument needed with `zcash-cli help`
+    // no additional argument used with `zcash-cli help`
     // to retrieve master help output
     let cmd = String::from("");
 
@@ -37,7 +56,11 @@ fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
     };
 
     // write the `zcash-cli help` output to `masterhelp.txt`
-    fs::write(format!("{}masterhelp.txt", masterhelp_path.to_str().unwrap()), &raw_help,).expect("panic during fs:write masterhelp!"); 
+    fs::write(
+        format!("{}masterhelp.txt", masterhelp_path.to_str().unwrap()),
+        &raw_help,
+    )
+    .expect("panic during fs:write masterhelp!");
 
     // create an iterator split by new lines
     let help_lines_iter = raw_help.split("\n");
@@ -116,28 +139,29 @@ fn check_success(output: &std::process::ExitStatus) {
     }
 }
 
-fn commands_help_dump(zcash_cli: &Path, commandhelp_path: &Path, commands: Vec<String>) {
-    // TODO move to main
-    fs::create_dir(commandhelp_path).expect("error creating commands dir!");
-    for command in commands {
-        // define cmd as clone of command (type String) to pass into
-        // get_command_help
-        let cmd = command.clone();
+fn log_raw_output(commandhelp_path: &Path, command: String, raw_command_help: &str) {
+    fs::create_dir_all(commandhelp_path).expect("error creating commands dir!");
 
-        let command_help_output = get_command_help(zcash_cli, cmd);
-        // command_help_output is type std::process::Output
-
-        check_success(&command_help_output.status);
-
-        let raw_command_help = match std::str::from_utf8(&command_help_output.stdout) {
-            Ok(x) => x,
-            Err(e) => panic!("Invalid, error: {}", e),
-        };
-
-        fs::write(format!("{}{}.txt", commandhelp_path.to_str().unwrap(), &command), &raw_command_help).expect("panic during fs::write command help!");
-    }
-    println!("command_help_output complete!");
+    fs::write(
+        format!("{}{}.txt", commandhelp_path.to_str().unwrap(), &command),
+        &raw_command_help,
+    )
+    .expect("panic during fs::write command help!");
 }
+
+// JSON target
+//
+// structure:
+/* ```
+{
+   "version":  "Decimal",
+   ...
+   "proxy": "Option<String>",
+   ...
+   "testnet":  "bool",
+   "errors": "String",
+}
+``` */
 
 // for the future, perhaps categorize commands according to
 // 'category' lines beginning with `==` ex: == Wallet ==
