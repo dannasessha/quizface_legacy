@@ -22,13 +22,12 @@ fn main() {
 
         check_success(&command_help_output.status);
 
-        // TODO determine if using String would be preferrable
-        let raw_command_help = match std::str::from_utf8(&command_help_output.stdout) {
+        let raw_command_help = match std::string::String::from_utf8(command_help_output.stdout) {
             Ok(x) => x,
             Err(e) => panic!("Invalid, error: {}", e),
         };
 
-        log_raw_output(&commandhelp_path, command.clone(), &raw_command_help);
+        log_raw_output(&commandhelp_path, command.clone(), raw_command_help.clone());
         // TODO actually parse output to form json in new helper function
     }
     println!("command_help_output complete!");
@@ -139,7 +138,7 @@ fn check_success(output: &std::process::ExitStatus) {
     }
 }
 
-fn log_raw_output(commandhelp_path: &Path, command: String, raw_command_help: &str) {
+fn log_raw_output(commandhelp_path: &Path, command: String, raw_command_help: String) {
     fs::create_dir_all(commandhelp_path).expect("error creating commands dir!");
 
     fs::write(
@@ -150,7 +149,7 @@ fn log_raw_output(commandhelp_path: &Path, command: String, raw_command_help: &s
 }
 
 // JSON target
-//
+// getinfo
 // structure:
 /* ```
 {
@@ -162,6 +161,9 @@ fn log_raw_output(commandhelp_path: &Path, command: String, raw_command_help: &s
    "errors": "String",
 }
 ``` */
+
+// next target
+// z_getnewaddress
 
 // for the future, perhaps categorize commands according to
 // 'category' lines beginning with `==` ex: == Wallet ==
