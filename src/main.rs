@@ -73,3 +73,10 @@ fn main() {
 //io::stderr().write_all(&output.stderr).unwrap();
 // possibly for future parsing
 // use regex::Regex;
+
+#[test]
+fn does_it_work() {
+    //So that our CI can call `cargo test` instead of `cargo run`
+    //Will soon be replaced by actual testing of our actual code
+    main();
+}
