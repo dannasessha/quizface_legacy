@@ -2,8 +2,8 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 fn main() {
-    let zcash_cli = Path::new("../../zcash/src/zcash-cli");
-
+    let zcash_cli = Path::new("zcash-cli");
+ 
     // TODO target path/build version variables:
     // `response_data/v4.1.1_0.1.0/help_output/{raw, annotated}/getinfo`
     //
