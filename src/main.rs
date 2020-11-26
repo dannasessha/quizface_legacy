@@ -9,7 +9,15 @@ fn get_zcashd_version() -> String {
         .output()
         .unwrap()
         .stdout;
-    String::from_utf8(version).unwrap()
+    String::from_utf8(version)
+        .unwrap()
+        .lines()
+        .collect::<Vec<&str>>()[0]
+        .to_string()
+        .split_whitespace()
+        .last()
+        .unwrap()
+        .to_string()
 }
 fn main() {
     // TODO target path/build version variables:
@@ -18,12 +26,22 @@ fn main() {
     // The path of quizface may need to be standardized against
     // the `zcash` directory, or customized during development.
     dbg!(get_zcashd_version());
-    let masterhelp_path = Path::new("./response_data/versiontags/masterhelp_output/raw/");
-    let commandhelp_path = Path::new("./response_data/versiontags/help_output/raw/");
+    let log_parent_template = format!(
+        "./response_data/{zdver}_{qfver}/",
+        zdver = get_zcashd_version(),
+        qfver = QUIZFACE_VERSION
+    );
+    let mut master_name = log_parent_template.clone();
+    master_name.push_str("masterhelp_output/raw");
+    let mut base_name = log_parent_template.clone();
+    base_name.push_str("help_output/raw");
+    dbg!(&master_name);
+    let masterhelp_logs = Path::new(&master_name);
+    let commandhelp_logs = Path::new(&base_name);
 
     // ingest_commands() also logs the masterhelp.txt file
     // from the same String from which commands are parsed
-    let commands = ingest_commands(&masterhelp_path);
+    let commands = ingest_commands(&masterhelp_logs);
 
     for command in commands {
         let command_help_output = get_command_help(&command);
@@ -36,15 +54,15 @@ fn main() {
             Err(e) => panic!("Invalid, error: {}", e),
         };
 
-        log_raw_output(&commandhelp_path, command.clone(), raw_command_help.clone());
+        log_raw_output(&commandhelp_logs, command.clone(), raw_command_help.clone());
         // TODO actually parse output to form json in new helper function
     }
     println!("command_help_output complete!");
     println!("main() complete!");
 }
 
-fn ingest_commands(masterhelp_path: &Path) -> Vec<String> {
-    create_data_dir(masterhelp_path).expect("Error Creating directories!");
+fn ingest_commands(masterhelp_logs: &Path) -> Vec<String> {
+    create_data_dir(masterhelp_logs).expect("Error Creating directories!");
 
     // creating cmd as empty String in this scope becasue
     // no additional argument used with `zcash-cli help`
@@ -64,7 +82,7 @@ fn ingest_commands(masterhelp_path: &Path) -> Vec<String> {
 
     // write the `zcash-cli help` output to `masterhelp.txt`
     fs::write(
-        format!("{}masterhelp.txt", masterhelp_path.to_str().unwrap()),
+        format!("{}masterhelp.txt", masterhelp_logs.to_str().unwrap()),
         &raw_help,
     )
     .expect("panic during fs:write masterhelp!");
@@ -119,8 +137,8 @@ fn ingest_commands(masterhelp_path: &Path) -> Vec<String> {
     commands
 }
 
-fn create_data_dir(masterhelp_path: &Path) -> std::io::Result<()> {
-    fs::create_dir_all(masterhelp_path)?;
+fn create_data_dir(masterhelp_logs: &Path) -> std::io::Result<()> {
+    fs::create_dir_all(masterhelp_logs)?;
     Ok(())
 }
 
@@ -146,11 +164,11 @@ fn check_success(output: &std::process::ExitStatus) {
     }
 }
 
-fn log_raw_output(commandhelp_path: &Path, command: String, raw_command_help: String) {
-    fs::create_dir_all(commandhelp_path).expect("error creating commands dir!");
+fn log_raw_output(commandhelp_logs: &Path, command: String, raw_command_help: String) {
+    fs::create_dir_all(commandhelp_logs).expect("error creating commands dir!");
 
     fs::write(
-        format!("{}{}.txt", commandhelp_path.to_str().unwrap(), &command),
+        format!("{}{}.txt", commandhelp_logs.to_str().unwrap(), &command),
         &raw_command_help,
     )
     .expect("panic during fs::write command help!");
