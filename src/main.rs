@@ -1,12 +1,23 @@
 use std::fs;
 use std::path::Path;
 use std::process::Command;
+const QUIZFACE_VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
+fn get_zcashd_version() -> String {
+    let version = Command::new("zcash-cli")
+        .arg("--version")
+        .output()
+        .unwrap()
+        .stdout;
+    String::from_utf8(version).unwrap()
+}
 fn main() {
     // TODO target path/build version variables:
     // `response_data/v4.1.1_0.1.0/help_output/{raw, annotated}/getinfo`
     //
     // The path of quizface may need to be standardized against
     // the `zcash` directory, or customized during development.
+    dbg!(get_zcashd_version());
     let masterhelp_path = Path::new("./response_data/versiontags/masterhelp_output/raw/");
     let commandhelp_path = Path::new("./response_data/versiontags/help_output/raw/");
 
