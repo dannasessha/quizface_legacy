@@ -19,12 +19,7 @@ fn get_zcashd_version() -> String {
         .unwrap()
         .to_string()
 }
-fn main() {
-    // TODO target path/build version variables:
-    // `response_data/v4.1.1_0.1.0/help_output/{raw, annotated}/getinfo`
-    //
-    // The path of quizface may need to be standardized against
-    // the `zcash` directory, or customized during development.
+fn name_logdirs() -> (String, String) {
     dbg!(get_zcashd_version());
     let log_parent_template = format!(
         "./response_data/{zdver}_{qfver}/",
@@ -35,13 +30,19 @@ fn main() {
     master_name.push_str("masterhelp_output/raw");
     let mut base_name = log_parent_template.clone();
     base_name.push_str("help_output/raw");
-    dbg!(&master_name);
-    let masterhelp_logs = Path::new(&master_name);
-    let commandhelp_logs = Path::new(&base_name);
+    (master_name, base_name)
+}
+fn main() {
+    // TODO target path/build version variables:
+    // `response_data/v4.1.1_0.1.0/help_output/{raw, annotated}/getinfo`
+    //
+    // The path of quizface may need to be standardized against
+    // the `zcash` directory, or customized during development.
 
     // ingest_commands() also logs the masterhelp.txt file
     // from the same String from which commands are parsed
-    let commands = ingest_commands(&masterhelp_logs);
+    let (masterhelp_name, commandhelp_name) = name_logdirs();
+    let commands = ingest_commands(Path::new(&masterhelp_name));
 
     for command in commands {
         let command_help_output = get_command_help(&command);
@@ -54,7 +55,11 @@ fn main() {
             Err(e) => panic!("Invalid, error: {}", e),
         };
 
-        log_raw_output(&commandhelp_logs, command.clone(), raw_command_help.clone());
+        log_raw_output(
+            Path::new(&commandhelp_name),
+            command.clone(),
+            raw_command_help.clone(),
+        );
         // TODO actually parse output to form json in new helper function
     }
     println!("command_help_output complete!");
