@@ -2,22 +2,20 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 fn main() {
-    //
-    // The local PATH must of zcash-clithe `zcash` directory, or customized during development.
-    let zcash_cli = Path::new("zcash-cli");
-
     // TODO target path/build version variables:
     // `response_data/v4.1.1_0.1.0/help_output/{raw, annotated}/getinfo`
-    
+    //
+    // The path of quizface may need to be standardized against
+    // the `zcash` directory, or customized during development.
     let masterhelp_path = Path::new("./response_data/versiontags/masterhelp_output/raw/");
     let commandhelp_path = Path::new("./response_data/versiontags/help_output/raw/");
 
     // ingest_commands() also logs the masterhelp.txt file
     // from the same String from which commands are parsed
-    let commands = ingest_commands(&zcash_cli, &masterhelp_path);
+    let commands = ingest_commands(&masterhelp_path);
 
     for command in commands {
-        let command_help_output = get_command_help(zcash_cli, command.clone());
+        let command_help_output = get_command_help(&command);
         // command_help_output is type std::process::Output
 
         check_success(&command_help_output.status);
@@ -34,15 +32,14 @@ fn main() {
     println!("main() complete!");
 }
 
-fn ingest_commands(zcash_cli: &Path, masterhelp_path: &Path) -> Vec<String> {
+fn ingest_commands(masterhelp_path: &Path) -> Vec<String> {
     create_data_dir(masterhelp_path).expect("Error Creating directories!");
 
     // creating cmd as empty String in this scope becasue
     // no additional argument used with `zcash-cli help`
     // to retrieve master help output
-    let cmd = String::from("");
 
-    let cli_help_output = get_command_help(zcash_cli, cmd);
+    let cli_help_output = get_command_help("");
     check_success(&cli_help_output.status);
 
     // output and output.stdout are type std::vec::Vec<u8>
@@ -116,9 +113,9 @@ fn create_data_dir(masterhelp_path: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
-fn get_command_help(zcash_cli: &Path, cmd: String) -> std::process::Output {
+fn get_command_help(cmd: &str) -> std::process::Output {
     // Command::new() does not seem to accept paths from `~` by default.
-    let command_help = Command::new(zcash_cli)
+    let command_help = Command::new("zcash-cli")
         .arg("help")
         .arg(&cmd)
         .output()
