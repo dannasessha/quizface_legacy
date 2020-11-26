@@ -126,7 +126,7 @@ fn create_data_dir(masterhelp_path: &Path) -> std::io::Result<()> {
 
 fn get_command_help(cmd: &str) -> std::process::Output {
     // Command::new() does not seem to accept paths from `~` by default.
-    let command_help = Command::new("zcash-cli")
+    let command_help = Command::new(Path::new("zcash-cli"))
         .arg("help")
         .arg(&cmd)
         .output()
