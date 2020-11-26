@@ -16,4 +16,4 @@ jobs:
       run: docker pull ghcr.io/zingolabs/zcashrpc:latest
     
     - name: Run Tests
-      run:  docker run  -v /home/runner/work/quizface/quizface:/quizface ghcr.io/zingolabs/zcashrpc:latest bash -c "./zcash/src/zcashd -daemon && cd quizface && cargo test"
+      run:  docker run  -v /home/runner/work/quizface/quizface:/quizface ghcr.io/zingolabs/zcashrpc:latest bash -c "PATH=/zcash/src:\$PATH && zcashd -daemon && sleep 2 && cd quizface && cargo test"
