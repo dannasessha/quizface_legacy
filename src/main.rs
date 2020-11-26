@@ -1,6 +1,5 @@
 use std::fs;
 use std::path::Path;
-use std::process::Command;
 mod logging;
 fn main() {
     // TODO target path/build version variables:
@@ -117,7 +116,7 @@ fn create_data_dir(masterhelp_logs: &Path) -> std::io::Result<()> {
 
 fn get_command_help(cmd: &str) -> std::process::Output {
     // Command::new() does not seem to accept paths from `~` by default.
-    let command_help = Command::new(Path::new("zcash-cli"))
+    let command_help = std::process::Command::new(Path::new("zcash-cli"))
         .arg("help")
         .arg(&cmd)
         .output()
