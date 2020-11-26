@@ -20,7 +20,6 @@ fn get_zcashd_version() -> String {
         .to_string()
 }
 fn name_logdirs() -> (String, String) {
-    dbg!(get_zcashd_version());
     let log_parent_template = format!(
         "./response_data/{zdver}_{qfver}/",
         zdver = get_zcashd_version(),
@@ -110,7 +109,6 @@ fn ingest_commands(masterhelp_logs: &Path) -> Vec<String> {
     // currently, with zcashd from version 4.1.0, 132 lines.
     // this matches 151 (`zcash-cli | wc -l`) - 19 (manual count of
     // empty lines or 'category' lines that begin with "=")
-    dbg!(&help_lines.len());
 
     let mut commands_str = Vec::new();
 
@@ -128,7 +126,6 @@ fn ingest_commands(masterhelp_logs: &Path) -> Vec<String> {
     //commands_str is type std::vec::Vec<&str>
 
     // also 132
-    dbg!(&commands_str.len());
 
     let mut commands = Vec::new();
 
