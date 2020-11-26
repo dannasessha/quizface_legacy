@@ -1,36 +1,7 @@
 use std::fs;
 use std::path::Path;
 use std::process::Command;
-const QUIZFACE_VERSION: &'static str = env!("CARGO_PKG_VERSION");
-
-fn get_zcashd_version() -> String {
-    let version = Command::new("zcash-cli")
-        .arg("--version")
-        .output()
-        .unwrap()
-        .stdout;
-    String::from_utf8(version)
-        .unwrap()
-        .lines()
-        .collect::<Vec<&str>>()[0]
-        .to_string()
-        .split_whitespace()
-        .last()
-        .unwrap()
-        .to_string()
-}
-fn name_logdirs() -> (String, String) {
-    let log_parent_template = format!(
-        "./response_data/{zdver}_{qfver}/",
-        zdver = get_zcashd_version(),
-        qfver = QUIZFACE_VERSION
-    );
-    let mut master_name = log_parent_template.clone();
-    master_name.push_str("masterhelp_output/raw");
-    let mut base_name = log_parent_template.clone();
-    base_name.push_str("help_output/raw");
-    (master_name, base_name)
-}
+mod logging;
 fn main() {
     // TODO target path/build version variables:
     // `response_data/v4.1.1_0.1.0/help_output/{raw, annotated}/getinfo`
@@ -40,7 +11,7 @@ fn main() {
 
     // ingest_commands() also logs the masterhelp.txt file
     // from the same String from which commands are parsed
-    let (masterhelp_name, commandhelp_name) = name_logdirs();
+    let (masterhelp_name, commandhelp_name) = logging::name_logdirs();
     let commands = ingest_commands(Path::new(&masterhelp_name));
 
     for command in commands {
