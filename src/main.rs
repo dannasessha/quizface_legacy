@@ -1,6 +1,5 @@
 use std::fs;
 use std::path::Path;
-use std::process::Command;
 mod logging;
 fn main() {
     // TODO target path/build version variables:
@@ -117,7 +116,7 @@ fn create_data_dir(masterhelp_logs: &Path) -> std::io::Result<()> {
 
 fn get_command_help(cmd: &str) -> std::process::Output {
     // Command::new() does not seem to accept paths from `~` by default.
-    let command_help = Command::new(Path::new("zcash-cli"))
+    let command_help = std::process::Command::new(Path::new("zcash-cli"))
         .arg("help")
         .arg(&cmd)
         .output()
@@ -171,9 +170,40 @@ fn log_raw_output(commandhelp_logs: &Path, command: String, raw_command_help: St
 // spare code bits
 // possibly for future parsing
 // use regex::Regex;
-#[test]
-fn does_it_work() {
-    //So that our CI can call `cargo test` instead of `cargo run`
-    //Will soon be replaced by actual testing of our actual code
-    main();
+#[cfg(test)]
+mod test {
+    use super::*;
+    use std::collections::HashMap;
+    fn fake_parse_getinfo() -> HashMap<&'static str, &'static str> {
+        [
+            ("version", "Decimal"),
+            ("protocolversion", "Decimal"),
+            ("walletversion", "Decimal"),
+            ("balance", "Decimal"),
+            ("blocks", "Decimal"),
+            ("timeoffset", "Decimal"),
+            ("connections", "Decimal"),
+            ("proxy", "Option<String>"),
+            ("difficulty", "Decimal"),
+            ("testnet", "bool"),
+            ("keypoololdest", "Decimal"),
+            ("keypoolsize", "Decimal"),
+            ("unlocked_until", "Decimal"),
+            ("paytxfee", "Decimal"),
+            ("relayfee", "Decimal"),
+            ("errors", "String"),
+        ]
+        .iter()
+        .cloned()
+        .collect()
+    }
+    mod getinfo {
+        use super::*;
+        #[test]
+        fn concrete_annotation_match() {
+            let static_test_annotation = fake_parse_getinfo();
+            let eventually_real = fake_parse_getinfo();
+            assert_eq!(static_test_annotation, eventually_real);
+        }
+    }
 }
