@@ -232,12 +232,14 @@ mod test {
             }
         }
         #[test]
+        #[ignore = "not yet implemented"]
         fn concrete_annotation_match() {
             let static_test_annotation = fake_parse_getinfo();
             let eventually_real = fake_parse_getinfo();
             assert_eq!(static_test_annotation, eventually_real);
         }
         #[test]
+        #[ignore = "zcash-cli help validation test"]
         fn validate_response_as_subset() {
             let response_fixture = GetInfoResponseFixture::new();
             let testdata_keys: HashSet<String> = fake_parse_getinfo()
