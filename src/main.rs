@@ -172,6 +172,7 @@ fn log_raw_output(commandhelp_logs: &Path, command: String, raw_command_help: St
 // use regex::Regex;
 #[cfg(test)]
 mod test {
+    #[allow(unused_imports)]
     use super::*;
     use std::collections::HashMap;
     fn fake_parse_getinfo() -> HashMap<&'static str, &'static str> {
@@ -202,6 +203,7 @@ mod test {
         use serde_json::Value;
         use std::collections::HashSet;
         use std::process::Command;
+        #[allow(dead_code)]
         struct GetInfoResponseFixture {
             repr_bytes: Vec<u8>,
             repr_string: String,
