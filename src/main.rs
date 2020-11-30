@@ -2,16 +2,12 @@ use std::fs;
 use std::path::Path;
 mod logging;
 fn main() {
-    // TODO target path/build version variables:
-    // `response_data/v4.1.1_0.1.0/help_output/{raw, annotated}/getinfo`
-    //
-    // The path of quizface may need to be standardized against
-    // the `zcash` directory, or customized during development.
-
+    // TODO rename `logging.rs` -> logdirs? create_logdirs? 
+    let (masterhelp_dir_name, commandhelp_dir_name) = logging::name_logdirs();
+    
     // ingest_commands() also logs the masterhelp.txt file
     // from the same String from which commands are parsed
-    let (masterhelp_name, commandhelp_name) = logging::name_logdirs();
-    let commands = ingest_commands(Path::new(&masterhelp_name));
+    let commands = ingest_commands(Path::new(&masterhelp_dir_name));
 
     for command in commands {
         let command_help_output = get_command_help(&command);
@@ -26,23 +22,20 @@ fn main() {
             };
 
         log_raw_output(
-            Path::new(&commandhelp_name),
+            Path::new(&commandhelp_dir_name),
             command.clone(),
             raw_command_help.clone(),
         );
-        // TODO actually parse output to form json in new helper function
+        // TODO parse here to form json
     }
     println!("command_help_output complete!");
     println!("main() complete!");
 }
 
-fn ingest_commands(masterhelp_logs: &Path) -> Vec<String> {
-    create_data_dir(masterhelp_logs).expect("Error Creating directories!");
+fn ingest_commands(masterhelp_log_dir: &Path) -> Vec<String> {
+    create_data_dir(masterhelp_log_dir).expect("Error Creating directories!");
 
-    // creating cmd as empty String in this scope becasue
-    // no additional argument used with `zcash-cli help`
-    // to retrieve master help output
-
+    // no argument used with `zcash-cli help` for master help output
     let cli_help_output = get_command_help("");
     check_success(&cli_help_output.status);
 
@@ -58,7 +51,7 @@ fn ingest_commands(masterhelp_logs: &Path) -> Vec<String> {
 
     // write the `zcash-cli help` output to `masterhelp.txt`
     fs::write(
-        format!("{}masterhelp.txt", masterhelp_logs.to_str().unwrap()),
+        format!("{}masterhelp.txt", masterhelp_log_dir.to_str().unwrap()),
         &raw_help,
     )
     .expect("panic during fs:write masterhelp!");
@@ -97,8 +90,6 @@ fn ingest_commands(masterhelp_logs: &Path) -> Vec<String> {
     }
     //commands_str is type std::vec::Vec<&str>
 
-    // also 132
-
     let mut commands = Vec::new();
 
     // form commands back into String for retun commands value
@@ -111,13 +102,12 @@ fn ingest_commands(masterhelp_logs: &Path) -> Vec<String> {
     commands
 }
 
-fn create_data_dir(masterhelp_logs: &Path) -> std::io::Result<()> {
-    fs::create_dir_all(masterhelp_logs)?;
+fn create_data_dir(masterhelp_log_dir: &Path) -> std::io::Result<()> {
+    fs::create_dir_all(masterhelp_log_dir)?;
     Ok(())
 }
 
 fn get_command_help(cmd: &str) -> std::process::Output {
-    // Command::new() does not seem to accept paths from `~` by default.
     let command_help = std::process::Command::new(Path::new("zcash-cli"))
         .arg("help")
         .arg(&cmd)
@@ -139,14 +129,12 @@ fn check_success(output: &std::process::ExitStatus) {
 }
 
 fn log_raw_output(
-    commandhelp_logs: &Path,
+    commandhelp_dir: &Path,
     command: String,
     raw_command_help: String,
 ) {
-    fs::create_dir_all(commandhelp_logs).expect("error creating commands dir!");
-
     fs::write(
-        format!("{}{}.txt", commandhelp_logs.to_str().unwrap(), &command),
+        format!("{}{}.txt", commandhelp_dir.to_str().unwrap(), &command),
         &raw_command_help,
     )
     .expect("panic during fs::write command help!");
@@ -165,17 +153,9 @@ fn log_raw_output(
    "errors": "String",
 }
 ``` */
-
 // next target
 // z_getnewaddress
 
-// for the future, perhaps categorize commands according to
-// 'category' lines beginning with `==` ex: == Wallet ==
-// and/or color code according to usefulness or deprecation
-
-// spare code bits
-// possibly for future parsing
-// use regex::Regex;
 #[test]
 #[ignore = "not yet implemented"]
 fn concrete_annotation_match() {

@@ -7,9 +7,9 @@ pub(crate) fn name_logdirs() -> (String, String) {
         qfver = QUIZFACE_VERSION
     );
     let mut master_name = log_parent_template.clone();
-    master_name.push_str("masterhelp_output/raw");
+    master_name.push_str("masterhelp_output/raw/");
     let mut base_name = log_parent_template.clone();
-    base_name.push_str("help_output/raw");
+    base_name.push_str("help_output/raw/");
     (master_name, base_name)
 }
 
