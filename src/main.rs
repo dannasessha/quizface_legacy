@@ -19,10 +19,11 @@ fn main() {
 
         check_success(&command_help_output.status);
 
-        let raw_command_help = match std::string::String::from_utf8(command_help_output.stdout) {
-            Ok(x) => x,
-            Err(e) => panic!("Invalid, error: {}", e),
-        };
+        let raw_command_help =
+            match std::string::String::from_utf8(command_help_output.stdout) {
+                Ok(x) => x,
+                Err(e) => panic!("Invalid, error: {}", e),
+            };
 
         log_raw_output(
             Path::new(&commandhelp_name),
@@ -49,7 +50,8 @@ fn ingest_commands(masterhelp_logs: &Path) -> Vec<String> {
     // extract these u8 values from Result as a UTF-8 String,
     // checking for malformed UTF-8. There is a faster method
     // without a validity check `from_utf8_unchecked`
-    let raw_help = match std::string::String::from_utf8(cli_help_output.stdout) {
+    let raw_help = match std::string::String::from_utf8(cli_help_output.stdout)
+    {
         Ok(x) => x,
         Err(e) => panic!("Invalid, not UTF-8. Error: {}", e),
     };
@@ -136,7 +138,11 @@ fn check_success(output: &std::process::ExitStatus) {
     }
 }
 
-fn log_raw_output(commandhelp_logs: &Path, command: String, raw_command_help: String) {
+fn log_raw_output(
+    commandhelp_logs: &Path,
+    command: String,
+    raw_command_help: String,
+) {
     fs::create_dir_all(commandhelp_logs).expect("error creating commands dir!");
 
     fs::write(
@@ -170,91 +176,11 @@ fn log_raw_output(commandhelp_logs: &Path, command: String, raw_command_help: St
 // spare code bits
 // possibly for future parsing
 // use regex::Regex;
-#[cfg(test)]
-mod test {
-    #[allow(unused_imports)]
-    use super::*;
-    use std::collections::HashMap;
-    fn fake_parse_getinfo() -> HashMap<&'static str, &'static str> {
-        [
-            ("version", "Decimal"),
-            ("protocolversion", "Decimal"),
-            ("walletversion", "Decimal"),
-            ("balance", "Decimal"),
-            ("blocks", "Decimal"),
-            ("timeoffset", "Decimal"),
-            ("connections", "Decimal"),
-            ("proxy", "Option<String>"),
-            ("difficulty", "Decimal"),
-            ("testnet", "bool"),
-            ("keypoololdest", "Decimal"),
-            ("keypoolsize", "Decimal"),
-            ("unlocked_until", "Decimal"),
-            ("paytxfee", "Decimal"),
-            ("relayfee", "Decimal"),
-            ("errors", "String"),
-        ]
-        .iter()
-        .cloned()
-        .collect()
-    }
-    mod getinfo {
-        use super::*;
-        use serde_json::Value;
-        use std::collections::HashSet;
-        use std::process::Command;
-        #[allow(dead_code)]
-        struct GetInfoResponseFixture {
-            repr_bytes: Vec<u8>,
-            repr_string: String,
-            repr_json: Value,
-            repr_keyset: HashSet<String>,
-        }
-        impl GetInfoResponseFixture {
-            fn new() -> GetInfoResponseFixture {
-                let repr_bytes = Command::new("zcash-cli")
-                    .arg("getinfo")
-                    .output()
-                    .unwrap()
-                    .stdout;
-                let repr_string = String::from_utf8(repr_bytes.clone()).unwrap();
-                let repr_json = serde_json::de::from_str(&repr_string).unwrap();
-                let repr_keyset;
-                if let Value::Object(objmap) = &repr_json {
-                    repr_keyset = objmap.keys().cloned().collect();
-                } else {
-                    panic!()
-                }
-                GetInfoResponseFixture {
-                    repr_bytes,
-                    repr_string,
-                    repr_json,
-                    repr_keyset,
-                }
-            }
-        }
-        #[test]
-        #[ignore = "not yet implemented"]
-        fn concrete_annotation_match() {
-            let static_test_annotation = fake_parse_getinfo();
-            let eventually_real = fake_parse_getinfo();
-            assert_eq!(static_test_annotation, eventually_real);
-        }
-        #[test]
-        #[ignore = "zcash-cli help validation test"]
-        fn validate_response_as_subset() {
-            let response_fixture = GetInfoResponseFixture::new();
-            let testdata_keys: HashSet<String> = fake_parse_getinfo()
-                .keys()
-                .map(|&x| x.to_string())
-                .collect();
-            dbg!(&response_fixture.repr_keyset.difference(&testdata_keys));
-            assert!(response_fixture
-                .repr_keyset
-                .difference(&testdata_keys)
-                .cloned()
-                .collect::<String>()
-                .is_empty());
-        }
-    }
+#[test]
+#[ignore = "not yet implemented"]
+fn concrete_annotation_match() {
+    use quizface::utils::test;
+    let static_test_annotation = test::fake_parse_getinfo();
+    let eventually_real = test::fake_parse_getinfo();
+    assert_eq!(static_test_annotation, eventually_real);
 }
