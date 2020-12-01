@@ -33,6 +33,7 @@ impl GetInfoResponseFixture {
     }
 }
 #[test]
+#[ignore = "not yet implemented"]
 fn validate_response_as_subset() {
     let response_fixture = GetInfoResponseFixture::new();
     let testdata_keys: HashSet<String> = test::fake_parse_getinfo()
