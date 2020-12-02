@@ -1,8 +1,8 @@
 use std::fs;
 use std::path::Path;
-mod logging;
+mod utils;
+use utils::logging;
 fn main() {
-    // TODO rename `logging.rs` -> logdirs? create_logdirs?
     let (masterhelp_dir_name, commandhelp_dir_name) = logging::name_logdirs();
 
     // ingest_commands() also logs the masterhelp.txt file
