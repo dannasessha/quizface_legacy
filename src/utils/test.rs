@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-pub fn valid_getinfo_annotation() -> HashMap<&'static str, &'static str> {
+pub fn valid_getinfo_annotation() -> HashMap<String, String> {
     [
         ("version", "Decimal"),
         ("protocolversion", "Decimal"),
@@ -19,6 +19,6 @@ pub fn valid_getinfo_annotation() -> HashMap<&'static str, &'static str> {
         ("errors", "String"),
     ]
     .iter()
-    .cloned()
+    .map(|(a, b)| (a.to_string(), b.to_string()))
     .collect()
 }
