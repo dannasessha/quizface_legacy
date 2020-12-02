@@ -153,4 +153,16 @@ mod unit {
         let valid_help_in = parse_raw_output(test::HELP_GETINFO.to_string());
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
+    #[test]
+    fn parse_raw_output_early_lbracket_input() {
+        let valid_help_in =
+            parse_raw_output(test::LBRACKETY_HELP_GETINFO.to_string());
+        assert_eq!(valid_help_in, test::valid_getinfo_annotation());
+    }
+    #[test]
+    fn parse_raw_output_early_rbracket_input() {
+        let valid_help_in =
+            parse_raw_output(test::RBRACKETY_HELP_GETINFO.to_string());
+        assert_eq!(valid_help_in, test::valid_getinfo_annotation());
+    }
 }

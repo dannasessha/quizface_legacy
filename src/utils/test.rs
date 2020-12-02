@@ -28,6 +28,27 @@ Examples:
 > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getinfo", "params": [] }' -H 'content-type: text/plain;' http://127.0.0.1:8232/
 
 "#;
+
+pub const LBRACKETY_HELP_GETINFO: &str = r#"
+getinfo with an extra 
+{
+Returns an object containing various state info.
+
+Result:
+{
+  "version": xxxxx,           (numeric) the server version
+"#;
+
+pub const RBRACKETY_HELP_GETINFO: &str = r#"
+getinfo with an extra 
+}
+Returns an object containing various state info.
+
+Result:
+{
+  "version": xxxxx,           (numeric) the server version
+"#;
+
 pub fn valid_getinfo_annotation() -> HashMap<String, String> {
     [
         ("version", "Decimal"),
