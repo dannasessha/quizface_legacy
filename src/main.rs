@@ -63,7 +63,7 @@ fn ingest_commands(masterhelp_log_dir: &Path) -> Vec<String> {
     .expect("panic during fs:write masterhelp!");
 
     // create an iterator split by new lines
-    let help_lines_iter = raw_help.split("\n");
+    let help_lines_iter = raw_help.lines();
     // help_lines_iter is type std::str::Split<'_, &str>
 
     let mut help_lines = Vec::new();
