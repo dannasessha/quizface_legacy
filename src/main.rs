@@ -189,7 +189,7 @@ fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
 // z_getnewaddress
 
 #[cfg(test)]
-mod test {
+mod unit {
     use super::*;
     use quizface::utils::test;
     #[test]
@@ -211,7 +211,7 @@ mod test {
         //assert_eq!(valid_annotation, annotate_identifier(raw_version));
     }
     #[test]
-    fn validate_parse_raw_output() {
+    fn parse_raw_output_validmap_for_example_input() {
         let valid_help_in = parse_raw_output(test::HELP_GETINFO.to_string());
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
