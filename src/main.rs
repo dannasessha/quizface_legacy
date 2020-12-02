@@ -41,20 +41,16 @@ fn main() {
 fn ingest_commands(masterhelp_log_dir: &Path) -> Vec<String> {
     create_data_dir(masterhelp_log_dir).expect("Error Creating directories!");
 
-    // no argument used with `zcash-cli help` for master help output
     let cli_help_output = get_command_help("");
     check_success(&cli_help_output.status);
 
-    // output and output.stdout are type std::vec::Vec<u8>
-    // extract these u8 values from Result as a UTF-8 String,
-    // checking for malformed UTF-8. There is a faster method
-    // without a validity check `from_utf8_unchecked`
     let raw_help = match std::string::String::from_utf8(cli_help_output.stdout)
     {
         Ok(x) => x,
         Err(e) => panic!("Invalid, not UTF-8. Error: {}", e),
     };
 
+    // TODO: move this into logging?
     // write the `zcash-cli help` output to `masterhelp.txt`
     fs::write(
         format!("{}masterhelp.txt", masterhelp_log_dir.to_str().unwrap()),
@@ -62,31 +58,19 @@ fn ingest_commands(masterhelp_log_dir: &Path) -> Vec<String> {
     )
     .expect("panic during fs:write masterhelp!");
 
-    // create an iterator split by new lines
     let help_lines_iter = raw_help.lines();
-    // help_lines_iter is type std::str::Split<'_, &str>
-
     let mut help_lines = Vec::new();
-    // select non-blank lines that do not begin with "=" to populate
-    // the vector with commands and their options
-
     for li in help_lines_iter {
         if li != "" && !li.starts_with("=") {
             help_lines.push(li);
         }
     }
-    //help_lines is type std::vec::Vec<&str>
 
     // currently, with zcashd from version 4.1.0, 132 lines.
     // this matches 151 (`zcash-cli | wc -l`) - 19 (manual count of
     // empty lines or 'category' lines that begin with "=")
 
     let mut commands_str = Vec::new();
-
-    // for each &str in help_lines, create an iterator over values
-    // separated by whitespace. Take the first value and push into
-    // commands. This pattern could be possibly extended for
-    // command options from this 'master help' (help help) output.
     for line in help_lines {
         let mut temp_iter = line.split_ascii_whitespace();
         match temp_iter.next() {
@@ -94,17 +78,11 @@ fn ingest_commands(masterhelp_log_dir: &Path) -> Vec<String> {
             None => panic!("error during command parsing"),
         }
     }
-    //commands_str is type std::vec::Vec<&str>
 
     let mut commands = Vec::new();
-
-    // form commands back into String for retun commands value
     for c in commands_str {
-        // c has type &str
         commands.push(c.to_string());
     }
-    println!("ingest_commands complete!");
-
     commands
 }
 
