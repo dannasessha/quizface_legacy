@@ -130,26 +130,19 @@ pub fn annotate_identifier(ident_with_metadata: String) -> (String, String) {
 mod unit {
     use super::*;
     use crate::utils::test;
-    #[test]
-    #[ignore = "not yet implemented"]
-    fn concrete_annotation_match() {
-        let static_test_annotation = test::valid_getinfo_annotation();
-        let eventually_real = test::valid_getinfo_annotation();
-        assert_eq!(static_test_annotation, eventually_real);
-    }
 
     #[test]
-    #[ignore = "not yet implemented"]
-    fn validate_annotate_identifier() {
+    fn annotate_identifier_observed_input_valid() {
         let raw_version =
             r#""version": xxxxx,           (numeric) the server version"#;
         let valid_annotation = ("version".to_string(), "Decimal".to_string());
-        dbg!(raw_version);
-        dbg!(valid_annotation);
-        //assert_eq!(valid_annotation, annotate_identifier(raw_version));
+        assert_eq!(
+            valid_annotation,
+            annotate_identifier(raw_version.to_string())
+        );
     }
     #[test]
-    fn parse_raw_output_validmap_for_example_input() {
+    fn parse_raw_output_observed_input_valid() {
         let valid_help_in = parse_raw_output(test::HELP_GETINFO.to_string());
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
