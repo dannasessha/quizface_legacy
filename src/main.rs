@@ -30,11 +30,8 @@ fn main() {
 
         // TODO : make more general and remove `if`
         if command == "getinfo".to_string() {
-            let parsed_command_help = parse_raw_output(
-                Path::new(&commandhelp_dir_name),
-                command.clone(),
-                raw_command_help.clone(),
-            );
+            let parsed_command_help =
+                parse_raw_output(raw_command_help.clone());
             // for the moment this is the resulting HashMap,
             // type HashMap<String, String>
             dbg!(&parsed_command_help);
@@ -152,11 +149,7 @@ fn log_raw_output(
     .expect("panic during fs::write command help!");
 }
 
-fn parse_raw_output(
-    commandhelp_dir: &Path,
-    command: String,
-    raw_command_help: String,
-) -> HashMap<String, String> {
+fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
     let command_help_lines_iter = raw_command_help.split("\n");
 
     let mut command_help_lines = Vec::new();
@@ -284,7 +277,7 @@ fn parse_raw_output(
 #[ignore = "not yet implemented"]
 fn concrete_annotation_match() {
     use quizface::utils::test;
-    let static_test_annotation = test::Valid_GetInfo_Annotation();
-    let eventually_real = test::Valid_GetInfo_Annotation();
+    let static_test_annotation = test::valid_getinfo_annotation();
+    let eventually_real = test::valid_getinfo_annotation();
     assert_eq!(static_test_annotation, eventually_real);
 }
