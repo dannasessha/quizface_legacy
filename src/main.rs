@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 mod logging;
@@ -31,7 +30,7 @@ fn main() {
         // TODO : make more general and remove `if`
         if command == "getinfo".to_string() {
             let parsed_command_help =
-                parse_raw_output(raw_command_help.clone());
+                quizface::parse_raw_output(raw_command_help.clone());
             // for the moment this is the resulting HashMap,
             // type HashMap<String, String>
             dbg!(&parsed_command_help);
@@ -149,70 +148,5 @@ fn log_raw_output(
     .expect("panic during fs::write command help!");
 }
 
-fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
-    let command_help_lines_iter = raw_command_help.split("\n");
-
-    let mut command_help_lines = Vec::new();
-
-    // for 'well formed' command help outputs (such as getinfo):
-    // the relevant fields are in between `{` and `}`, assumed
-    // to be alone on a line
-    let mut start: bool = false;
-    let mut end: bool = false;
-
-    // TODO insure this pattern happens exactly once
-    for li in command_help_lines_iter {
-        if li == "}" {
-            end = true;
-        }
-
-        // XOR: after `{` but before `}`
-        if start ^ end {
-            command_help_lines.push(li);
-        }
-
-        if li == "{" {
-            start = true;
-        }
-    }
-
-    let mut command_map = HashMap::new();
-
-    for line in command_help_lines {
-        let (key, value) = quizface::annotate_identifier(line.to_string());
-        command_map.insert(key, value);
-    }
-    command_map
-}
-
 // next target
 // z_getnewaddress
-
-#[cfg(test)]
-mod unit {
-    use super::*;
-    use quizface::utils::test;
-    #[test]
-    #[ignore = "not yet implemented"]
-    fn concrete_annotation_match() {
-        let static_test_annotation = test::valid_getinfo_annotation();
-        let eventually_real = test::valid_getinfo_annotation();
-        assert_eq!(static_test_annotation, eventually_real);
-    }
-
-    #[test]
-    #[ignore = "not yet implemented"]
-    fn validate_annotate_identifier() {
-        let raw_version =
-            r#""version": xxxxx,           (numeric) the server version"#;
-        let valid_annotation = ("version".to_string(), "Decimal".to_string());
-        dbg!(raw_version);
-        dbg!(valid_annotation);
-        //assert_eq!(valid_annotation, annotate_identifier(raw_version));
-    }
-    #[test]
-    fn parse_raw_output_validmap_for_example_input() {
-        let valid_help_in = parse_raw_output(test::HELP_GETINFO.to_string());
-        assert_eq!(valid_help_in, test::valid_getinfo_annotation());
-    }
-}
