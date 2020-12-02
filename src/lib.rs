@@ -40,15 +40,19 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
 pub fn annotate_identifier(ident_with_metadata: String) -> (String, String) {
     // find key. begin by selecting first str before
     // whitespace and eliminating leading whitespace.
+    let ident = &ident_with_metadata.split('"').collect::<Vec<&str>>()[1]
+        .trim_matches('"');
+
     let mut temp_iter = ident_with_metadata.split_ascii_whitespace();
     let unparsed_key_str = match temp_iter.next() {
         Some(x) => x,
         None => panic!("error during command parsing"),
     };
-    //dbg!(&unparsed_key_str);
+    dbg!(&unparsed_key_str);
 
     let unparsed_key_str_vec: Vec<&str> = unparsed_key_str.split('"').collect();
 
+    dbg!(&unparsed_key_str_vec);
     // unparsed_key_str_vec should still contain leading "" element
     // and trailing ":" element, and be exactly 3 elements in length
     if &unparsed_key_str_vec.len() == &3 {
@@ -71,6 +75,7 @@ pub fn annotate_identifier(ident_with_metadata: String) -> (String, String) {
     }
 
     let key_str = isolated_key_str_vec[0];
+    let key_str = ident;
     //dbg!(&key_str);
 
     // find 'keywords' in ident_with_metadata to eventually produce values
