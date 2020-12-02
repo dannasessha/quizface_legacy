@@ -1,6 +1,6 @@
 const QUIZFACE_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
-pub(crate) fn name_logdirs() -> (String, String) {
+pub fn name_logdirs() -> (String, String) {
     let log_parent_template = format!(
         "./logs/{zdver}_{qfver}/",
         zdver = get_zcashd_version(),

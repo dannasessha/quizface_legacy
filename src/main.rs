@@ -1,7 +1,6 @@
+use quizface::utils::logging;
 use std::fs;
 use std::path::Path;
-mod utils;
-use utils::logging;
 fn main() {
     let (masterhelp_dir_name, commandhelp_dir_name) = logging::name_logdirs();
 
