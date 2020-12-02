@@ -195,7 +195,8 @@ fn parse_raw_output(
         };
         //dbg!(&unparsed_key_str);
 
-        let unparsed_key_str_vec: Vec<&str> = unparsed_key_str.split('"').collect();
+        let unparsed_key_str_vec: Vec<&str> =
+            unparsed_key_str.split('"').collect();
 
         // unparsed_key_str_vec should still contain leading "" element
         // and trailing ":" element, and be exactly 3 elements in length
@@ -227,7 +228,8 @@ fn parse_raw_output(
         // these 'keywords' within first set of paranthesis.
 
         // split with an closure to support multiple 'splitters'
-        let unparsed_value_str_vec: Vec<&str> = line.split(|c| c == '(' || c == ')').collect();
+        let unparsed_value_str_vec: Vec<&str> =
+            line.split(|c| c == '(' || c == ')').collect();
 
         // because unparsed_value_str_vec will have an element before
         // the first '(', and there may be more sets of parenthesis,
