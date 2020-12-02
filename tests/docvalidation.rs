@@ -46,3 +46,10 @@ fn validate_response_as_subset() {
         .collect::<String>()
         .is_empty());
 }
+#[test]
+fn validate_annotate_identifier() {
+    let raw_version =
+        r#""version": xxxxx,           (numeric) the server version"#;
+    let valid_annotation = ("version".to_string(), "Decimal".to_string());
+    assert_eq!(valid_annotation, annotate_identifier(raw_version));
+}
