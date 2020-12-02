@@ -212,6 +212,7 @@ mod test {
     }
     #[test]
     fn validate_parse_raw_output() {
-        dbg!(parse_raw_output(test::HELP_GETINFO.to_string()));
+        let valid_help_in = parse_raw_output(test::HELP_GETINFO.to_string());
+        assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 }
