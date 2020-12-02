@@ -32,7 +32,7 @@ fn main() {
                 quizface::parse_raw_output(raw_command_help.clone());
             // for the moment this is the resulting HashMap,
             // type HashMap<String, String>
-            dbg!(&parsed_command_help);
+            //dbg!(&parsed_command_help);
         }
     }
     println!("main() complete!");
