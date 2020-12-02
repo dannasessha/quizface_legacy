@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-pub fn fake_parse_getinfo() -> HashMap<&'static str, &'static str> {
+pub fn Valid_GetInfo_Annotation() -> HashMap<&'static str, &'static str> {
     [
         ("version", "Decimal"),
         ("protocolversion", "Decimal"),

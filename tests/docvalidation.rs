@@ -36,7 +36,7 @@ impl GetInfoResponseFixture {
 #[ignore = "not yet implemented"]
 fn validate_response_as_subset() {
     let response_fixture = GetInfoResponseFixture::new();
-    let testdata_keys: HashSet<String> = test::fake_parse_getinfo()
+    let testdata_keys: HashSet<String> = test::Valid_GetInfo_Annotation()
         .keys()
         .map(|&x| x.to_string())
         .collect();

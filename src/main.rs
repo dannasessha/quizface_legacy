@@ -284,7 +284,7 @@ fn parse_raw_output(
 #[ignore = "not yet implemented"]
 fn concrete_annotation_match() {
     use quizface::utils::test;
-    let static_test_annotation = test::fake_parse_getinfo();
-    let eventually_real = test::fake_parse_getinfo();
+    let static_test_annotation = test::Valid_GetInfo_Annotation();
+    let eventually_real = test::Valid_GetInfo_Annotation();
     assert_eq!(static_test_annotation, eventually_real);
 }
