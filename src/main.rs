@@ -281,3 +281,11 @@ fn concrete_annotation_match() {
     let eventually_real = test::valid_getinfo_annotation();
     assert_eq!(static_test_annotation, eventually_real);
 }
+
+#[test]
+fn validate_annotate_identifier() {
+    let raw_version =
+        r#""version": xxxxx,           (numeric) the server version"#;
+    let valid_annotation = ("version".to_string(), "Decimal".to_string());
+    assert_eq!(valid_annotation, annotate_identifier(raw_version));
+}
