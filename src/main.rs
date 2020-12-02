@@ -21,7 +21,7 @@ fn main() {
                 Err(e) => panic!("Invalid, error: {}", e),
             };
 
-        log_raw_output(
+        logging::log_raw_output(
             Path::new(&commandhelp_dir_name),
             command.clone(),
             raw_command_help.clone(),
@@ -133,19 +133,6 @@ fn check_success(output: &std::process::ExitStatus) {
         Some(_) => panic!("exit code not 0"),
         None => panic!("error! no exit code"),
     }
-}
-
-fn log_raw_output(
-    commandhelp_dir: &Path,
-    command: String,
-    raw_command_help: String,
-) {
-    fs::create_dir_all(commandhelp_dir).expect("error creating commands dir!");
-    fs::write(
-        format!("{}{}.txt", commandhelp_dir.to_str().unwrap(), &command),
-        &raw_command_help,
-    )
-    .expect("panic during fs::write command help!");
 }
 
 // next target

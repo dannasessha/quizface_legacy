@@ -29,3 +29,17 @@ fn get_zcashd_version() -> String {
         .unwrap()
         .to_string()
 }
+
+pub fn log_raw_output(
+    commandhelp_dir: &std::path::Path,
+    command: String,
+    raw_command_help: String,
+) {
+    use std::fs;
+    fs::create_dir_all(commandhelp_dir).expect("error creating commands dir!");
+    fs::write(
+        format!("{}{}.txt", commandhelp_dir.to_str().unwrap(), &command),
+        &raw_command_help,
+    )
+    .expect("panic during fs::write command help!");
+}
