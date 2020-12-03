@@ -1,5 +1,81 @@
 pub mod utils;
+use std::fs;
+use std::path::Path;
 use std::collections::HashMap;
+
+pub fn create_data_dir(masterhelp_log_dir: &Path) -> std::io::Result<()> {
+    fs::create_dir_all(masterhelp_log_dir)?;
+    Ok(())
+}
+
+pub fn ingest_commands(masterhelp_log_dir: &Path) -> Vec<String> {
+    create_data_dir(masterhelp_log_dir).expect("Error Creating directories!");
+
+    let cli_help_output = get_command_help("");
+    check_success(&cli_help_output.status);
+
+    let raw_help = match std::string::String::from_utf8(cli_help_output.stdout)
+    {
+        Ok(x) => x,
+        Err(e) => panic!("Invalid, not UTF-8. Error: {}", e),
+    };
+
+    // TODO: move this into logging?
+    // write the `zcash-cli help` output to `masterhelp.txt`
+    fs::write(
+        format!("{}masterhelp.txt", masterhelp_log_dir.to_str().unwrap()),
+        &raw_help,
+    )
+    .expect("panic during fs:write masterhelp!");
+
+    let help_lines_iter = raw_help.lines();
+    let mut help_lines = Vec::new();
+    for li in help_lines_iter {
+        if li != "" && !li.starts_with("=") {
+            help_lines.push(li);
+        }
+    }
+
+    // currently, with zcashd from version 4.1.0, 132 lines.
+    // this matches 151 (`zcash-cli | wc -l`) - 19 (manual count of
+    // empty lines or 'category' lines that begin with "=")
+
+    let mut commands_str = Vec::new();
+    for line in help_lines {
+        let mut temp_iter = line.split_ascii_whitespace();
+        match temp_iter.next() {
+            Some(x) => commands_str.push(x),
+            None => panic!("error during command parsing"),
+        }
+    }
+
+    let mut commands = Vec::new();
+    for c in commands_str {
+        commands.push(c.to_string());
+    }
+    commands
+}
+
+pub fn get_command_help(cmd: &str) -> std::process::Output {
+    let command_help = std::process::Command::new(Path::new("zcash-cli"))
+        .arg("help")
+        .arg(&cmd)
+        .output()
+        .expect("failed to execute command help");
+    command_help
+}
+
+pub fn check_success(output: &std::process::ExitStatus) {
+    // simple boolean that output succeeded by spawning
+    // and monitoring child process, if false: panic
+    assert!(output.success());
+    // then match output exit code
+    match output.code() {
+        Some(0) => (),
+        Some(_) => panic!("exit code not 0"),
+        None => panic!("error! no exit code"),
+    }
+}
 
 pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
     let command_help_lines_iter = raw_command_help.split("\n");
