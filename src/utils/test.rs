@@ -37,6 +37,7 @@ Returns an object containing various state info.
 Result:
 {
   "version": xxxxx,           (numeric) the server version
+}
 "#;
 
 pub const RBRACKETY_HELP_GETINFO: &str = r#"
@@ -47,6 +48,7 @@ Returns an object containing various state info.
 Result:
 {
   "version": xxxxx,           (numeric) the server version
+}
 "#;
 
 pub fn valid_getinfo_annotation() -> HashMap<String, String> {

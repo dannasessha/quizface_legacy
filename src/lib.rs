@@ -78,7 +78,7 @@ pub fn check_success(output: &std::process::ExitStatus) {
 }
 
 pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
-    let command_help_lines_iter = raw_command_help.split("\n");
+    let command_help_lines_iter = raw_command_help.lines();
 
     let mut command_help_lines = Vec::new();
 
@@ -88,8 +88,9 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
     let mut start: bool = false;
     let mut end: bool = false;
 
-    // TODO insure this pattern happens exactly once
+    // TODO create recursive function
     for li in command_help_lines_iter {
+        // select info only after Results
         if li == "}" {
             end = true;
         }
@@ -99,9 +100,17 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
             command_help_lines.push(li);
         }
 
+        if end && !start {
+            panic!("curly braces not well formed. end with no start");
+        }
+
         if li == "{" {
             start = true;
         }
+    }
+
+    if start && !end {
+        panic!("curly braces not well formed! start with no end");
     }
 
     let mut command_map = HashMap::new();
@@ -124,11 +133,11 @@ pub fn annotate_identifier(ident_with_metadata: String) -> (String, String) {
         Some(x) => x,
         None => panic!("error during command parsing"),
     };
-    dbg!(&unparsed_key_str);
+    //dbg!(&unparsed_key_str);
 
     let unparsed_key_str_vec: Vec<&str> = unparsed_key_str.split('"').collect();
 
-    dbg!(&unparsed_key_str_vec);
+    // dbg!(&unparsed_key_str_vec);
     // unparsed_key_str_vec should still contain leading "" element
     // and trailing ":" element, and be exactly 3 elements in length
     if &unparsed_key_str_vec.len() == &3 {

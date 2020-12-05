@@ -1,6 +1,7 @@
 use quizface::utils::logging;
 use std::path::Path;
 fn main() {
+    // TODO move all logging to lib.rs?
     let (masterhelp_dir_name, commandhelp_dir_name) = logging::name_logdirs();
 
     // ingest_commands() also logs the masterhelp.txt file
