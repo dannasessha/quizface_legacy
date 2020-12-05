@@ -30,9 +30,8 @@ fn main() {
         if command == "getinfo".to_string() {
             let parsed_command_help =
                 quizface::parse_raw_output(raw_command_help.clone());
-            // for the moment this is the resulting HashMap,
-            // type HashMap<String, String>
-            //dbg!(&parsed_command_help);
+            // HashMap<String, String>
+            dbg!(&parsed_command_help);
         }
     }
     println!("main() complete!");
