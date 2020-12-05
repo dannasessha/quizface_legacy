@@ -87,16 +87,26 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
     // to be alone on a line
     let mut start: bool = false;
     let mut end: bool = false;
+    let mut beginresult = false;
+    let mut beginexample = false;
 
     // TODO create recursive function
     for li in command_help_lines_iter {
-        // select info only after Results
-        if li == "}" {
-            end = true;
+        // TODO add helper function
+        if li == "Examples:"{
+            break
+        }
+
+        if li == "Result:" {
+            beginresult = true;
+        }
+        
+        if li == "}" && beginresult {
+            end = !end;
         }
 
         // XOR: after `{` but before `}`
-        if start ^ end {
+        if start ^ end && beginresult {
             command_help_lines.push(li);
         }
 
@@ -104,9 +114,11 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
             panic!("curly braces not well formed. end with no start");
         }
 
-        if li == "{" {
-            start = true;
+        if li == "{" && beginresult {
+            start = !start;
         }
+
+        
     }
 
     if start && !end {
