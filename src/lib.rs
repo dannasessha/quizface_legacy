@@ -112,7 +112,7 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
         }
 
         if end && !start {
-            panic!("curly braces not well formed. end with no start");
+            panic!("curly brace error. end && no start or additional start");
         }
 
         if li == "{" && beginresult {
@@ -229,6 +229,24 @@ mod unit {
     fn parse_raw_output_early_rbracket_input() {
         let valid_help_in =
             parse_raw_output(test::RBRACKETY_HELP_GETINFO.to_string());
+        assert_eq!(valid_help_in, test::valid_getinfo_annotation());
+    }
+    #[test]
+    fn parse_raw_output_early_extrabrackets_input() {
+        let valid_help_in =
+            parse_raw_output(test::EXTRABRACKETS1_HELP_GETINFO.to_string());
+        assert_eq!(valid_help_in, test::valid_getinfo_annotation());
+    }
+    #[test]
+    fn parse_raw_output_extrabrackets_within_input_lines() {
+        let valid_help_in =
+            parse_raw_output(test::EXTRABRACKETS3_HELP_GETINFO.to_string());
+        assert_eq!(valid_help_in, test::valid_getinfo_annotation());
+    }
+    #[test]
+    fn parse_raw_output_late_extrabrackets_input() {
+        let valid_help_in =
+            parse_raw_output(test::EXTRABRACKETS2_HELP_GETINFO.to_string());
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 }

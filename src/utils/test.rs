@@ -81,6 +81,83 @@ Result:
 }
 "#;
 
+pub const EXTRABRACKETS1_HELP_GETINFO: &str = r#"
+getinfo with extra brackets in disorder before Result:
+}
+
+{ } { { }
+Result:
+{
+  "version": xxxxx,           (numeric) the server version
+  "protocolversion": xxxxx,   (numeric) the protocol version
+  "walletversion": xxxxx,     (numeric) the wallet version
+  "balance": xxxxxxx,         (numeric) the total Zcash balance of the wallet
+  "blocks": xxxxxx,           (numeric) the current number of blocks processed in the server
+  "timeoffset": xxxxx,        (numeric) the time offset (deprecated; always 0)
+  "connections": xxxxx,       (numeric) the number of connections
+  "proxy": "host:port",     (string, optional) the proxy used by the server
+  "difficulty": xxxxxx,       (numeric) the current difficulty
+  "testnet": true|false,      (boolean) if the server is using testnet or not
+  "keypoololdest": xxxxxx,    (numeric) the timestamp (seconds since GMT epoch) of the oldest pre-generated key in the key pool
+  "keypoolsize": xxxx,        (numeric) how many new keys are pre-generated
+  "unlocked_until": ttt,      (numeric) the timestamp in seconds since epoch (midnight Jan 1 1970 GMT) that the wallet is unlocked for transfers, or 0 if the wallet is locked
+  "paytxfee": x.xxxx,         (numeric) the transaction fee set in ZEC/kB
+  "relayfee": x.xxxx,         (numeric) minimum relay fee for non-free transactions in ZEC/kB
+  "errors": "..."           (string) any error messages
+}
+"#;
+
+pub const EXTRABRACKETS2_HELP_GETINFO: &str = r#"
+getinfo with extra brackets in disorder after Examples:
+Result:
+{
+  "version": xxxxx,           (numeric) the server version
+  "protocolversion": xxxxx,   (numeric) the protocol version
+  "walletversion": xxxxx,     (numeric) the wallet version
+  "balance": xxxxxxx,         (numeric) the total Zcash balance of the wallet
+  "blocks": xxxxxx,           (numeric) the current number of blocks processed in the server
+  "timeoffset": xxxxx,        (numeric) the time offset (deprecated; always 0)
+  "connections": xxxxx,       (numeric) the number of connections
+  "proxy": "host:port",     (string, optional) the proxy used by the server
+  "difficulty": xxxxxx,       (numeric) the current difficulty
+  "testnet": true|false,      (boolean) if the server is using testnet or not
+  "keypoololdest": xxxxxx,    (numeric) the timestamp (seconds since GMT epoch) of the oldest pre-generated key in the key pool
+  "keypoolsize": xxxx,        (numeric) how many new keys are pre-generated
+  "unlocked_until": ttt,      (numeric) the timestamp in seconds since epoch (midnight Jan 1 1970 GMT) that the wallet is unlocked for transfers, or 0 if the wallet is locked
+  "paytxfee": x.xxxx,         (numeric) the transaction fee set in ZEC/kB
+  "relayfee": x.xxxx,         (numeric) minimum relay fee for non-free transactions in ZEC/kB
+  "errors": "..."           (string) any error messages
+}
+Examples:
+}{ {} { { }
+{ } { { }{
+    {{{}{{}{{
+"#;
+
+pub const EXTRABRACKETS3_HELP_GETINFO: &str = r#"
+getinfo with brackets in the middle of output lines, 
+including badly formed brackets
+Result:
+{
+  "version": {xxxxx,}           (numeric) the server version
+  "protocolversion": {xxxxx,}   (numeric) the protocol version
+  "walletversion": {xxxxx,}     (numeric) the wallet version
+  "balance": {xxxxxxx,}         (numeric) the total Zcash balance of the wallet
+  "blocks": {xxxxxx,}           (numeric) the current number of blocks processed in the server
+  "timeoffset": {xxxxx,}        (numeric) the time offset (deprecated; always 0)
+  "connections": {{{xxxxx,}}}       (numeric) the number of connections
+  "proxy": }{}{{{{"host:port",  }{{}}}{{   (string, optional) the proxy used by the server
+  "difficulty": }}xxxxxx,}}       (numeric) the current difficulty
+  "testnet": {{true|false,{{      (boolean) if the server is using testnet or not
+  "keypoololdest": }xxxxxx,{    (numeric) the timestamp (seconds since GMT epoch) of the oldest pre-generated key in the key pool
+  "keypoolsize": xxxx,{}{{        (numeric) how many new keys are pre-generated
+  "unlocked_until": }}{ttt,      (numeric) the timestamp in seconds since epoch (midnight Jan 1 1970 GMT) that the wallet is unlocked for transfers, or 0 if the wallet is locked
+  "paytxfee": x.xxxx,  }{}       (numeric) the transaction fee set in ZEC/kB
+  "relayfee": x.xxxx,         (numeric){} }minimum relay fee for non-free transactions in ZEC/kB{
+  "errors": "..."           (string) {any error messages}
+}
+"#;
+
 pub fn valid_getinfo_annotation() -> HashMap<String, String> {
     [
         ("version", "Decimal"),
