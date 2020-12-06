@@ -132,13 +132,13 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
     let mut command_map = HashMap::new();
 
     for line in command_help_lines {
-        let (key, value) = annotate_identifier(line.to_string());
+        let (key, value) = define_ident_annotation(line.to_string());
         command_map.insert(key, value);
     }
     command_map
 }
 
-pub fn annotate_identifier(ident_with_metadata: String) -> (String, String) {
+pub fn define_ident_annotation(ident_with_metadata: String) -> (String, String) {
     // find key (String) for hashmap, aka the indentifier
     let mut ident_temp = ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
     ident_temp.retain(|&c| c != "");
@@ -147,8 +147,9 @@ pub fn annotate_identifier(ident_with_metadata: String) -> (String, String) {
         None => panic!("no match setting ident")
     };
 
-    // find annotation (String) for identifier, aka values for hashmap,
+    // define annotation for identifier, aka values for hashmap,
     // aka rust type 'hint'
+    // TODO check for nested parenthesis?
     let unparsed_annotation_str_vec: Vec<&str> = ident_with_metadata
         .split(|c| c == '(' || c == ')')
         .collect();
@@ -156,12 +157,13 @@ pub fn annotate_identifier(ident_with_metadata: String) -> (String, String) {
     // because unparsed_annotation_str_vec will have an element before
     // the first '(', and there may be more sets of parenthesis,
     // only the second element is examined with [1].
-    // if there are nested parenthesis this scheme will fail.
-    // TODO check for nested parenthesis?
+    let annotation = define_annotation(unparsed_annotation_str_vec[1]);
 
-    let unparsed_annotation_str = unparsed_annotation_str_vec[1];
+    (ident.to_string(), annotation)
+}
 
-    // determine if optional.
+pub fn define_annotation(unparsed_annotation_str: &str) -> String {
+
     let mut optional: bool = false;
     if unparsed_annotation_str.contains("optional") {
         optional = true;
@@ -169,6 +171,7 @@ pub fn annotate_identifier(ident_with_metadata: String) -> (String, String) {
     
     let mut annotation_str ="";
 
+    // only the first str after the first '(' or ')' will be matched.
     if unparsed_annotation_str.starts_with("numeric") {
         annotation_str = "Decimal";
     }
@@ -179,22 +182,23 @@ pub fn annotate_identifier(ident_with_metadata: String) -> (String, String) {
         annotation_str = "bool";
     }
 
-    if annotation_str == ""{
+    if annotation_str == "" {
         panic!("annotation_str should have a value at this point.");
     };
 
-    let temp_ann_string: String;
-    let annotation: &str;
+    let temp_note_string: String;
+    let note: &str;
 
     if optional {
-        temp_ann_string = format!("Option<{}>", annotation_str);
-        annotation = &temp_ann_string;
+        temp_note_string = format!("Option<{}>", annotation_str);
+        note = &temp_note_string;
     } else {
-        annotation = annotation_str;
+        note = annotation_str;
     }
-
-    (ident.to_string(), annotation.to_string())
+    //return annotation
+    note.to_string()
 }
+
 #[cfg(test)]
 mod unit {
     use super::*;
@@ -207,7 +211,7 @@ mod unit {
         let valid_annotation = ("version".to_string(), "Decimal".to_string());
         assert_eq!(
             valid_annotation,
-            annotate_identifier(raw_version.to_string())
+            define_ident_annotation(raw_version.to_string())
         );
     }
     #[test]
