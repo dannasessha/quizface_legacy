@@ -153,7 +153,7 @@ pub fn define_ident_annotation(
         .split(|c| c == '(' || c == ')')
         .collect::<Vec<&str>>()[1];
 
-    // because unparsed_annotation_str_vec will have an element before
+    // because unparsed_annotation_vec will have an element before
     // the first '(', and there may be more sets of parenthesis,
     // only the second element is examined with [1].
     let annotation = define_annotation(unparsed_annotation);
@@ -161,22 +161,22 @@ pub fn define_ident_annotation(
     (ident.to_string(), annotation)
 }
 
-pub fn define_annotation(unparsed_annotation_str: &str) -> String {
+pub fn define_annotation(unparsed_annotation: &str) -> String {
     let mut optional: bool = false;
-    if unparsed_annotation_str.contains("optional") {
+    if unparsed_annotation.contains("optional") {
         optional = true;
     }
 
     let mut annotation_str = "";
 
     // only the first str after the first '(' or ')' will be matched.
-    if unparsed_annotation_str.starts_with("numeric") {
+    if unparsed_annotation.starts_with("numeric") {
         annotation_str = "Decimal";
     }
-    if unparsed_annotation_str.starts_with("string") {
+    if unparsed_annotation.starts_with("string") {
         annotation_str = "String";
     }
-    if unparsed_annotation_str.starts_with("boolean") {
+    if unparsed_annotation.starts_with("boolean") {
         annotation_str = "bool";
     }
 
