@@ -1,7 +1,7 @@
 pub mod utils;
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
-use std::collections::HashMap;
 
 pub fn create_data_dir(masterhelp_log_dir: &Path) -> std::io::Result<()> {
     fs::create_dir_all(masterhelp_log_dir)?;
@@ -93,15 +93,15 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
     // TODO create recursive function
     for li in command_help_lines_iter {
         // TODO add helper function
-        if li == "Examples:"{
+        if li == "Examples:" {
             beginexamples = true;
-            break
+            break;
         }
 
         if li == "Result:" {
             beginresult = true;
         }
-        
+
         if li == "}" && beginresult {
             end = !end;
         }
@@ -118,13 +118,12 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
         if li == "{" && beginresult {
             start = !start;
         }
-        
     }
 
     if !beginexamples {
         println!("WARNING! No examples!")
     }
-    
+
     if start && !end {
         panic!("curly braces not well formed! start with no end");
     }
@@ -138,13 +137,16 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
     command_map
 }
 
-pub fn define_ident_annotation(ident_with_metadata: String) -> (String, String) {
+pub fn define_ident_annotation(
+    ident_with_metadata: String,
+) -> (String, String) {
     // find key (String) for hashmap, aka the indentifier
-    let mut ident_temp = ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
+    let mut ident_temp =
+        ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
     ident_temp.retain(|&c| c != "");
-    let ident =  match ident_temp.first() {
+    let ident = match ident_temp.first() {
         Some(x) => x,
-        None => panic!("no match setting ident")
+        None => panic!("no match setting ident"),
     };
 
     // define annotation for identifier, aka values for hashmap,
@@ -163,13 +165,12 @@ pub fn define_ident_annotation(ident_with_metadata: String) -> (String, String) 
 }
 
 pub fn define_annotation(unparsed_annotation_str: &str) -> String {
-
     let mut optional: bool = false;
     if unparsed_annotation_str.contains("optional") {
         optional = true;
     }
-    
-    let mut annotation_str ="";
+
+    let mut annotation_str = "";
 
     // only the first str after the first '(' or ')' will be matched.
     if unparsed_annotation_str.starts_with("numeric") {
