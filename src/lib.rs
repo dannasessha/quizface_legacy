@@ -149,14 +149,14 @@ pub fn define_ident_annotation(
     // define annotation for identifier, aka values for hashmap,
     // aka rust type 'hint'
     // TODO check for nested parenthesis?
-    let unparsed_annotation_str_vec: Vec<&str> = ident_with_metadata
+    let unparsed_annotation: &str = ident_with_metadata
         .split(|c| c == '(' || c == ')')
-        .collect();
+        .collect::<Vec<&str>>()[1];
 
     // because unparsed_annotation_str_vec will have an element before
     // the first '(', and there may be more sets of parenthesis,
     // only the second element is examined with [1].
-    let annotation = define_annotation(unparsed_annotation_str_vec[1]);
+    let annotation = define_annotation(unparsed_annotation);
 
     (ident.to_string(), annotation)
 }
