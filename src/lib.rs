@@ -121,15 +121,13 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
     }
     let mut command_map = HashMap::new();
     for line in command_help_lines {
-        let (key, value) = define_ident_annotation(line.to_string());
+        let (key, value) = label_identifier(line.to_string());
         command_map.insert(key, value);
     }
     command_map
 }
 
-pub fn define_ident_annotation(
-    ident_with_metadata: String,
-) -> (String, String) {
+pub fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let mut ident_temp =
         ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
     ident_temp.retain(|&c| c != "");
@@ -138,11 +136,11 @@ pub fn define_ident_annotation(
         .split(|c| c == '(' || c == ')')
         .collect::<Vec<&str>>()[1];
 
-    let annotation = define_annotation(raw_label);
+    let annotation = make_label(raw_label);
     (ident.to_string(), annotation)
 }
 
-pub fn define_annotation(raw_label: &str) -> String {
+pub fn make_label(raw_label: &str) -> String {
     let mut annotation = String::new();
 
     if raw_label.starts_with("numeric") {
@@ -153,7 +151,7 @@ pub fn define_annotation(raw_label: &str) -> String {
         annotation.push_str("bool");
     } else {
         panic!("annotation should have a value at this point.");
-    };
+    }
 
     if raw_label.contains(", optional") {
         annotation = format!("Option<{}>", annotation);
@@ -167,14 +165,11 @@ mod unit {
     use crate::utils::test;
 
     #[test]
-    fn annotate_identifier_observed_input_valid() {
+    fn label_identifier_with_observed_input_valid() {
         let raw_version =
             r#""version": xxxxx,           (numeric) the server version"#;
         let valid_annotation = ("version".to_string(), "Decimal".to_string());
-        assert_eq!(
-            valid_annotation,
-            define_ident_annotation(raw_version.to_string())
-        );
+        assert_eq!(valid_annotation, label_identifier(raw_version.to_string()));
     }
     #[test]
     fn parse_raw_output_observed_input_valid() {
