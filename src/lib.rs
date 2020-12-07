@@ -130,15 +130,11 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
 pub fn define_ident_annotation(
     ident_with_metadata: String,
 ) -> (String, String) {
-    // find key (String) for hashmap, aka the indentifier
     let mut ident_temp =
         ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
     ident_temp.retain(|&c| c != "");
     let ident = ident_temp.first().expect("no match setting ident");
 
-    // define annotation for identifier, aka values for hashmap,
-    // aka rust type 'hint'
-    // TODO check for nested parenthesis?
     let unparsed_annotation: &str = ident_with_metadata
         .split(|c| c == '(' || c == ')')
         .collect::<Vec<&str>>()[1];
