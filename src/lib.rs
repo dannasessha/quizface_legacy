@@ -79,7 +79,6 @@ pub fn check_success(output: &std::process::ExitStatus) {
 
 pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
     let command_help_lines_iter = raw_command_help.lines();
-
     let mut command_help_lines = Vec::new();
 
     // for 'well formed' command help outputs (such as getinfo):
@@ -97,107 +96,67 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
             beginexamples = true;
             break;
         }
-
         if li == "Result:" {
             beginresult = true;
         }
-
         if li == "}" && beginresult {
             end = !end;
         }
-
         // XOR: after `{` but before `}`
         if start ^ end && beginresult {
             command_help_lines.push(li);
         }
-
         if end && !start {
             panic!("curly brace error. end && no start or additional start");
         }
-
         if li == "{" && beginresult {
             start = !start;
         }
     }
-
     if !beginexamples {
         println!("WARNING! No examples!")
     }
-
     if start && !end {
         panic!("curly braces not well formed! start with no end");
     }
-
     let mut command_map = HashMap::new();
-
     for line in command_help_lines {
-        let (key, value) = define_ident_annotation(line.to_string());
+        let (key, value) = label_identifier(line.to_string());
         command_map.insert(key, value);
     }
     command_map
 }
 
-pub fn define_ident_annotation(
-    ident_with_metadata: String,
-) -> (String, String) {
-    // find key (String) for hashmap, aka the indentifier
+pub fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let mut ident_temp =
         ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
     ident_temp.retain(|&c| c != "");
-    let ident = match ident_temp.first() {
-        Some(x) => x,
-        None => panic!("no match setting ident"),
-    };
-
-    // define annotation for identifier, aka values for hashmap,
-    // aka rust type 'hint'
-    // TODO check for nested parenthesis?
-    let unparsed_annotation_str_vec: Vec<&str> = ident_with_metadata
+    let ident = ident_temp.first().expect("no match setting ident");
+    let raw_label: &str = ident_with_metadata
         .split(|c| c == '(' || c == ')')
-        .collect();
+        .collect::<Vec<&str>>()[1];
 
-    // because unparsed_annotation_str_vec will have an element before
-    // the first '(', and there may be more sets of parenthesis,
-    // only the second element is examined with [1].
-    let annotation = define_annotation(unparsed_annotation_str_vec[1]);
-
+    let annotation = make_label(raw_label);
     (ident.to_string(), annotation)
 }
 
-pub fn define_annotation(unparsed_annotation_str: &str) -> String {
-    let mut optional: bool = false;
-    if unparsed_annotation_str.contains("optional") {
-        optional = true;
-    }
+pub fn make_label(raw_label: &str) -> String {
+    let mut annotation = String::new();
 
-    let mut annotation_str = "";
-
-    // only the first str after the first '(' or ')' will be matched.
-    if unparsed_annotation_str.starts_with("numeric") {
-        annotation_str = "Decimal";
-    }
-    if unparsed_annotation_str.starts_with("string") {
-        annotation_str = "String";
-    }
-    if unparsed_annotation_str.starts_with("boolean") {
-        annotation_str = "bool";
-    }
-
-    if annotation_str == "" {
-        panic!("annotation_str should have a value at this point.");
-    };
-
-    let temp_note_string: String;
-    let note: &str;
-
-    if optional {
-        temp_note_string = format!("Option<{}>", annotation_str);
-        note = &temp_note_string;
+    if raw_label.starts_with("numeric") {
+        annotation.push_str("Decimal");
+    } else if raw_label.starts_with("string") {
+        annotation.push_str("String");
+    } else if raw_label.starts_with("boolean") {
+        annotation.push_str("bool");
     } else {
-        note = annotation_str;
+        panic!("annotation should have a value at this point.");
     }
-    //return annotation
-    note.to_string()
+
+    if raw_label.contains(", optional") {
+        return format!("Option<{}>", annotation);
+    }
+    annotation
 }
 
 #[cfg(test)]
@@ -206,14 +165,11 @@ mod unit {
     use crate::utils::test;
 
     #[test]
-    fn annotate_identifier_observed_input_valid() {
+    fn label_identifier_with_observed_input_valid() {
         let raw_version =
             r#""version": xxxxx,           (numeric) the server version"#;
         let valid_annotation = ("version".to_string(), "Decimal".to_string());
-        assert_eq!(
-            valid_annotation,
-            define_ident_annotation(raw_version.to_string())
-        );
+        assert_eq!(valid_annotation, label_identifier(raw_version.to_string()));
     }
     #[test]
     fn parse_raw_output_observed_input_valid() {
