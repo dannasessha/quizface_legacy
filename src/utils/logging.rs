@@ -1,8 +1,8 @@
 const QUIZFACE_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
-pub(crate) fn name_logdirs() -> (String, String) {
+pub fn name_logdirs() -> (String, String) {
     let log_parent_template = format!(
-        "./response_data/{zdver}_{qfver}/",
+        "./logs/{zdver}_{qfver}/",
         zdver = get_zcashd_version(),
         qfver = QUIZFACE_VERSION
     );
@@ -28,4 +28,18 @@ fn get_zcashd_version() -> String {
         .last()
         .unwrap()
         .to_string()
+}
+
+pub fn log_raw_output(
+    commandhelp_dir: &std::path::Path,
+    command: String,
+    raw_command_help: String,
+) {
+    use std::fs;
+    fs::create_dir_all(commandhelp_dir).expect("error creating commands dir!");
+    fs::write(
+        format!("{}{}.txt", commandhelp_dir.to_str().unwrap(), &command),
+        &raw_command_help,
+    )
+    .expect("panic during fs::write command help!");
 }
