@@ -79,7 +79,6 @@ pub fn check_success(output: &std::process::ExitStatus) {
 
 pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
     let command_help_lines_iter = raw_command_help.lines();
-
     let mut command_help_lines = Vec::new();
 
     // for 'well formed' command help outputs (such as getinfo):
@@ -97,39 +96,30 @@ pub fn parse_raw_output(raw_command_help: String) -> HashMap<String, String> {
             beginexamples = true;
             break;
         }
-
         if li == "Result:" {
             beginresult = true;
         }
-
         if li == "}" && beginresult {
             end = !end;
         }
-
         // XOR: after `{` but before `}`
         if start ^ end && beginresult {
             command_help_lines.push(li);
         }
-
         if end && !start {
             panic!("curly brace error. end && no start or additional start");
         }
-
         if li == "{" && beginresult {
             start = !start;
         }
     }
-
     if !beginexamples {
         println!("WARNING! No examples!")
     }
-
     if start && !end {
         panic!("curly braces not well formed! start with no end");
     }
-
     let mut command_map = HashMap::new();
-
     for line in command_help_lines {
         let (key, value) = define_ident_annotation(line.to_string());
         command_map.insert(key, value);
@@ -163,31 +153,31 @@ pub fn define_annotation(unparsed_annotation: &str) -> String {
         optional = true;
     }
 
-    let mut annotation_str = "";
+    let mut annotation = "";
 
     // only the first str after the first '(' or ')' will be matched.
     if unparsed_annotation.starts_with("numeric") {
-        annotation_str = "Decimal";
+        annotation = "Decimal";
     }
     if unparsed_annotation.starts_with("string") {
-        annotation_str = "String";
+        annotation = "String";
     }
     if unparsed_annotation.starts_with("boolean") {
-        annotation_str = "bool";
+        annotation = "bool";
     }
 
-    if annotation_str == "" {
-        panic!("annotation_str should have a value at this point.");
+    if annotation == "" {
+        panic!("annotation should have a value at this point.");
     };
 
-    let temp_note_string: String;
+    let temp_note: String;
     let note: &str;
 
     if optional {
-        temp_note_string = format!("Option<{}>", annotation_str);
-        note = &temp_note_string;
+        temp_note = format!("Option<{}>", annotation);
+        note = &temp_note;
     } else {
-        note = annotation_str;
+        note = annotation;
     }
     //return annotation
     note.to_string()
