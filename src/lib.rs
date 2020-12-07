@@ -152,10 +152,6 @@ pub fn define_ident_annotation(
     let unparsed_annotation: &str = ident_with_metadata
         .split(|c| c == '(' || c == ')')
         .collect::<Vec<&str>>()[1];
-
-    // because unparsed_annotation_vec will have an element before
-    // the first '(', and there may be more sets of parenthesis,
-    // only the second element is examined with [1].
     let annotation = define_annotation(unparsed_annotation);
 
     (ident.to_string(), annotation)
