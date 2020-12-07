@@ -154,7 +154,7 @@ pub fn make_label(raw_label: &str) -> String {
     }
 
     if raw_label.contains(", optional") {
-        annotation = format!("Option<{}>", annotation);
+        return format!("Option<{}>", annotation);
     }
     annotation
 }
