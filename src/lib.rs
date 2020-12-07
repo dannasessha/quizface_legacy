@@ -144,10 +144,7 @@ pub fn define_ident_annotation(
     let mut ident_temp =
         ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
     ident_temp.retain(|&c| c != "");
-    let ident = match ident_temp.first() {
-        Some(x) => x,
-        None => panic!("no match setting ident"),
-    };
+    let ident = ident_temp.first().expect("no match setting ident");
 
     // define annotation for identifier, aka values for hashmap,
     // aka rust type 'hint'
