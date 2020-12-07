@@ -134,49 +134,31 @@ pub fn define_ident_annotation(
         ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
     ident_temp.retain(|&c| c != "");
     let ident = ident_temp.first().expect("no match setting ident");
-
-    let unparsed_annotation: &str = ident_with_metadata
+    let raw_label: &str = ident_with_metadata
         .split(|c| c == '(' || c == ')')
         .collect::<Vec<&str>>()[1];
-    let annotation = define_annotation(unparsed_annotation);
 
+    let annotation = define_annotation(raw_label);
     (ident.to_string(), annotation)
 }
 
-pub fn define_annotation(unparsed_annotation: &str) -> String {
-    let mut optional: bool = false;
-    if unparsed_annotation.contains("optional") {
-        optional = true;
-    }
+pub fn define_annotation(raw_label: &str) -> String {
+    let mut annotation = String::new();
 
-    let mut annotation = "";
-
-    // only the first str after the first '(' or ')' will be matched.
-    if unparsed_annotation.starts_with("numeric") {
-        annotation = "Decimal";
-    }
-    if unparsed_annotation.starts_with("string") {
-        annotation = "String";
-    }
-    if unparsed_annotation.starts_with("boolean") {
-        annotation = "bool";
-    }
-
-    if annotation == "" {
+    if raw_label.starts_with("numeric") {
+        annotation.push_str("Decimal");
+    } else if raw_label.starts_with("string") {
+        annotation.push_str("String");
+    } else if raw_label.starts_with("boolean") {
+        annotation.push_str("bool");
+    } else {
         panic!("annotation should have a value at this point.");
     };
 
-    let temp_note: String;
-    let note: &str;
-
-    if optional {
-        temp_note = format!("Option<{}>", annotation);
-        note = &temp_note;
-    } else {
-        note = annotation;
+    if raw_label.contains(", optional") {
+        annotation = format!("Option<{}>", annotation);
     }
-    //return annotation
-    note.to_string()
+    annotation
 }
 
 #[cfg(test)]
