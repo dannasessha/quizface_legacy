@@ -70,20 +70,25 @@ fn extract_result_section(raw_command_help: &str) -> &str {
         .trim()
 }
 
-pub fn parse_raw_output(raw_command_help: &str) -> HashMap<String, String> {
-    let mut command_map = HashMap::new();
-    let result_section: Vec<&str> =
-        extract_result_section(raw_command_help).lines().collect();
-    for line in result_section {
-        if line == "{" || line == "}" {
-            continue; // Temporary during development
-        }
-        let (key, value) = label_identifier(line.to_string());
-        command_map.insert(key, value);
-    }
-    command_map
+pub fn parse_raw_output(raw_command_help: &str) -> serde_json::Value {
+    let command_help: &mut str = &mut *raw_command_help.to_string();
+    parse_result(extract_result_section(command_help));
+    unimplemented!()
+
+    //for line in result_section {
+    //    if line == "{" || line == "}" {
+    //        continue; // Temporary during development
+    //    }
+    //    let (key, value) = label_identifier(line.to_string());
+    //    command_map.insert(key, value);
+    //}
+    //command_map
 }
 
+fn parse_result(result_section: &mut str) -> serde_json::Value {
+    dbg!(result_section);
+    unimplemented!()
+}
 pub fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let mut ident_temp =
         ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
