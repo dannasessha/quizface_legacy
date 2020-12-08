@@ -102,6 +102,7 @@ fn parse_result<T: Iterator<Item = char>>(
                     '\u{0}'..='|'
                     | '~'..='\u{d7ff}'
                     | '\u{e000}'..='\u{10ffff}' => panic!(),
+                    x => raw_data.push(x),
                 }
             }
             Value::Object(ident_labels)
