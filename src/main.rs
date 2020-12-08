@@ -9,6 +9,7 @@ fn main() {
     let commands = quizface::ingest_commands(Path::new(&masterhelp_dir_name));
 
     for command in commands {
+        // print command to ... something. hashmap?
         let command_help_output = quizface::get_command_help(&command);
         // command_help_output is type std::process::Output
 
@@ -31,6 +32,7 @@ fn main() {
             let parsed_command_help =
                 quizface::parse_raw_output(raw_command_help.clone());
             // HashMap<String, String>
+            // flip bit on this command for table, turning table cell green
             dbg!(&parsed_command_help);
         }
     }
