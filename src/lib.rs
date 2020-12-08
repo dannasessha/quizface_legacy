@@ -99,16 +99,11 @@ fn parse_result<T: Iterator<Item = char>>(
                         parse_result(i, result_section);
                     }
                     // TODO: Handle unbalanced braces
-                    '\u{0}'..='|'
-                    | '~'..='\u{d7ff}'
-                    | '\u{e000}'..='\u{10ffff}' => panic!(),
-                    x => raw_data.push(x),
+                    x if x.is_ascii() => raw_data.push(x),
+                    _ => panic!(),
                 }
             }
             Value::Object(ident_labels)
-        }
-        '\u{0}'..='|' | '~'..='\u{d7ff}' | '\u{e000}'..='\u{10ffff}' => {
-            panic!()
         }
         _ => json!("SPASM"),
     }
