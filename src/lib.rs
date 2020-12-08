@@ -72,41 +72,50 @@ fn extract_result_section(raw_command_help: &str) -> String {
 }
 
 pub fn parse_raw_output(raw_command_help: &str) -> serde_json::Value {
-    parse_result(&mut extract_result_section(raw_command_help).chars());
+    //let data = &mut extract_result_section(raw_command_help).chars();
+    //let initial = data.next().unwrap().clone();
+    let mut data = extract_result_section(raw_command_help);
+    let initial = data.remove(0);
+    let data = &mut data.chars();
+    dbg!(&data);
+    parse_result(initial, data);
     unimplemented!()
 }
 
 use serde_json::{json, map::Map, Value};
 fn parse_result<T: Iterator<Item = char>>(
+    initial: char,
     result_section: &mut T,
 ) -> serde_json::Value {
-    match result_section.next() {
-        Some('{') => {
+    match initial {
+        '{' => {
             let mut ident_labels = Map::new();
             let mut raw_data = String::new();
             loop {
-                match result_section.next() {
-                    Some('}') => {
+                match result_section.next().unwrap() {
+                    '}' => {
                         ident_labels = build_ident_binding(raw_data);
                         break;
                     }
-                    None => panic!(),
-                    Some('\u{0}'..='|')
-                    | Some('~'..='\u{d7ff}')
-                    | Some('\u{e000}'..='\u{10ffff}') => panic!(),
+                    i if i == '[' || i == '{' => {
+                        parse_result(i, result_section);
+                    }
+                    // TODO: Handle unbalanced braces
+                    '\u{0}'..='|'
+                    | '~'..='\u{d7ff}'
+                    | '\u{e000}'..='\u{10ffff}' => panic!(),
                 }
             }
             Value::Object(ident_labels)
         }
-        None => panic!(),
-        Some('\u{0}'..='|')
-        | Some('~'..='\u{d7ff}')
-        | Some('\u{e000}'..='\u{10ffff}') => panic!(),
+        '\u{0}'..='|' | '~'..='\u{d7ff}' | '\u{e000}'..='\u{10ffff}' => {
+            panic!()
+        }
         _ => json!("SPASM"),
     }
 }
 
-fn build_ident_binding(raw_id_label: String) -> Map<String, Value> {
+fn build_ident_binding(raw_id_labels: String) -> Map<String, Value> {
     unimplemented!()
 }
 pub fn label_identifier(ident_with_metadata: String) -> (String, String) {
