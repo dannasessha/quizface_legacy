@@ -85,10 +85,14 @@ pub fn parse_raw_output(raw_command_help: &str) -> serde_json::Value {
     //command_map
 }
 
+use serde_json::{json, Value};
 fn parse_result<T: Iterator<Item = char>>(
     result_section: &mut T,
 ) -> serde_json::Value {
-    unimplemented!()
+    match result_section.next() {
+        Some('{') => json!("{"),
+        _ => json!("SPASM"),
+    }
 }
 pub fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let mut ident_temp =
@@ -223,5 +227,9 @@ mod unit {
     #[test]
     fn parse_result_from_get_blockchain_info_observed() {
         dbg!(test::HELP_GETBLOCKCHAININFO);
+    }
+    #[test]
+    fn parse_result_enforce_as_input() {
+        parse_result(&mut test::ENFORCE_EXTRACTED.chars());
     }
 }

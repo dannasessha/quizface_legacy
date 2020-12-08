@@ -1,4 +1,10 @@
 use std::collections::HashMap;
+pub const ENFORCE_EXTRACTED: &str = r#""enforce": {           (object) progress toward enforcing the softfork rules for new-version blocks
+"status": xx,       (boolean) true if threshold reached
+"found": xx,        (numeric) number of blocks with the new version found
+"required": xx,     (numeric) number of blocks required to trigger
+"window": xx,       (numeric) maximum size of examined window of recent blocks
+}"#;
 pub const HELP_GETBLOCKCHAININFO: &str = r#"{
   "chain": "xxxx",        (string) current network name as defined in BIP70 (main, test, regtest)
   "blocks": xxxxxx,         (numeric) the current number of blocks processed in the server
