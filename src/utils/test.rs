@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-pub const ENFORCE_EXTRACTED: &str = r#""enforce": {           (object) progress toward enforcing the softfork rules for new-version blocks
+pub const ENFORCE_EXTRACTED: &str = r#"{           (object) progress toward enforcing the softfork rules for new-version blocks
 "status": xx,       (boolean) true if threshold reached
 "found": xx,        (numeric) number of blocks with the new version found
 "required": xx,     (numeric) number of blocks required to trigger

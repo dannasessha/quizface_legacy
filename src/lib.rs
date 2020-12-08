@@ -74,26 +74,22 @@ fn extract_result_section(raw_command_help: &str) -> String {
 pub fn parse_raw_output(raw_command_help: &str) -> serde_json::Value {
     parse_result(&mut extract_result_section(raw_command_help).chars());
     unimplemented!()
-
-    //for line in result_section {
-    //    if line == "{" || line == "}" {
-    //        continue; // Temporary during development
-    //    }
-    //    let (key, value) = label_identifier(line.to_string());
-    //    command_map.insert(key, value);
-    //}
-    //command_map
 }
 
-use serde_json::{json, Value};
+use serde_json::{json, map::Map, Value};
 fn parse_result<T: Iterator<Item = char>>(
     result_section: &mut T,
 ) -> serde_json::Value {
     match result_section.next() {
-        Some('{') => json!("{"),
+        Some('{') => {
+            let mut ident_labels = Map::new();
+            let mut raw_data = String::new();
+            Value::Object(ident_labels)
+        }
         _ => json!("SPASM"),
     }
 }
+
 pub fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let mut ident_temp =
         ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
@@ -230,6 +226,6 @@ mod unit {
     }
     #[test]
     fn parse_result_enforce_as_input() {
-        parse_result(&mut test::ENFORCE_EXTRACTED.chars());
+        dbg!(parse_result(&mut test::ENFORCE_EXTRACTED.chars()));
     }
 }
