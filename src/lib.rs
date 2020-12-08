@@ -135,16 +135,19 @@ mod unit {
         assert_eq!(valid_annotation, label_identifier(raw_version.to_string()));
     }
     #[test]
+    #[ignore = "in development"]
     fn parse_raw_output_observed_input_valid() {
         let valid_help_in = parse_raw_output(test::HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
+    #[ignore = "in development"]
     fn parse_raw_output_early_lbracket_input() {
         let valid_help_in = parse_raw_output(test::LBRACKETY_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
+    #[ignore = "in development"]
     fn parse_raw_output_early_rbracket_input() {
         let valid_help_in = parse_raw_output(test::RBRACKETY_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
@@ -156,11 +159,13 @@ mod unit {
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
+    #[ignore = "in development"]
     fn parse_raw_output_extrabrackets_within_input_lines() {
         let valid_help_in = parse_raw_output(test::EXTRABRACKETS3_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
+    #[ignore = "in development"]
     fn parse_raw_output_late_extrabrackets_input() {
         let valid_help_in = parse_raw_output(test::EXTRABRACKETS2_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
@@ -211,7 +216,12 @@ mod unit {
             parse_raw_output(test::NO_START_BRACKET_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
+    #[test]
     fn extract_result_section_getinfo_input() {
         dbg!(extract_result_section(test::HELP_GETINFO));
+    }
+    #[test]
+    fn parse_result_from_get_blockchain_info_observed() {
+        dbg!(test::HELP_GETBLOCKCHAININFO);
     }
 }

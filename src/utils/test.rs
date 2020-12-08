@@ -338,8 +338,8 @@ Result:
 }
 "#;
 
-pub fn valid_getinfo_annotation() -> HashMap<String, String> {
-    [
+pub fn valid_getinfo_annotation() -> serde_json::Value {
+    serde_json::json!([
         ("version", "Decimal"),
         ("protocolversion", "Decimal"),
         ("walletversion", "Decimal"),
@@ -359,5 +359,5 @@ pub fn valid_getinfo_annotation() -> HashMap<String, String> {
     ]
     .iter()
     .map(|(a, b)| (a.to_string(), b.to_string()))
-    .collect()
+    .collect::<HashMap<String, String>>())
 }

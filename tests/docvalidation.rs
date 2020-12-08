@@ -36,13 +36,16 @@ impl GetInfoResponseFixture {
 #[ignore = "not yet implemented"]
 fn validate_response_as_subset() {
     let response_fixture = GetInfoResponseFixture::new();
-    let testdata_keys: HashSet<String> =
-        test::valid_getinfo_annotation().keys().cloned().collect();
-    dbg!(&response_fixture.repr_keyset.difference(&testdata_keys));
-    assert!(response_fixture
-        .repr_keyset
-        .difference(&testdata_keys)
-        .cloned()
-        .collect::<String>()
-        .is_empty());
+    use serde_json::Value;
+    if let Value::Object(annotations) = test::valid_getinfo_annotation() {
+        let testdata_keys: HashSet<String> =
+            annotations.keys().cloned().collect();
+        dbg!(&response_fixture.repr_keyset.difference(&testdata_keys));
+        assert!(response_fixture
+            .repr_keyset
+            .difference(&testdata_keys)
+            .cloned()
+            .collect::<String>()
+            .is_empty());
+    }
 }
