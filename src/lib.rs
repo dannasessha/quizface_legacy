@@ -72,8 +72,6 @@ fn extract_result_section(raw_command_help: &str) -> String {
 }
 
 pub fn parse_raw_output(raw_command_help: &str) -> serde_json::Value {
-    //let data = &mut extract_result_section(raw_command_help).chars();
-    //let initial = data.next().unwrap().clone();
     let mut data = extract_result_section(raw_command_help);
     let initial = data.remove(0);
     let data = &mut data.chars();
@@ -254,6 +252,6 @@ mod unit {
     }
     #[test]
     fn parse_result_enforce_as_input() {
-        dbg!(parse_result(&mut test::ENFORCE_EXTRACTED.chars()));
+        dbg!(parse_result('{', &mut test::ENFORCE_EXTRACTED.chars()));
     }
 }
