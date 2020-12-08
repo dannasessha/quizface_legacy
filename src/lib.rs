@@ -63,16 +63,16 @@ pub fn check_success(output: &std::process::ExitStatus) {
     }
 }
 
-fn extract_result_section(raw_command_help: &str) -> &str {
+fn extract_result_section(raw_command_help: &str) -> String {
     raw_command_help.split("Result:\n").collect::<Vec<&str>>()[1]
         .split("Examples:\n")
         .collect::<Vec<&str>>()[0]
         .trim()
+        .to_string()
 }
 
 pub fn parse_raw_output(raw_command_help: &str) -> serde_json::Value {
-    let command_help: &mut str = &mut *raw_command_help.to_string();
-    parse_result(extract_result_section(command_help));
+    parse_result(extract_result_section(raw_command_help));
     unimplemented!()
 
     //for line in result_section {
@@ -85,7 +85,7 @@ pub fn parse_raw_output(raw_command_help: &str) -> serde_json::Value {
     //command_map
 }
 
-fn parse_result(result_section: &mut str) -> serde_json::Value {
+fn parse_result(result_section: String) -> serde_json::Value {
     dbg!(result_section);
     unimplemented!()
 }
