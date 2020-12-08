@@ -84,12 +84,31 @@ fn parse_result<T: Iterator<Item = char>>(
         Some('{') => {
             let mut ident_labels = Map::new();
             let mut raw_data = String::new();
+            loop {
+                match result_section.next() {
+                    Some('}') => {
+                        ident_labels = build_ident_binding(raw_data);
+                        break;
+                    }
+                    None => panic!(),
+                    Some('\u{0}'..='|')
+                    | Some('~'..='\u{d7ff}')
+                    | Some('\u{e000}'..='\u{10ffff}') => panic!(),
+                }
+            }
             Value::Object(ident_labels)
         }
+        None => panic!(),
+        Some('\u{0}'..='|')
+        | Some('~'..='\u{d7ff}')
+        | Some('\u{e000}'..='\u{10ffff}') => panic!(),
         _ => json!("SPASM"),
     }
 }
 
+fn build_ident_binding(raw_id_label: String) -> Map<String, Value> {
+    unimplemented!()
+}
 pub fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let mut ident_temp =
         ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
