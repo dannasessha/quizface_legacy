@@ -161,45 +161,48 @@ mod unit {
     }
     #[test]
     #[should_panic]
+    #[ignore = "in development"]
     fn parse_raw_output_more_than_one_set_of_brackets_input() {
         let valid_help_in =
-            parse_raw_output(test::MORE_BRACKET_PAIRS_HELP_GETINFO.to_string());
+            parse_raw_output(test::MORE_BRACKET_PAIRS_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
     #[should_panic]
+    #[ignore = "in development"]
     fn parse_raw_output_two_starting_brackets_input() {
-        let valid_help_in = parse_raw_output(
-            test::EXTRA_START_BRACKET_HELP_GETINFO.to_string(),
-        );
+        let valid_help_in =
+            parse_raw_output(test::EXTRA_START_BRACKET_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
     #[should_panic]
+    #[ignore = "in development"]
     fn parse_raw_output_two_ending_brackets_input() {
         let valid_help_in =
-            parse_raw_output(test::EXTRA_END_BRACKET_HELP_GETINFO.to_string());
+            parse_raw_output(test::EXTRA_END_BRACKET_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
     #[should_panic]
+    #[ignore = "in development"]
     fn parse_raw_output_no_results_input() {
-        let valid_help_in =
-            parse_raw_output(test::NO_RESULT_HELP_GETINFO.to_string());
+        let valid_help_in = parse_raw_output(test::NO_RESULT_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
     #[should_panic]
+    #[ignore = "in development"]
     fn parse_raw_output_no_end_bracket_input() {
-        let valid_help_in =
-            parse_raw_output(test::NO_END_BRACKET_HELP_GETINFO.to_string());
+        let valid_help_in = parse_raw_output(test::NO_END_BRACKET_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
     #[should_panic]
+    #[ignore = "in development"]
     fn parse_raw_output_no_start_bracket_input() {
         let valid_help_in =
-            parse_raw_output(test::NO_START_BRACKET_HELP_GETINFO.to_string());
+            parse_raw_output(test::NO_START_BRACKET_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     fn extract_result_section_getinfo_input() {
