@@ -72,7 +72,7 @@ fn extract_result_section(raw_command_help: &str) -> String {
 }
 
 pub fn parse_raw_output(raw_command_help: &str) -> serde_json::Value {
-    parse_result(extract_result_section(raw_command_help));
+    parse_result(&mut extract_result_section(raw_command_help).chars());
     unimplemented!()
 
     //for line in result_section {
@@ -85,8 +85,9 @@ pub fn parse_raw_output(raw_command_help: &str) -> serde_json::Value {
     //command_map
 }
 
-fn parse_result(result_section: String) -> serde_json::Value {
-    dbg!(result_section);
+fn parse_result<T: Iterator<Item = char>>(
+    result_section: &mut T,
+) -> serde_json::Value {
     unimplemented!()
 }
 pub fn label_identifier(ident_with_metadata: String) -> (String, String) {
