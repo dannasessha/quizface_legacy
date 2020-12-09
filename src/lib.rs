@@ -73,7 +73,6 @@ fn extract_result_section(raw_command_help: &str) -> String {
 
 struct Annotator<'a> {
     observed_data: String,
-    numbered_lines: Vec<(usize, String)>,
     incoming_data_stream: &'a mut std::str::Chars<'a>,
     initial: char,
 }
@@ -91,7 +90,6 @@ impl<'a> Annotator<'a> {
     ) -> Annotator<'a> {
         Annotator {
             observed_data: String::from(""),
-            numbered_lines: vec![],
             incoming_data_stream,
             initial,
         }
