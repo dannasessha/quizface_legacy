@@ -97,7 +97,16 @@ impl<'a> Annotator<'a> {
     }
     fn bind_idents_labels(&mut self) -> Map<String, Value> {
         let mut kvs = vec![];
-        let lines = self.observed_data.lines().collect::<Vec<&str>>();
+        let mut lines = self.observed_data.lines().collect::<Vec<&str>>();
+        match lines.remove(0) {
+            empty if empty.is_empty() => (),
+            description if description.contains("(object)") => (),
+            reject if reject == "..." => (), // Special case
+            catchall @ _ => {
+                dbg!(catchall);
+                panic!("This was unexpected ");
+            }
+        }
         for line in lines {
             if line.contains("object") || line.is_empty() {
                 continue; // Obviously needs work!
