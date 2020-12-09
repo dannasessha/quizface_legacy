@@ -72,38 +72,50 @@ fn extract_result_section(raw_command_help: &str) -> String {
 }
 
 struct Annotator<'a> {
+    observed_data: String,
     numbered_lines: Vec<(usize, String)>,
-    data_stream: &'a mut std::str::Chars<'a>,
+    incoming_data_stream: &'a mut std::str::Chars<'a>,
     initial: char,
 }
 impl std::iter::Iterator for Annotator<'_> {
     type Item = char;
     fn next(&mut self) -> Option<Self::Item> {
-        self.data_stream.next()
+        self.incoming_data_stream.next()
     }
 }
 use serde_json::{json, map::Map, Value};
+impl<'a> Annotator<'a> {
+    fn new(
+        initial: char,
+        incoming_data_stream: &'a mut std::str::Chars<'a>,
+    ) -> Annotator<'a> {
+        Annotator {
+            observed_data: String::from(""),
+            numbered_lines: vec![],
+            incoming_data_stream,
+            initial,
+        }
+    }
+    fn bind_idents_labels(&mut self) -> Map<String, Value> {
+        Map::new()
+    }
+}
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let mut data = extract_result_section(raw_command_help);
     let initial = data.remove(0);
-    let data = &mut Annotator {
-        numbered_lines: vec![],
-        data_stream: &mut data.chars(),
-        initial,
-    };
-    parse_result(data);
+    parse_result(&mut Annotator::new(initial, &mut data.chars()));
     Value::String("dummy".to_string())
 }
 
 fn parse_result(result_section: &mut Annotator) -> serde_json::Value {
     match result_section.initial {
         '{' => {
-            let mut ident_labels = Map::new();
-            let mut raw_data = String::new();
+            let mut ident_label_bindings = Map::new();
             loop {
                 match result_section.next().unwrap() {
                     '}' => {
-                        ident_labels = build_ident_binding(raw_data);
+                        ident_label_bindings =
+                            result_section.bind_idents_labels();
                         break;
                     }
                     i if i == '[' || i == '{' => {
@@ -111,11 +123,11 @@ fn parse_result(result_section: &mut Annotator) -> serde_json::Value {
                         parse_result(result_section);
                     }
                     // TODO: Handle unbalanced braces
-                    x if x.is_ascii() => raw_data.push(x),
+                    x if x.is_ascii() => result_section.observed_data.push(x),
                     _ => panic!(),
                 }
             }
-            Value::Object(ident_labels)
+            return Value::Object(ident_label_bindings);
         }
         _ => json!("SPASM"),
     }
@@ -262,7 +274,7 @@ mod unit {
     fn parse_result_enforce_as_input() {
         dbg!(parse_result(&mut Annotator {
             numbered_lines: vec![],
-            data_stream: &mut test::ENFORCE_EXTRACTED.chars(),
+            incoming_data_stream: &mut test::ENFORCE_EXTRACTED.chars(),
             initial: '{'
         }));
     }
