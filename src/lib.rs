@@ -285,10 +285,6 @@ mod unit {
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
-    fn extract_result_section_getinfo_input() {
-        dbg!(extract_result_section(test::HELP_GETINFO));
-    }
-    #[test]
     fn annotate_result_section_from_getinfo_observed() {
         let observed_testdata_annotated = test::valid_getinfo_annotation();
         let mut section_data = extract_result_section(test::HELP_GETINFO);
@@ -313,5 +309,15 @@ mod unit {
                 &mut test::ENFORCE_EXTRACTED.chars(),
             ))
         );
+    }
+    #[test]
+    fn annotate_result_section_nested_obj_extracted_from_softfork() {
+        let mut observed_nested = test::SIMPLIFIED_SOFTFORK;
+        let initial = observed_nested.remove(0);
+        let annotated = annotate_result_section(&mut Annotator::new(
+            initial,
+            &mut observed_nested.chars(),
+        ));
+        //assert_eq!(annotated,);
     }
 }
