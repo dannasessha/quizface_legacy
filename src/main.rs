@@ -8,11 +8,10 @@ fn main() {
 
         quizface::check_success(&command_help_output.status);
 
-        let raw_command_help =
-            std::string::String::from_utf8(command_help_output.stdout)
-                .expect("Invalid raw_command_help, error!");
+        let raw_command_help = std::str::from_utf8(&command_help_output.stdout)
+            .expect("Invalid raw_command_help, error!");
 
-        log_raw_output(command.clone(), raw_command_help.clone());
+        log_raw_output(command.clone(), raw_command_help.to_string());
 
         // TODO : make more general and remove `if`
         if command == "getinfo".to_string() {
