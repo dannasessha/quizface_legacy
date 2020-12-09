@@ -1,32 +1,18 @@
 pub mod utils;
+use crate::logging::create_log_dirs;
+use crate::logging::log_masterhelp_output;
 use std::collections::HashMap;
-use std::fs;
 use std::path::Path;
+use utils::logging;
 
-pub fn create_data_dir(masterhelp_log_dir: &Path) -> std::io::Result<()> {
-    fs::create_dir_all(masterhelp_log_dir)?;
-    Ok(())
-}
-
-pub fn ingest_commands(masterhelp_log_dir: &Path) -> Vec<String> {
-    create_data_dir(masterhelp_log_dir).expect("Error Creating directories!");
-
+pub fn ingest_commands() -> Vec<String> {
+    create_log_dirs();
     let cli_help_output = get_command_help("");
     check_success(&cli_help_output.status);
 
-    let raw_help = match std::string::String::from_utf8(cli_help_output.stdout)
-    {
-        Ok(x) => x,
-        Err(e) => panic!("Invalid, not UTF-8. Error: {}", e),
-    };
-
-    // TODO: move this into logging?
-    // write the `zcash-cli help` output to `masterhelp.txt`
-    fs::write(
-        format!("{}masterhelp.txt", masterhelp_log_dir.to_str().unwrap()),
-        &raw_help,
-    )
-    .expect("panic during fs:write masterhelp!");
+    let raw_help = std::string::String::from_utf8(cli_help_output.stdout)
+        .expect("Invalid, not UTF-8. Error!");
+    log_masterhelp_output(&raw_help);
 
     let help_lines_iter = raw_help.lines();
     let mut help_lines = Vec::new();
@@ -216,8 +202,9 @@ mod unit {
     #[test]
     #[should_panic]
     fn parse_raw_output_two_starting_brackets_input() {
-        let valid_help_in =
-            parse_raw_output(test::EXTRA_START_BRACKET_HELP_GETINFO.to_string());
+        let valid_help_in = parse_raw_output(
+            test::EXTRA_START_BRACKET_HELP_GETINFO.to_string(),
+        );
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
