@@ -71,16 +71,15 @@ fn extract_result_section(raw_command_help: &str) -> String {
         .to_string()
 }
 
-pub fn parse_raw_output(raw_command_help: &str) -> serde_json::Value {
+use serde_json::{json, map::Map, Value};
+pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let mut data = extract_result_section(raw_command_help);
     let initial = data.remove(0);
     let data = &mut data.chars();
-    dbg!(&data);
     parse_result(initial, data);
-    unimplemented!()
+    Value::String("dummy".to_string())
 }
 
-use serde_json::{json, map::Map, Value};
 fn parse_result<T: Iterator<Item = char>>(
     initial: char,
     result_section: &mut T,
