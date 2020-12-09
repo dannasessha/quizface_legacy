@@ -116,11 +116,13 @@ impl<'a> Annotator<'a> {
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let mut data = extract_result_section(raw_command_help);
     let initial = data.remove(0);
-    parse_result(&mut Annotator::new(initial, &mut data.chars()));
+    annotate_result_section(&mut Annotator::new(initial, &mut data.chars()));
     unimplemented!()
 }
 
-fn parse_result(result_section: &mut Annotator) -> serde_json::Value {
+fn annotate_result_section(
+    result_section: &mut Annotator,
+) -> serde_json::Value {
     match result_section.initial {
         '{' => {
             let mut ident_label_bindings = Map::new();
@@ -133,7 +135,7 @@ fn parse_result(result_section: &mut Annotator) -> serde_json::Value {
                     }
                     i if i == '[' || i == '{' => {
                         result_section.initial = i;
-                        parse_result(result_section);
+                        annotate_result_section(result_section);
                     }
                     // TODO: Handle unbalanced braces
                     x if x.is_ascii() => result_section.observed_data.push(x),
@@ -145,7 +147,7 @@ fn parse_result(result_section: &mut Annotator) -> serde_json::Value {
         _ => unimplemented!(),
     }
 }
-pub fn label_identifier(ident_with_metadata: String) -> (String, String) {
+fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let mut ident_temp =
         ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
     ident_temp.retain(|&c| c != "");
@@ -158,7 +160,7 @@ pub fn label_identifier(ident_with_metadata: String) -> (String, String) {
     (ident.to_string(), annotation)
 }
 
-pub fn make_label(raw_label: &str) -> String {
+fn make_label(raw_label: &str) -> String {
     let mut annotation = String::new();
 
     if raw_label.starts_with("numeric") {
@@ -276,11 +278,11 @@ mod unit {
         dbg!(extract_result_section(test::HELP_GETINFO));
     }
     #[test]
-    fn parse_result_from_get_blockchain_info_observed() {
+    fn annotate_result_section_from_get_blockchain_info_observed() {
         dbg!(test::HELP_GETBLOCKCHAININFO);
     }
     #[test]
-    fn parse_result_enforce_as_input() {
+    fn annotate_result_section_enforce_as_input() {
         use std::collections::HashMap;
         let testmap = json!(test::INTERMEDIATE_REPR_ENFORCE
             .iter()
@@ -288,7 +290,7 @@ mod unit {
             .collect::<HashMap<String, Value>>());
         assert_eq!(
             testmap,
-            parse_result(&mut Annotator::new(
+            annotate_result_section(&mut Annotator::new(
                 '{',
                 &mut test::ENFORCE_EXTRACTED.chars(),
             ))
