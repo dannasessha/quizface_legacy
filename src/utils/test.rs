@@ -51,6 +51,18 @@ pub const HELP_GETBLOCKCHAININFO: &str = r#"{
   }
 }
 "#;
+
+pub const SIMPLIFIED_SOFTFORK: &str = r#"{
+        "id": "xxxx",        (string) name of softfork
+        "version": xx,         (numeric) block version
+        "enforce": {           (object) progress toward enforcing the softfork rules for new-version blocks
+           "status": xx,       (boolean) true if threshold reached
+           "found": xx,        (numeric) number of blocks with the new version found
+           "required": xx,     (numeric) number of blocks required to trigger
+           "window": xx,       (numeric) maximum size of examined window of recent blocks
+        },
+     }
+"#;
 pub const HELP_GETINFO: &str = r#"
 getinfo
 Returns an object containing various state info.
