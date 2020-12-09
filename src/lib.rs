@@ -71,6 +71,7 @@ fn extract_result_section(raw_command_help: &str) -> String {
         .to_string()
 }
 
+#[derive(Debug)]
 struct Annotator<'a> {
     observed_data: String,
     incoming_data_stream: &'a mut std::str::Chars<'a>,
@@ -96,8 +97,9 @@ impl<'a> Annotator<'a> {
     }
     fn bind_idents_labels(&mut self) -> Map<String, Value> {
         let mut kvs = vec![];
-        for line in self.observed_data.lines() {
-            if line.contains("object") {
+        let lines = self.observed_data.lines().collect::<Vec<&str>>();
+        for line in lines {
+            if line.contains("object") || line.is_empty() {
                 continue; // Obviously needs work!
             }
             kvs.push(label_identifier(line.to_string()));
@@ -149,7 +151,7 @@ fn annotate_result_section(
 }
 fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let mut ident_temp =
-        ident_with_metadata.trim().split('"').collect::<Vec<&str>>();
+        dbg!(ident_with_metadata.trim().split('"').collect::<Vec<&str>>());
     ident_temp.retain(|&c| c != "");
     let ident = ident_temp.first().expect("no match setting ident");
     let raw_label: &str = ident_with_metadata
@@ -278,8 +280,15 @@ mod unit {
         dbg!(extract_result_section(test::HELP_GETINFO));
     }
     #[test]
-    fn annotate_result_section_from_get_blockchain_info_observed() {
-        dbg!(test::HELP_GETBLOCKCHAININFO);
+    fn annotate_result_section_from_getinfo_observed() {
+        let observed_testdata_annotated = test::valid_getinfo_annotation();
+        let mut section_data = extract_result_section(test::HELP_GETINFO);
+        let initial = section_data.remove(0);
+        let annotated = annotate_result_section(&mut Annotator::new(
+            initial,
+            &mut section_data.chars(),
+        ));
+        assert_eq!(annotated, observed_testdata_annotated);
     }
     #[test]
     fn annotate_result_section_enforce_as_input() {
