@@ -71,20 +71,32 @@ fn extract_result_section(raw_command_help: &str) -> String {
         .to_string()
 }
 
+struct Annotator<'a> {
+    numbered_lines: Vec<(usize, String)>,
+    data_stream: &'a mut std::str::Chars<'a>,
+    initial: char,
+}
+impl std::iter::Iterator for Annotator<'_> {
+    type Item = char;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.data_stream.next()
+    }
+}
 use serde_json::{json, map::Map, Value};
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let mut data = extract_result_section(raw_command_help);
     let initial = data.remove(0);
-    let data = &mut data.chars();
-    parse_result(initial, data);
+    let data = &mut Annotator {
+        numbered_lines: vec![],
+        data_stream: &mut data.chars(),
+        initial,
+    };
+    parse_result(data);
     Value::String("dummy".to_string())
 }
 
-fn parse_result<T: Iterator<Item = char>>(
-    initial: char,
-    result_section: &mut T,
-) -> serde_json::Value {
-    match initial {
+fn parse_result(result_section: &mut Annotator) -> serde_json::Value {
+    match result_section.initial {
         '{' => {
             let mut ident_labels = Map::new();
             let mut raw_data = String::new();
@@ -95,7 +107,8 @@ fn parse_result<T: Iterator<Item = char>>(
                         break;
                     }
                     i if i == '[' || i == '{' => {
-                        parse_result(i, result_section);
+                        result_section.initial = i;
+                        parse_result(result_section);
                     }
                     // TODO: Handle unbalanced braces
                     x if x.is_ascii() => raw_data.push(x),
@@ -247,6 +260,10 @@ mod unit {
     }
     #[test]
     fn parse_result_enforce_as_input() {
-        dbg!(parse_result('{', &mut test::ENFORCE_EXTRACTED.chars()));
+        dbg!(parse_result(&mut Annotator {
+            numbered_lines: vec![],
+            data_stream: &mut test::ENFORCE_EXTRACTED.chars(),
+            initial: '{'
+        }));
     }
 }
