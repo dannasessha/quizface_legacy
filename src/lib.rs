@@ -83,7 +83,7 @@ impl std::iter::Iterator for Annotator<'_> {
         self.incoming_data_stream.next()
     }
 }
-use serde_json::{json, map::Map, Value};
+use serde_json::{map::Map, Value};
 impl<'a> Annotator<'a> {
     fn new(
         initial: char,
@@ -99,12 +99,18 @@ impl<'a> Annotator<'a> {
     fn bind_idents_labels(&mut self) -> Map<String, Value> {
         Map::new()
     }
+    fn list_idents(&mut self) -> Vec<Value> {
+        vec![]
+    }
+    fn bind_ident(&mut self) -> String {
+        String::from("")
+    }
 }
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let mut data = extract_result_section(raw_command_help);
     let initial = data.remove(0);
     parse_result(&mut Annotator::new(initial, &mut data.chars()));
-    Value::String("dummy".to_string())
+    unimplemented!()
 }
 
 fn parse_result(result_section: &mut Annotator) -> serde_json::Value {
@@ -129,12 +135,8 @@ fn parse_result(result_section: &mut Annotator) -> serde_json::Value {
             }
             return Value::Object(ident_label_bindings);
         }
-        _ => json!("SPASM"),
+        _ => unimplemented!(),
     }
-}
-
-fn build_ident_binding(raw_id_labels: String) -> Map<String, Value> {
-    unimplemented!()
 }
 pub fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let mut ident_temp =
@@ -272,10 +274,9 @@ mod unit {
     }
     #[test]
     fn parse_result_enforce_as_input() {
-        dbg!(parse_result(&mut Annotator {
-            numbered_lines: vec![],
-            incoming_data_stream: &mut test::ENFORCE_EXTRACTED.chars(),
-            initial: '{'
-        }));
+        dbg!(parse_result(&mut Annotator::new(
+            '{',
+            &mut test::ENFORCE_EXTRACTED.chars(),
+        )));
     }
 }
