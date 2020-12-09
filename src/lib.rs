@@ -82,7 +82,7 @@ impl std::iter::Iterator for Annotator<'_> {
         self.incoming_data_stream.next()
     }
 }
-use serde_json::{map::Map, Value};
+use serde_json::{json, map::Map, Value};
 impl<'a> Annotator<'a> {
     fn new(
         initial: char,
@@ -95,7 +95,16 @@ impl<'a> Annotator<'a> {
         }
     }
     fn bind_idents_labels(&mut self) -> Map<String, Value> {
-        Map::new()
+        let mut kvs = vec![];
+        for line in self.observed_data.lines() {
+            if line.contains("object") {
+                continue; // Obviously needs work!
+            }
+            kvs.push(label_identifier(line.to_string()));
+        }
+        kvs.iter()
+            .map(|(a, b)| (a.to_string(), json!(b.to_string())))
+            .collect::<Map<String, Value>>()
     }
     fn list_idents(&mut self) -> Vec<Value> {
         vec![]
