@@ -281,9 +281,17 @@ mod unit {
     }
     #[test]
     fn parse_result_enforce_as_input() {
-        dbg!(parse_result(&mut Annotator::new(
-            '{',
-            &mut test::ENFORCE_EXTRACTED.chars(),
-        )));
+        use std::collections::HashMap;
+        let testmap = json!(test::INTERMEDIATE_REPR_ENFORCE
+            .iter()
+            .map(|(a, b)| (a.to_string(), json!(b.to_string())))
+            .collect::<HashMap<String, Value>>());
+        assert_eq!(
+            testmap,
+            parse_result(&mut Annotator::new(
+                '{',
+                &mut test::ENFORCE_EXTRACTED.chars(),
+            ))
+        );
     }
 }

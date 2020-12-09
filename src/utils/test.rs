@@ -5,6 +5,13 @@ pub const ENFORCE_EXTRACTED: &str = r#"           (object) progress toward enfor
 "required": xx,     (numeric) number of blocks required to trigger
 "window": xx,       (numeric) maximum size of examined window of recent blocks
 }"#;
+pub const INTERMEDIATE_REPR_ENFORCE: [(&str, &str); 4] = [
+    ("status", "bool"),
+    ("found", "Decimal"),
+    ("required", "Decimal"),
+    ("window", "Decimal"),
+];
+
 pub const HELP_GETBLOCKCHAININFO: &str = r#"{
   "chain": "xxxx",        (string) current network name as defined in BIP70 (main, test, regtest)
   "blocks": xxxxxx,         (numeric) the current number of blocks processed in the server
