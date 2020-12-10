@@ -313,10 +313,11 @@ mod unit {
     #[test]
     fn annotate_result_section_nested_obj_extracted_from_softfork() {
         let mut observed_nested = test::SIMPLIFIED_SOFTFORK;
-        let initial = observed_nested.remove(0);
+        let mut obs_nested = observed_nested.chars();
+        let initial = obs_nested.nth(0).unwrap();
         let annotated = annotate_result_section(&mut Annotator::new(
             initial,
-            &mut observed_nested.chars(),
+            &mut obs_nested,
         ));
         //assert_eq!(annotated,);
     }
