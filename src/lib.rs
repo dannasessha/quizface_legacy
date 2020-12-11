@@ -73,7 +73,7 @@ fn extract_result_section(raw_command_help: &str) -> String {
 
 #[derive(Debug)]
 struct Annotator<'a> {
-    observed_data: String,
+    observed_data: Vec<String>,
     incoming_data_stream: &'a mut std::str::Chars<'a>,
     initial: char,
 }
@@ -90,14 +90,14 @@ impl<'a> Annotator<'a> {
         incoming_data_stream: &'a mut std::str::Chars<'a>,
     ) -> Annotator<'a> {
         Annotator {
-            observed_data: String::from(""),
+            observed_data: vec![String::from("")],
             incoming_data_stream,
             initial,
         }
     }
-    fn bind_idents_labels(&mut self) -> Map<String, Value> {
+    fn bind_idents_labels(&mut self, observed: String) -> Map<String, Value> {
         let mut kvs = vec![];
-        let mut lines = self.observed_data.lines().collect::<Vec<&str>>();
+        let mut lines = observed.lines().collect::<Vec<&str>>();
         match lines.remove(0) {
             empty if empty.is_empty() => (),
             description if description.contains("(object)") => (),
@@ -137,23 +137,21 @@ fn annotate_result_section(
     match result_section.initial {
         '{' => {
             let mut ident_label_bindings = Map::new();
+            let mut observed = result_section.observed_data.pop().unwrap();
             loop {
                 match result_section.next().unwrap() {
                     '}' => {
                         ident_label_bindings =
-                            result_section.bind_idents_labels();
+                            result_section.bind_idents_labels(observed.clone());
                         break;
                     }
-                    '[' => {
-                        result_section.initial = '[';
-                        annotate_result_section(result_section);
-                    }
-                    '{' => {
-                        result_section.initial = '{';
+                    i if i == '[' || i == '{' => {
+                        result_section.initial = i;
+                        result_section.observed_data.push(observed.clone());
                         annotate_result_section(result_section);
                     }
                     // TODO: Handle unbalanced braces
-                    x if x.is_ascii() => result_section.observed_data.push(x),
+                    x if x.is_ascii() => observed.push(x),
                     _ => panic!(),
                 }
             }
