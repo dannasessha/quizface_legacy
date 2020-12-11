@@ -196,7 +196,7 @@ mod unit {
     use crate::utils::test;
 
     #[test]
-    fn label_identifier_with_observed_input_valid() {
+    fn label_identifier_with_expected_input_valid() {
         let raw_version =
             r#""version": xxxxx,           (numeric) the server version"#;
         let valid_annotation = ("version".to_string(), "Decimal".to_string());
@@ -204,7 +204,7 @@ mod unit {
     }
     #[test]
     #[ignore = "in development"]
-    fn parse_raw_output_observed_input_valid() {
+    fn parse_raw_output_expected_input_valid() {
         let valid_help_in = parse_raw_output(test::HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
@@ -285,15 +285,15 @@ mod unit {
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
-    fn annotate_result_section_from_getinfo_observed() {
-        let observed_testdata_annotated = test::valid_getinfo_annotation();
+    fn annotate_result_section_from_getinfo_expected() {
+        let expected_testdata_annotated = test::valid_getinfo_annotation();
         let mut section_data = extract_result_section(test::HELP_GETINFO);
         let initial = section_data.remove(0);
         let annotated = annotate_result_section(&mut Annotator::new(
             initial,
             &mut section_data.chars(),
         ));
-        assert_eq!(annotated, observed_testdata_annotated);
+        assert_eq!(annotated, expected_testdata_annotated);
     }
     #[test]
     fn annotate_result_section_enforce_as_input() {
@@ -312,8 +312,8 @@ mod unit {
     }
     #[test]
     fn annotate_result_section_nested_obj_extracted_from_softfork() {
-        let mut observed_nested = test::SIMPLIFIED_SOFTFORK;
-        let mut obs_nested = observed_nested.chars();
+        let mut expected_nested = test::SIMPLIFIED_SOFTFORK;
+        let mut obs_nested = expected_nested.chars();
         let initial = obs_nested.nth(0).unwrap();
         let annotated = annotate_result_section(&mut Annotator::new(
             initial,
