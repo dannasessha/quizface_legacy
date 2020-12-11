@@ -144,8 +144,12 @@ fn annotate_result_section(
                             result_section.bind_idents_labels();
                         break;
                     }
-                    i if i == '[' || i == '{' => {
-                        result_section.initial = i;
+                    '[' => {
+                        result_section.initial = '[';
+                        annotate_result_section(result_section);
+                    }
+                    '{' => {
+                        result_section.initial = '{';
                         annotate_result_section(result_section);
                     }
                     // TODO: Handle unbalanced braces
