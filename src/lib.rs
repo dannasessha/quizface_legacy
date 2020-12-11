@@ -148,7 +148,11 @@ fn annotate_result_section(
                     i if i == '[' || i == '{' => {
                         result_section.initial = i;
                         result_section.observed_data.push(observed.clone());
-                        annotate_result_section(result_section);
+                        let inner = serde_json::to_string(
+                            &annotate_result_section(result_section),
+                        )
+                        .expect("couldn't get string from json");
+                        observed.push_str(&inner);
                     }
                     // TODO: Handle unbalanced braces
                     x if x.is_ascii() => observed.push(x),
