@@ -73,7 +73,6 @@ fn extract_result_section(raw_command_help: &str) -> String {
 
 #[derive(Debug)]
 struct Annotator<'a> {
-    observed_data: Vec<String>,
     incoming_data_stream: &'a mut std::str::Chars<'a>,
     initial: char,
 }
@@ -90,7 +89,6 @@ impl<'a> Annotator<'a> {
         incoming_data_stream: &'a mut std::str::Chars<'a>,
     ) -> Annotator<'a> {
         Annotator {
-            observed_data: vec![String::from("")],
             incoming_data_stream,
             initial,
         }
@@ -137,7 +135,7 @@ fn annotate_result_section(
     match result_section.initial {
         '{' => {
             let mut ident_label_bindings = Map::new();
-            let mut observed = result_section.observed_data.pop().unwrap();
+            let mut observed = String::from(""); // Each call gets its own!!
             loop {
                 match result_section.next().unwrap() {
                     '}' => {
@@ -147,11 +145,26 @@ fn annotate_result_section(
                     }
                     i if i == '[' || i == '{' => {
                         result_section.initial = i;
-                        result_section.observed_data.push(observed.clone());
                         let inner = serde_json::to_string(
+                            // Here's the point where recursion into an inner
+                            // data structure occurs.
+                            //
+                            // "observed" is all chars up to the '[' or '{'.
+                            // The data comes out of the 'inner' as a Value
+                            // (see return type of annotate_result_section).
+                            //
+                            // serde_json::to_string takes that Value and makes
+                            // it into a string.
+                            //
+                            // In "SIMPLIFIED_SOFTFORK" mentally replace from
+                            // the '{' on line 58 to the } on line 63, with a
+                            // jsonified string that represents the contents.
                             &annotate_result_section(result_section),
                         )
                         .expect("couldn't get string from json");
+                        // Push the string-from-inner onto the end of the
+                        // observed chars, meanwhile the &mut Iterator is
+                        // pointing at the first char after '}'. Why?
                         observed.push_str(&inner);
                     }
                     // TODO: Handle unbalanced braces
@@ -165,6 +178,10 @@ fn annotate_result_section(
     }
 }
 fn label_identifier(ident_with_metadata: String) -> (String, String) {
+    //  But we don't properly handle the string-representation of the inner
+    //  e.g. "enforce"'s value, here, because it's not a case we've seen before
+    //  So, if you can extend this function to handle a serialized JSON string
+    //  (by ignoring it!!) then that will help!
     let mut ident_temp =
         dbg!(ident_with_metadata.trim().split('"').collect::<Vec<&str>>());
     ident_temp.retain(|&c| c != "");
