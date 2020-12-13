@@ -1,7 +1,6 @@
 //use crate::lib;
 //use quizface::lib;
 fn main() {
-    println!("bless initiate!");
     let commands = quizface::ingest_commands();
     let mut blessed = Vec::new();
     for command in commands {
@@ -15,14 +14,15 @@ fn main() {
             raw_command_help.split("Examples:\n").collect();
         if delimiter_test_1.len() != 1 && delimiter_test_2.len() != 1 {
             // interesting test would be to put Examples first
-            raw_command_help.split("Result:\n").collect::<Vec<&str>>()[1]
-                .split("Examples:\n")
-                .collect::<Vec<&str>>()[0]
-                // remove leading and trailing whitespace removed,
-                // as defined by Unicode Derived Core Property White_Space
-                .trim();
+            let split_command_help =
+                raw_command_help.split("Result:\n").collect::<Vec<&str>>()[1]
+                    .split("Examples:\n")
+                    .collect::<Vec<&str>>()[0]
+                    // remove leading and trailing whitespace removed,
+                    // as defined by Unicode Derived Core Property White_Space
+                    .trim();
             // .is_empty() tests to see if &self has zero bytes
-            if !raw_command_help.is_empty() {
+            if !split_command_help.is_empty() {
                 blessed.push(command);
             } else {
                 continue;
@@ -31,7 +31,6 @@ fn main() {
             continue;
         }
     }
-    println!("loop done");
     println!("{:?}", blessed);
     println!("Number of blessed commands: {}", blessed.len());
 }
