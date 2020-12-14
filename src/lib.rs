@@ -281,10 +281,8 @@ mod unit {
         let expected_testdata_annotated = test::valid_getinfo_annotation();
         let mut section_data = extract_result_section(test::HELP_GETINFO);
         let last_observed = section_data.remove(0);
-        let annotated = annotate_result_section(&mut Annotator::new(
-            last_observed,
-            &mut section_data.chars(),
-        ));
+        let annotated =
+            annotate_result_section(last_observed, &mut section_data.chars());
         assert_eq!(annotated, expected_testdata_annotated);
     }
     #[test]
@@ -296,10 +294,7 @@ mod unit {
             .collect::<HashMap<String, Value>>());
         assert_eq!(
             testmap,
-            annotate_result_section(&mut Annotator::new(
-                '{',
-                &mut test::ENFORCE_EXTRACTED.chars(),
-            ))
+            annotate_result_section('{', &mut test::ENFORCE_EXTRACTED.chars(),)
         );
     }
     #[test]
@@ -307,10 +302,7 @@ mod unit {
         let mut expected_nested = test::SIMPLIFIED_SOFTFORK;
         let mut obs_nested = expected_nested.chars();
         let last_observed = obs_nested.nth(0).unwrap();
-        let annotated = annotate_result_section(&mut Annotator::new(
-            last_observed,
-            &mut obs_nested,
-        ));
+        let annotated = annotate_result_section(last_observed, &mut obs_nested);
         //assert_eq!(annotated,);
     }
 }
