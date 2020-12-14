@@ -72,86 +72,65 @@ fn extract_result_section(raw_command_help: &str) -> String {
 }
 
 use serde_json::{json, map::Map, Value};
-impl<'a> Annotator<'a> {
-    fn new(
-        last_observed: char,
-        incoming_data_stream: &'a mut std::str::Chars<'a>,
-    ) -> Annotator<'a> {
-        Annotator {
-            incoming_data_stream,
-            last_observed,
+
+fn bind_idents_labels(observed: String) -> Map<String, Value> {
+    let mut kvs = vec![];
+    let mut lines = observed.lines().collect::<Vec<&str>>();
+    match lines.remove(0) {
+        empty if empty.is_empty() => (),
+        description if description.contains("(object)") => (),
+        reject if reject == "..." => (), // Special case
+        catchall @ _ => {
+            dbg!(catchall);
+            panic!("This was unexpected ");
         }
     }
-    fn bind_idents_labels(&mut self, observed: String) -> Map<String, Value> {
-        let mut kvs = vec![];
-        let mut lines = observed.lines().collect::<Vec<&str>>();
-        match lines.remove(0) {
-            empty if empty.is_empty() => (),
-            description if description.contains("(object)") => (),
-            reject if reject == "..." => (), // Special case
-            catchall @ _ => {
-                dbg!(catchall);
-                panic!("This was unexpected ");
-            }
+    for line in lines {
+        if line.contains("object") || line.is_empty() {
+            continue; // Obviously needs work!
         }
-        for line in lines {
-            if line.contains("object") || line.is_empty() {
-                continue; // Obviously needs work!
-            }
-            kvs.push(label_identifier(line.to_string()));
-        }
-        kvs.iter()
-            .map(|(a, b)| (a.to_string(), json!(b.to_string())))
-            .collect::<Map<String, Value>>()
+        kvs.push(label_identifier(line.to_string()));
     }
-    fn list_idents(&mut self) -> Vec<Value> {
-        vec![]
-    }
-    fn bind_ident(&mut self) -> String {
-        String::from("")
-    }
+    kvs.iter()
+        .map(|(a, b)| (a.to_string(), json!(b.to_string())))
+        .collect::<Map<String, Value>>()
 }
+fn list_idents() -> Vec<Value> {
+    vec![]
+}
+fn bind_ident() -> String {
+    String::from("")
+}
+
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let mut data = extract_result_section(raw_command_help);
     let last_observed = data.remove(0);
-    annotate_result_section(&mut Annotator::new(last_observed, &mut data.chars()));
+    annotate_result_section(last_observed, &mut data.chars());
     unimplemented!()
 }
 
 fn annotate_result_section(
-    last_observed: char;
-    annotator: &mut std::str::Chars;
+    last_observed: char,
+    mut incoming_data: &mut std::str::Chars,
 ) -> serde_json::Value {
-    match result_section.last_observed {
+    match last_observed {
         '{' => {
             let mut ident_label_bindings = Map::new();
             let mut observed = String::from(""); // Each call gets its own!!
             loop {
-                match result_section.next().unwrap() {
+                match incoming_data.next().unwrap() {
                     '}' => {
                         ident_label_bindings =
-                            result_section.bind_idents_labels(observed.clone());
+                            bind_idents_labels(observed.clone());
                         break;
                     }
-                    i if i == '[' || i == '{' => {
-                        result_section.last_observed = i;
-                        let inner = serde_json::to_string(
-                            // Here's the point where recursion into an inner
-                            // data structure occurs.
-                            //
-                            // "observed" is all chars up to the '[' or '{'.
-                            // The data comes out of the 'inner' as a Value
-                            // (see return type of annotate_result_section).
-                            //
-                            // serde_json::to_string takes that Value and makes
-                            // it into a string.
-                            //
-                            // In "SIMPLIFIED_SOFTFORK" mentally replace from
-                            // the '{' on line 58 to the } on line 63, with a
-                            // jsonified string that represents the contents.
-                            &annotate_result_section(result_section),
-                        )
-                        .expect("couldn't get string from json");
+                    lastobs if lastobs == '[' || lastobs == '{' => {
+                        let inner =
+                            serde_json::to_string(&annotate_result_section(
+                                lastobs,
+                                &mut incoming_data,
+                            ))
+                            .expect("couldn't get string from json");
                         // Push the string-from-inner onto the end of the
                         // observed chars, meanwhile the &mut Iterator is
                         // pointing at the first char after '}'. Why?
