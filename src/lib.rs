@@ -71,17 +71,6 @@ fn extract_result_section(raw_command_help: &str) -> String {
         .to_string()
 }
 
-#[derive(Debug)]
-struct Annotator<'a> {
-    incoming_data_stream: &'a mut std::str::Chars<'a>,
-    initial: char,
-}
-impl std::iter::Iterator for Annotator<'_> {
-    type Item = char;
-    fn next(&mut self) -> Option<Self::Item> {
-        self.incoming_data_stream.next()
-    }
-}
 use serde_json::{json, map::Map, Value};
 impl<'a> Annotator<'a> {
     fn new(
@@ -130,7 +119,8 @@ pub fn parse_raw_output(raw_command_help: &str) -> Value {
 }
 
 fn annotate_result_section(
-    result_section: &mut Annotator,
+    initial: char;
+    annotator: &mut std::str::Chars;
 ) -> serde_json::Value {
     match result_section.initial {
         '{' => {
