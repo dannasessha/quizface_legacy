@@ -74,12 +74,12 @@ fn extract_result_section(raw_command_help: &str) -> String {
 use serde_json::{json, map::Map, Value};
 impl<'a> Annotator<'a> {
     fn new(
-        initial: char,
+        last_observed: char,
         incoming_data_stream: &'a mut std::str::Chars<'a>,
     ) -> Annotator<'a> {
         Annotator {
             incoming_data_stream,
-            initial,
+            last_observed,
         }
     }
     fn bind_idents_labels(&mut self, observed: String) -> Map<String, Value> {
@@ -113,16 +113,16 @@ impl<'a> Annotator<'a> {
 }
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let mut data = extract_result_section(raw_command_help);
-    let initial = data.remove(0);
-    annotate_result_section(&mut Annotator::new(initial, &mut data.chars()));
+    let last_observed = data.remove(0);
+    annotate_result_section(&mut Annotator::new(last_observed, &mut data.chars()));
     unimplemented!()
 }
 
 fn annotate_result_section(
-    initial: char;
+    last_observed: char;
     annotator: &mut std::str::Chars;
 ) -> serde_json::Value {
-    match result_section.initial {
+    match result_section.last_observed {
         '{' => {
             let mut ident_label_bindings = Map::new();
             let mut observed = String::from(""); // Each call gets its own!!
@@ -134,7 +134,7 @@ fn annotate_result_section(
                         break;
                     }
                     i if i == '[' || i == '{' => {
-                        result_section.initial = i;
+                        result_section.last_observed = i;
                         let inner = serde_json::to_string(
                             // Here's the point where recursion into an inner
                             // data structure occurs.
@@ -301,9 +301,9 @@ mod unit {
     fn annotate_result_section_from_getinfo_expected() {
         let expected_testdata_annotated = test::valid_getinfo_annotation();
         let mut section_data = extract_result_section(test::HELP_GETINFO);
-        let initial = section_data.remove(0);
+        let last_observed = section_data.remove(0);
         let annotated = annotate_result_section(&mut Annotator::new(
-            initial,
+            last_observed,
             &mut section_data.chars(),
         ));
         assert_eq!(annotated, expected_testdata_annotated);
@@ -327,9 +327,9 @@ mod unit {
     fn annotate_result_section_nested_obj_extracted_from_softfork() {
         let mut expected_nested = test::SIMPLIFIED_SOFTFORK;
         let mut obs_nested = expected_nested.chars();
-        let initial = obs_nested.nth(0).unwrap();
+        let last_observed = obs_nested.nth(0).unwrap();
         let annotated = annotate_result_section(&mut Annotator::new(
-            initial,
+            last_observed,
             &mut obs_nested,
         ));
         //assert_eq!(annotated,);
