@@ -92,15 +92,20 @@ fn clean_observed(raw_observed: String) -> Vec<String> {
     }
     ident_labels
 }
-mod SpecialCases {
-    pub const REJECT: &str = r#"
-        {
-            \"found\":      \"Decimal\",
-            \"required\":   \"Decimal\",
-            \"status\":     \"bool\",
-            \"window\":     \"Decimal\"
-        }
-    "#;
+mod special_cases {
+    use serde_json::{json, Map, Value};
+    pub const REJECT_BINDINGS: [(&str, &str); 4] = [
+        ("found", "Decimal"),
+        ("required", "Decimal"),
+        ("status", "bool"),
+        ("window", "Decimal"),
+    ];
+    pub fn create_reject_bindings() -> Map<String, Value> {
+        REJECT_BINDINGS
+            .iter()
+            .map(|(a, b)| (a.to_string(), json!(b)))
+            .collect()
+    }
 }
 fn bind_idents_labels(
     raw_observed: String,
@@ -110,7 +115,7 @@ fn bind_idents_labels(
     if cleaned[0] == "...".to_string()
         && cmd_name == "getblockchaininfo".to_string()
     {
-        serde_json::from_str(SpecialCases::REJECT).unwrap()
+        special_cases::create_reject_bindings()
     } else {
         cleaned
             .iter()
@@ -326,6 +331,14 @@ mod unit {
     }
     #[test]
     fn annotate_result_section_help_getblockchain_reject_fragment() {
-        let mut expected_data = test::GETBLOCKCHAININFO_REJECT_FRAGMENT.chars();
+        let mut expected_data = test::GETBLOCKCHAININFO_REJECT_FRAGMENT;
+        let (cmd_name, _) = extract_name_and_result(expected_data);
+        let fake_ident_label = "...".to_string();
+        let bound = bind_idents_labels(fake_ident_label, cmd_name);
+        bound.entry("status");
+        //use std::borrow::Borrow;
+        //for (k, v) in test::INTERMEDIATE_REPR_ENFORCE.iter() {
+        //    bound.get(k);
+        //}
     }
 }
