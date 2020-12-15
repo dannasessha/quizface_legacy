@@ -1,7 +1,6 @@
 pub mod utils;
 use crate::logging::create_log_dirs;
 use crate::logging::log_masterhelp_output;
-use std::collections::HashMap;
 use std::path::Path;
 use utils::logging;
 
@@ -98,12 +97,6 @@ fn bind_idents_labels(raw_observed: String) -> Map<String, Value> {
         .map(|(a, b)| (a.to_string(), json!(b.to_string())))
         .collect::<Map<String, Value>>()
 }
-fn list_idents() -> Vec<Value> {
-    vec![]
-}
-fn bind_ident() -> String {
-    String::from("")
-}
 
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let mut data = extract_result_section(raw_command_help);
@@ -117,8 +110,9 @@ fn annotate_result_section(
 ) -> serde_json::Value {
     match last_observed {
         '{' => {
+            #[allow(unused_assignments)]
             let mut ident_label_bindings = Map::new();
-            let mut observed = String::from("");
+            let mut observed = String::new();
             loop {
                 match incoming_data.next().unwrap() {
                     '}' => {
@@ -146,13 +140,14 @@ fn annotate_result_section(
     }
 }
 fn label_identifier(ident_with_metadata: String) -> (String, String) {
-    let mut ident_and_metadata = ident_with_metadata
+    let ident_and_metadata = ident_with_metadata
         .trim()
         .splitn(2, ':')
         .collect::<Vec<&str>>();
     let ident = ident_and_metadata[0].trim_matches('"');
     let meta_data = ident_and_metadata[1].trim();
-    let mut annotation = String::from("");
+    #[allow(unused_assignments)]
+    let mut annotation = String::new();
     if meta_data.starts_with('{') {
         annotation = meta_data.to_string();
     } else {
