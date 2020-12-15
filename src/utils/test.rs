@@ -62,6 +62,15 @@ pub const SIMPLIFIED_SOFTFORK: &str = r#"{
            "window": xx,       (numeric) maximum size of examined window of recent blocks
         },
      }"#;
+pub const SOFTFORK_EXTRACT_JSON: &str = r##"{
+    "enforce":
+        "{\"found\":\"Decimal\",\"required\":\"Decimal\",\"status\":\"bool\",\"window\":\"Decimal\"},",
+    "id":
+        "String",
+    "version":
+        "Decimal"
+}
+"##;
 pub const HELP_GETINFO: &str = r#"
 getinfo
 Returns an object containing various state info.

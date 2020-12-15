@@ -151,7 +151,7 @@ fn label_identifier(ident_with_metadata: String) -> (String, String) {
     if meta_data.starts_with('{') {
         annotation = meta_data.to_string();
     } else {
-        let raw_label: &str = dbg!(&meta_data)
+        let raw_label: &str = meta_data
             .split(|c| c == '(' || c == ')')
             .collect::<Vec<&str>>()[1];
 
@@ -285,10 +285,12 @@ mod unit {
     }
     #[test]
     fn annotate_result_section_nested_obj_extracted_from_softfork() {
-        let mut expected_nested = test::SIMPLIFIED_SOFTFORK;
-        let mut obs_nested = expected_nested.chars();
-        let last_observed = obs_nested.nth(0).unwrap();
-        let annotated = annotate_result_section(last_observed, &mut obs_nested);
-        //assert_eq!(annotated,);
+        let mut expected_nested = test::SIMPLIFIED_SOFTFORK.chars();
+        let last_observed = expected_nested.nth(0).unwrap();
+        let annotated =
+            annotate_result_section(last_observed, &mut expected_nested);
+        let expected_enforce: Map<String, Value> =
+            serde_json::from_str(test::SOFTFORK_EXTRACT_JSON).unwrap();
+        assert_eq!(Value::Object(expected_enforce), annotated);
     }
 }
