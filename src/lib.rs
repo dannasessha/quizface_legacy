@@ -109,8 +109,7 @@ fn bind_ident() -> String {
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let mut data = extract_result_section(raw_command_help);
     let last_observed = data.remove(0);
-    annotate_result_section(last_observed, &mut data.chars());
-    unimplemented!()
+    annotate_result_section(last_observed, &mut data.chars())
 }
 
 fn annotate_result_section(
@@ -135,9 +134,6 @@ fn annotate_result_section(
                                 &mut incoming_data,
                             ))
                             .expect("couldn't get string from json");
-                        // Push the string-from-inner onto the end of the
-                        // observed chars, meanwhile the &mut Iterator is
-                        // pointing at the first char after '}'. Why?
                         observed.push_str(&inner);
                     }
                     // TODO: Handle unbalanced braces
