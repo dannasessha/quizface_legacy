@@ -125,18 +125,26 @@ fn bind_idents_labels(
     }
 }
 
+struct Context {
+    cmd_name: String,
+    last_observed: char,
+}
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let (cmd_name, data) = extract_name_and_result(raw_command_help);
     let observed = &mut data.chars();
     let last_observed = observed.next().expect("Missing first char!");
-    annotate_result_section((last_observed, cmd_name), observed)
+    let context = &mut Context {
+        cmd_name,
+        last_observed,
+    };
+    annotate_result_section(context, observed)
 }
 
 fn annotate_result_section(
-    context: (char, String),
+    mut context: &mut Context,
     mut incoming_data: &mut std::str::Chars,
 ) -> serde_json::Value {
-    match context.0 {
+    match context.last_observed {
         '{' => {
             #[allow(unused_assignments)]
             let mut ident_label_bindings = Map::new();
@@ -146,14 +154,15 @@ fn annotate_result_section(
                     '}' => {
                         ident_label_bindings = bind_idents_labels(
                             observed.clone(),
-                            context.1.clone(),
+                            context.cmd_name.clone(),
                         );
                         break;
                     }
                     lastobs if lastobs == '[' || lastobs == '{' => {
+                        context.last_observed = lastobs;
                         let inner =
                             serde_json::to_string(&annotate_result_section(
-                                (lastobs, context.1.clone()),
+                                &mut context,
                                 &mut incoming_data,
                             ))
                             .expect("couldn't get string from json");
@@ -295,11 +304,16 @@ mod unit {
     #[test]
     fn annotate_result_section_from_getinfo_expected() {
         let expected_testdata_annotated = test::valid_getinfo_annotation();
-        let (_, mut section_data) = extract_name_and_result(test::HELP_GETINFO);
-        let last_observed = section_data.remove(0);
+        let (cmd_name, section_data) =
+            extract_name_and_result(test::HELP_GETINFO);
+        let data_stream = &mut section_data.chars();
+        let last_observed = data_stream.next().unwrap();
         let annotated = annotate_result_section(
-            (last_observed, "getinfo".to_string()),
-            &mut section_data.chars(),
+            &mut Context {
+                last_observed,
+                cmd_name,
+            },
+            data_stream,
         );
         assert_eq!(annotated, expected_testdata_annotated);
     }
@@ -313,7 +327,10 @@ mod unit {
         assert_eq!(
             testmap,
             annotate_result_section(
-                ('{', "getblockchaininfo".to_string()),
+                &mut Context {
+                    last_observed: '{',
+                    cmd_name: "getblockchaininfo".to_string()
+                },
                 &mut test::ENFORCE_EXTRACTED.chars(),
             )
         );
@@ -323,7 +340,10 @@ mod unit {
         let mut expected_nested = test::SIMPLIFIED_SOFTFORK.chars();
         let last_observed = expected_nested.nth(0).unwrap();
         let annotated = annotate_result_section(
-            (last_observed, "getblockchaininfo".to_string()),
+            &mut Context {
+                last_observed,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
             &mut expected_nested,
         );
         let expected_enforce: Map<String, Value> =
