@@ -197,13 +197,11 @@ mod unit {
         assert_eq!(valid_annotation, label_identifier(raw_version.to_string()));
     }
     #[test]
-    #[ignore = "in development"]
     fn parse_raw_output_expected_input_valid() {
         let valid_help_in = parse_raw_output(test::HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
-    #[ignore = "in development"]
     fn parse_raw_output_early_lbracket_input() {
         let valid_help_in = parse_raw_output(test::LBRACKETY_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
