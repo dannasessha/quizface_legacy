@@ -91,8 +91,7 @@ fn clean_observed(raw_observed: String) -> Vec<String> {
     ident_labels
 }
 fn bind_idents_labels(raw_observed: String) -> Map<String, Value> {
-    let mut lines = clean_observed(raw_observed);
-    lines
+    clean_observed(raw_observed)
         .iter()
         .map(|ident_rawlabel| label_identifier(ident_rawlabel.to_string()))
         .map(|(a, b)| (a.to_string(), json!(b.to_string())))
