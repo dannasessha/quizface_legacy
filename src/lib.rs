@@ -334,11 +334,9 @@ mod unit {
         let mut expected_data = test::GETBLOCKCHAININFO_REJECT_FRAGMENT;
         let (cmd_name, _) = extract_name_and_result(expected_data);
         let fake_ident_label = "...".to_string();
-        let bound = bind_idents_labels(fake_ident_label, cmd_name);
-        bound.entry("status");
-        //use std::borrow::Borrow;
-        //for (k, v) in test::INTERMEDIATE_REPR_ENFORCE.iter() {
-        //    bound.get(k);
-        //}
+        let mut bound = bind_idents_labels(fake_ident_label, cmd_name);
+        for (k, v) in test::INTERMEDIATE_REPR_ENFORCE.iter() {
+            assert_eq!(&bound.get(k.clone()).unwrap().as_str().unwrap(), v);
+        }
     }
 }
