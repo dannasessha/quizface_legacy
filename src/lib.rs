@@ -92,11 +92,9 @@ fn clean_observed(raw_observed: String) -> Vec<String> {
 }
 fn bind_idents_labels(raw_observed: String) -> Map<String, Value> {
     let mut lines = clean_observed(raw_observed);
-    let mut kvs = vec![];
-    for line in lines {
-        kvs.push(label_identifier(line.to_string()));
-    }
-    kvs.iter()
+    lines
+        .iter()
+        .map(|ident_rawlabel| label_identifier(ident_rawlabel.to_string()))
         .map(|(a, b)| (a.to_string(), json!(b.to_string())))
         .collect::<Map<String, Value>>()
 }
