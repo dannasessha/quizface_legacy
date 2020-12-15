@@ -126,9 +126,10 @@ fn bind_idents_labels(
 }
 
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
-    let (cmd_name, mut data) = extract_name_and_result(raw_command_help);
-    let last_observed = data.remove(0);
-    annotate_result_section((last_observed, cmd_name), &mut data.chars())
+    let (cmd_name, data) = extract_name_and_result(raw_command_help);
+    let observed = &mut data.chars();
+    let last_observed = observed.next().expect("Missing first char!");
+    annotate_result_section((last_observed, cmd_name), observed)
 }
 
 fn annotate_result_section(
@@ -331,10 +332,10 @@ mod unit {
     }
     #[test]
     fn annotate_result_section_help_getblockchain_reject_fragment() {
-        let mut expected_data = test::GETBLOCKCHAININFO_REJECT_FRAGMENT;
+        let expected_data = test::GETBLOCKCHAININFO_REJECT_FRAGMENT;
         let (cmd_name, _) = extract_name_and_result(expected_data);
         let fake_ident_label = "...".to_string();
-        let mut bound = bind_idents_labels(fake_ident_label, cmd_name);
+        let bound = bind_idents_labels(fake_ident_label, cmd_name);
         for (k, v) in test::INTERMEDIATE_REPR_ENFORCE.iter() {
             assert_eq!(&bound.get(k.clone()).unwrap().as_str().unwrap(), v);
         }
