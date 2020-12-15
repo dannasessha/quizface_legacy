@@ -145,7 +145,7 @@ Result:
 "#;
 
 pub const EXTRABRACKETS1_HELP_GETINFO: &str = r#"
-getinfo with extra brackets in disorder before Result:
+getinfo with extra brackets in disorder before result section!
 }
 
 { } { { }
@@ -168,6 +168,7 @@ Result:
   "relayfee": x.xxxx,         (numeric) minimum relay fee for non-free transactions in ZEC/kB
   "errors": "..."           (string) any error messages
 }
+Examples:
 "#;
 
 pub const EXTRABRACKETS2_HELP_GETINFO: &str = r#"

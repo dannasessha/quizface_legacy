@@ -215,7 +215,6 @@ mod unit {
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
-    #[ignore = "in development"]
     fn parse_raw_output_early_extrabrackets_input() {
         let valid_help_in = parse_raw_output(test::EXTRABRACKETS1_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
@@ -227,14 +226,12 @@ mod unit {
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
-    #[ignore = "in development"]
     fn parse_raw_output_late_extrabrackets_input() {
         let valid_help_in = parse_raw_output(test::EXTRABRACKETS2_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
     #[should_panic]
-    #[ignore = "in development"]
     fn parse_raw_output_more_than_one_set_of_brackets_input() {
         let valid_help_in =
             parse_raw_output(test::MORE_BRACKET_PAIRS_HELP_GETINFO);
@@ -242,7 +239,6 @@ mod unit {
     }
     #[test]
     #[should_panic]
-    #[ignore = "in development"]
     fn parse_raw_output_two_starting_brackets_input() {
         let valid_help_in =
             parse_raw_output(test::EXTRA_START_BRACKET_HELP_GETINFO);
