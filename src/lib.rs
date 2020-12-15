@@ -187,6 +187,10 @@ fn annotate_result_section(
             }
             return Value::Object(ident_label_bindings);
         }
+        '[' => {
+            let mut ordered_results: Vec<Value> = vec![];
+            Value::Array(ordered_results)
+        }
         _ => unimplemented!(),
     }
 }
@@ -371,5 +375,10 @@ mod unit {
         for (k, v) in test::INTERMEDIATE_REPR_ENFORCE.iter() {
             assert_eq!(&bound.get(k.clone()).unwrap().as_str().unwrap(), v);
         }
+    }
+    #[test]
+    fn parse_raw_output_getblockchain_softforks_fragment() {
+        let expected_incoming = test::GETBLOCKCHAININFO_SOFTFORK_FRAGMENT;
+        parse_raw_output(expected_incoming);
     }
 }

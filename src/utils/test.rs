@@ -62,6 +62,29 @@ Examples:
 > zcash-cli getblockchaininfo
 > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getblockchaininfo", "params": [] }' -H 'content-type: text/plain;' http://127.0.0.1:8232/
 "##;
+
+pub const GETBLOCKCHAININFO_SOFTFORK_FRAGMENT: &str = r##"getblockchaininfo
+
+Result:
+{
+  "softforks": [            (array) status of softforks in progress
+     {
+        "id": "xxxx",        (string) name of softfork
+        "version": xx,         (numeric) block version
+        "enforce": {           (object) progress toward enforcing the softfork rules for new-version blocks
+           "status": xx,       (boolean) true if threshold reached
+           "found": xx,        (numeric) number of blocks with the new version found
+           "required": xx,     (numeric) number of blocks required to trigger
+           "window": xx,       (numeric) maximum size of examined window of recent blocks
+        },
+        "reject": { ... }      (object) progress toward rejecting pre-softfork blocks (same fields as "enforce")
+     }, ...
+  ],
+}
+
+Examples:
+"##;
+
 pub const HELP_GETBLOCKCHAININFO_RESULT: &str = r#"{
   "chain": "xxxx",        (string) current network name as defined in BIP70 (main, test, regtest)
   "blocks": xxxxxx,         (numeric) the current number of blocks processed in the server
