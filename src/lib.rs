@@ -62,13 +62,15 @@ pub fn check_success(output: &std::process::ExitStatus) {
     }
 }
 
-fn extract_result_section(raw_command_help: &str) -> String {
+fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
     let sections = raw_command_help.split("Result:\n").collect::<Vec<&str>>();
     assert_eq!(sections.len(), 2, "Wrong number of Results!");
+    let command_name =
+        sections[0].split_ascii_whitespace().collect::<Vec<&str>>()[0];
     let end = sections[1];
     let end_sections = end.split("Examples:\n").collect::<Vec<&str>>();
     assert_eq!(end_sections.len(), 2, "Wrong number of Examples!");
-    end_sections[0].trim().to_string()
+    (command_name.to_string(), end_sections[0].trim().to_string())
 }
 
 use serde_json::{json, map::Map, Value};
@@ -99,7 +101,7 @@ fn bind_idents_labels(raw_observed: String) -> Map<String, Value> {
 }
 
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
-    let mut data = extract_result_section(raw_command_help);
+    let (command, mut data) = extract_name_and_result(raw_command_help);
     let last_observed = data.remove(0);
     annotate_result_section(last_observed, &mut data.chars())
 }
@@ -265,7 +267,7 @@ mod unit {
     #[test]
     fn annotate_result_section_from_getinfo_expected() {
         let expected_testdata_annotated = test::valid_getinfo_annotation();
-        let mut section_data = extract_result_section(test::HELP_GETINFO);
+        let (_, mut section_data) = extract_name_and_result(test::HELP_GETINFO);
         let last_observed = section_data.remove(0);
         let annotated =
             annotate_result_section(last_observed, &mut section_data.chars());
