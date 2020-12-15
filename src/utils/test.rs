@@ -142,6 +142,7 @@ Result:
   "relayfee": x.xxxx,         (numeric) minimum relay fee for non-free transactions in ZEC/kB
   "errors": "..."           (string) any error messages
 }
+Examples:
 "#;
 
 pub const EXTRABRACKETS1_HELP_GETINFO: &str = r#"

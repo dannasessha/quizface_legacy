@@ -209,7 +209,6 @@ mod unit {
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
-    #[ignore = "in development"]
     fn parse_raw_output_early_rbracket_input() {
         let valid_help_in = parse_raw_output(test::RBRACKETY_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
