@@ -73,7 +73,11 @@ fn extract_result_section(raw_command_help: &str) -> String {
 
 use serde_json::{json, map::Map, Value};
 
-fn bind_idents_labels(observed: String) -> Map<String, Value> {
+fn clean_observed(raw_observed: String) -> String {
+    raw_observed.trim_end().to_string()
+}
+fn bind_idents_labels(raw_observed: String) -> Map<String, Value> {
+    let observed = clean_observed(raw_observed);
     let mut kvs = vec![];
     let mut lines = observed.lines().collect::<Vec<&str>>();
     match lines.remove(0) {
@@ -147,19 +151,22 @@ fn annotate_result_section(
     }
 }
 fn label_identifier(ident_with_metadata: String) -> (String, String) {
-    //  But we don't properly handle the string-representation of the inner
-    //  e.g. "enforce"'s value, here, because it's not a case we've seen before
-    //  So, if you can extend this function to handle a serialized JSON string
-    //  (by ignoring it!!) then that will help!
-    let mut ident_temp =
-        dbg!(ident_with_metadata.trim().split('"').collect::<Vec<&str>>());
-    ident_temp.retain(|&c| c != "");
-    let ident = ident_temp.first().expect("no match setting ident");
-    let raw_label: &str = ident_with_metadata
-        .split(|c| c == '(' || c == ')')
-        .collect::<Vec<&str>>()[1];
+    let mut ident_and_metadata = ident_with_metadata
+        .trim()
+        .splitn(2, ':')
+        .collect::<Vec<&str>>();
+    let ident = ident_and_metadata[0].trim_matches('"');
+    let meta_data = ident_and_metadata[1].trim();
+    let mut annotation = String::from("");
+    if meta_data.starts_with('{') {
+        annotation = meta_data.to_string();
+    } else {
+        let raw_label: &str = dbg!(&meta_data)
+            .split(|c| c == '(' || c == ')')
+            .collect::<Vec<&str>>()[1];
 
-    let annotation = make_label(raw_label);
+        annotation = make_label(raw_label);
+    }
     (ident.to_string(), annotation)
 }
 

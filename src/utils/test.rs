@@ -61,8 +61,7 @@ pub const SIMPLIFIED_SOFTFORK: &str = r#"{
            "required": xx,     (numeric) number of blocks required to trigger
            "window": xx,       (numeric) maximum size of examined window of recent blocks
         },
-     }
-"#;
+     }"#;
 pub const HELP_GETINFO: &str = r#"
 getinfo
 Returns an object containing various state info.
