@@ -95,10 +95,10 @@ fn clean_observed(raw_observed: String) -> Vec<String> {
 mod SpecialCases {
     pub const REJECT: &str = r#"
         {
-            \"found\":\"Decimal\",
-            \"required\":\"Decimal\",
-            \"status\":\"bool\",
-            \"window\":\"Decimal\"
+            \"found\":      \"Decimal\",
+            \"required\":   \"Decimal\",
+            \"status\":     \"bool\",
+            \"window\":     \"Decimal\"
         }
     "#;
 }
