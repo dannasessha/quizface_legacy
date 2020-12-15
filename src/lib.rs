@@ -64,11 +64,12 @@ pub fn check_success(output: &std::process::ExitStatus) {
 }
 
 fn extract_result_section(raw_command_help: &str) -> String {
-    raw_command_help.split("Result:\n").collect::<Vec<&str>>()[1]
-        .split("Examples:\n")
-        .collect::<Vec<&str>>()[0]
-        .trim()
-        .to_string()
+    let sections = raw_command_help.split("Result:\n").collect::<Vec<&str>>();
+    assert_eq!(sections.len(), 2, "Wrong number of Results!");
+    let end = sections[1];
+    let end_sections = end.split("Examples:\n").collect::<Vec<&str>>();
+    assert_eq!(end_sections.len(), 2, "Wrong number of Examples!");
+    end_sections[0].trim().to_string()
 }
 
 use serde_json::{json, map::Map, Value};
@@ -249,7 +250,6 @@ mod unit {
     }
     #[test]
     #[should_panic]
-    #[ignore = "in development"]
     fn parse_raw_output_two_ending_brackets_input() {
         let valid_help_in =
             parse_raw_output(test::EXTRA_END_BRACKET_HELP_GETINFO);
@@ -257,21 +257,18 @@ mod unit {
     }
     #[test]
     #[should_panic]
-    #[ignore = "in development"]
     fn parse_raw_output_no_results_input() {
         let valid_help_in = parse_raw_output(test::NO_RESULT_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
     #[should_panic]
-    #[ignore = "in development"]
     fn parse_raw_output_no_end_bracket_input() {
         let valid_help_in = parse_raw_output(test::NO_END_BRACKET_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
     #[should_panic]
-    #[ignore = "in development"]
     fn parse_raw_output_no_start_bracket_input() {
         let valid_help_in =
             parse_raw_output(test::NO_START_BRACKET_HELP_GETINFO);
