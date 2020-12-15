@@ -324,4 +324,8 @@ mod unit {
             serde_json::from_str(test::SOFTFORK_EXTRACT_JSON).unwrap();
         assert_eq!(Value::Object(expected_enforce), annotated);
     }
+    #[test]
+    fn annotate_result_section_help_getblockchain_info_complete() {
+        let mut expected_data = test::HELP_GETBLOCKCHAININFO_COMPLETE.chars();
+    }
 }
