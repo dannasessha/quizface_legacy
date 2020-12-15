@@ -117,7 +117,7 @@ fn annotate_result_section(
     match last_observed {
         '{' => {
             let mut ident_label_bindings = Map::new();
-            let mut observed = String::from(""); // Each call gets its own!!
+            let mut observed = String::from("");
             loop {
                 match incoming_data.next().unwrap() {
                     '}' => {
