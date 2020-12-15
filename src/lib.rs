@@ -65,12 +65,12 @@ pub fn check_success(output: &std::process::ExitStatus) {
 fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
     let sections = raw_command_help.split("Result:\n").collect::<Vec<&str>>();
     assert_eq!(sections.len(), 2, "Wrong number of Results!");
-    let command_name =
+    let cmd_name =
         sections[0].split_ascii_whitespace().collect::<Vec<&str>>()[0];
     let end = sections[1];
     let end_sections = end.split("Examples:\n").collect::<Vec<&str>>();
     assert_eq!(end_sections.len(), 2, "Wrong number of Examples!");
-    (command_name.to_string(), end_sections[0].trim().to_string())
+    (cmd_name.to_string(), end_sections[0].trim().to_string())
 }
 
 use serde_json::{json, map::Map, Value};
@@ -101,16 +101,16 @@ fn bind_idents_labels(raw_observed: String) -> Map<String, Value> {
 }
 
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
-    let (command, mut data) = extract_name_and_result(raw_command_help);
+    let (cmd_name, mut data) = extract_name_and_result(raw_command_help);
     let last_observed = data.remove(0);
-    annotate_result_section(last_observed, &mut data.chars())
+    annotate_result_section((last_observed, cmd_name), &mut data.chars())
 }
 
 fn annotate_result_section(
-    last_observed: char,
+    context: (char, String),
     mut incoming_data: &mut std::str::Chars,
 ) -> serde_json::Value {
-    match last_observed {
+    match context.0 {
         '{' => {
             #[allow(unused_assignments)]
             let mut ident_label_bindings = Map::new();
@@ -125,7 +125,7 @@ fn annotate_result_section(
                     lastobs if lastobs == '[' || lastobs == '{' => {
                         let inner =
                             serde_json::to_string(&annotate_result_section(
-                                lastobs,
+                                (lastobs, context.1.clone()),
                                 &mut incoming_data,
                             ))
                             .expect("couldn't get string from json");
@@ -269,8 +269,10 @@ mod unit {
         let expected_testdata_annotated = test::valid_getinfo_annotation();
         let (_, mut section_data) = extract_name_and_result(test::HELP_GETINFO);
         let last_observed = section_data.remove(0);
-        let annotated =
-            annotate_result_section(last_observed, &mut section_data.chars());
+        let annotated = annotate_result_section(
+            (last_observed, "getinfo".to_string()),
+            &mut section_data.chars(),
+        );
         assert_eq!(annotated, expected_testdata_annotated);
     }
     #[test]
@@ -282,15 +284,20 @@ mod unit {
             .collect::<HashMap<String, Value>>());
         assert_eq!(
             testmap,
-            annotate_result_section('{', &mut test::ENFORCE_EXTRACTED.chars(),)
+            annotate_result_section(
+                ('{', "getblockchaininfo".to_string()),
+                &mut test::ENFORCE_EXTRACTED.chars(),
+            )
         );
     }
     #[test]
     fn annotate_result_section_nested_obj_extracted_from_softfork() {
         let mut expected_nested = test::SIMPLIFIED_SOFTFORK.chars();
         let last_observed = expected_nested.nth(0).unwrap();
-        let annotated =
-            annotate_result_section(last_observed, &mut expected_nested);
+        let annotated = annotate_result_section(
+            (last_observed, "getblockchaininfo".to_string()),
+            &mut expected_nested,
+        );
         let expected_enforce: Map<String, Value> =
             serde_json::from_str(test::SOFTFORK_EXTRACT_JSON).unwrap();
         assert_eq!(Value::Object(expected_enforce), annotated);
