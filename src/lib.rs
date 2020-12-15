@@ -85,7 +85,7 @@ fn clean_observed(raw_observed: String) -> Vec<String> {
         reject if reject == "..." => (), // Special case
         catchall @ _ => {
             dbg!(catchall);
-            panic!("This was unexpected ");
+            panic!("Unexpected object format!");
         }
     }
     ident_labels
@@ -212,7 +212,7 @@ mod unit {
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
-    #[ignore = "in development"]
+    #[should_panic]
     fn parse_raw_output_extrabrackets_within_input_lines() {
         let valid_help_in = parse_raw_output(test::EXTRABRACKETS3_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
