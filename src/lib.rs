@@ -73,14 +73,13 @@ fn extract_result_section(raw_command_help: &str) -> String {
 
 use serde_json::{json, map::Map, Value};
 
-fn clean_observed(raw_observed: String) -> String {
-    raw_observed.trim_end().to_string()
-}
-fn bind_idents_labels(raw_observed: String) -> Map<String, Value> {
-    let observed = clean_observed(raw_observed);
-    let mut kvs = vec![];
-    let mut lines = observed.lines().collect::<Vec<&str>>();
-    match lines.remove(0) {
+fn clean_observed(raw_observed: String) -> Vec<String> {
+    let mut ident_labels = raw_observed
+        .trim_end()
+        .lines()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>();
+    match ident_labels.remove(0) {
         empty if empty.is_empty() => (),
         description if description.contains("(object)") => (),
         reject if reject == "..." => (), // Special case
@@ -89,6 +88,11 @@ fn bind_idents_labels(raw_observed: String) -> Map<String, Value> {
             panic!("This was unexpected ");
         }
     }
+    ident_labels
+}
+fn bind_idents_labels(raw_observed: String) -> Map<String, Value> {
+    let mut lines = clean_observed(raw_observed);
+    let mut kvs = vec![];
     for line in lines {
         if line.contains("object") || line.is_empty() {
             continue; // Obviously needs work!
