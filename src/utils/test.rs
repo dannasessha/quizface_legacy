@@ -121,6 +121,18 @@ pub const SOFTFORK_EXTRACT_JSON: &str = r##"{
         "Decimal"
 }
 "##;
+pub const GETBLOCKCHAININFO_REJECT_FRAGMENT: &str = r##"getblockchaininfo
+Returns an object containing various state info regarding block chain processing.
+XXX
+
+Result:
+{
+    "reject": { ... }      (object) progress toward rejecting pre-softfork blocks (same fields as "enforce")
+}
+
+Examples:
+> zcash-cli getblockchaininfo XXX
+"##;
 pub const HELP_GETINFO: &str = r#"
 getinfo
 Returns an object containing various state info.

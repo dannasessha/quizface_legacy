@@ -325,7 +325,7 @@ mod unit {
         assert_eq!(Value::Object(expected_enforce), annotated);
     }
     #[test]
-    fn annotate_result_section_help_getblockchain_info_complete() {
-        let mut expected_data = test::HELP_GETBLOCKCHAININFO_COMPLETE.chars();
+    fn annotate_result_section_help_getblockchain_reject_fragment() {
+        let mut expected_data = test::GETBLOCKCHAININFO_REJECT_FRAGMENT.chars();
     }
 }
