@@ -84,7 +84,7 @@ fn clean_observed(raw_observed: String) -> Vec<String> {
     match ident_labels.remove(0) {
         empty if empty.is_empty() => (),
         description if description.contains("(object)") => (),
-        reject if reject == "..." => (), // Special case
+        i if i == "...".to_string() => ident_labels = vec![String::from(i)],
         catchall @ _ => {
             dbg!(catchall);
             panic!("Unexpected object format!");
@@ -92,12 +92,32 @@ fn clean_observed(raw_observed: String) -> Vec<String> {
     }
     ident_labels
 }
-fn bind_idents_labels(raw_observed: String) -> Map<String, Value> {
-    clean_observed(raw_observed)
-        .iter()
-        .map(|ident_rawlabel| label_identifier(ident_rawlabel.to_string()))
-        .map(|(a, b)| (a.to_string(), json!(b.to_string())))
-        .collect::<Map<String, Value>>()
+mod SpecialCases {
+    pub const REJECT: &str = r#"
+        {
+            \"found\":\"Decimal\",
+            \"required\":\"Decimal\",
+            \"status\":\"bool\",
+            \"window\":\"Decimal\"
+        }
+    "#;
+}
+fn bind_idents_labels(
+    raw_observed: String,
+    cmd_name: String,
+) -> Map<String, Value> {
+    let cleaned = clean_observed(raw_observed);
+    if cleaned[0] == "...".to_string()
+        && cmd_name == "getblockchaininfo".to_string()
+    {
+        serde_json::from_str(SpecialCases::REJECT).unwrap()
+    } else {
+        cleaned
+            .iter()
+            .map(|ident_rawlabel| label_identifier(ident_rawlabel.to_string()))
+            .map(|(a, b)| (a.to_string(), json!(b.to_string())))
+            .collect::<Map<String, Value>>()
+    }
 }
 
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
@@ -118,8 +138,10 @@ fn annotate_result_section(
             loop {
                 match incoming_data.next().unwrap() {
                     '}' => {
-                        ident_label_bindings =
-                            bind_idents_labels(observed.clone());
+                        ident_label_bindings = bind_idents_labels(
+                            observed.clone(),
+                            context.1.clone(),
+                        );
                         break;
                     }
                     lastobs if lastobs == '[' || lastobs == '{' => {
