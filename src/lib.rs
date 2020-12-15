@@ -185,10 +185,21 @@ fn annotate_result_section(
                     _ => panic!(),
                 }
             }
-            return Value::Object(ident_label_bindings);
+            Value::Object(ident_label_bindings)
         }
         '[' => {
             let mut ordered_results: Vec<Value> = vec![];
+            loop {
+                match incoming_data.next().unwrap() {
+                    ']' => {
+                        ordered_results = label_by_position(
+                            observed.clone(),
+                            context.cmd_name.clone(),
+                        );
+                        break;
+                    }
+                }
+            }
             Value::Array(ordered_results)
         }
         _ => unimplemented!(),
