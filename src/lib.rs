@@ -94,9 +94,6 @@ fn bind_idents_labels(raw_observed: String) -> Map<String, Value> {
     let mut lines = clean_observed(raw_observed);
     let mut kvs = vec![];
     for line in lines {
-        if line.contains("object") || line.is_empty() {
-            continue; // Obviously needs work!
-        }
         kvs.push(label_identifier(line.to_string()));
     }
     kvs.iter()
