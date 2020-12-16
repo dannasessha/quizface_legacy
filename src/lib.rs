@@ -93,18 +93,20 @@ fn clean_observed(raw_observed: String) -> Vec<String> {
     ident_labels
 }
 mod special_cases {
-    use serde_json::{json, Map, Value};
-    pub const REJECT_BINDINGS: [(&str, &str); 4] = [
-        ("found", "Decimal"),
-        ("required", "Decimal"),
-        ("status", "bool"),
-        ("window", "Decimal"),
-    ];
-    pub fn create_reject_bindings() -> Map<String, Value> {
-        REJECT_BINDINGS
-            .iter()
-            .map(|(a, b)| (a.to_string(), json!(b)))
-            .collect()
+    pub(crate) mod getblockchaininfo_reject {
+        use serde_json::{json, Map, Value};
+        pub const BINDINGS: [(&str, &str); 4] = [
+            ("found", "Decimal"),
+            ("required", "Decimal"),
+            ("status", "bool"),
+            ("window", "Decimal"),
+        ];
+        pub fn create_bindings() -> Map<String, Value> {
+            BINDINGS
+                .iter()
+                .map(|(a, b)| (a.to_string(), json!(b)))
+                .collect()
+        }
     }
 }
 fn bind_idents_labels(
@@ -115,7 +117,7 @@ fn bind_idents_labels(
     if cleaned[0] == "...".to_string()
         && cmd_name == "getblockchaininfo".to_string()
     {
-        special_cases::create_reject_bindings()
+        special_cases::getblockchaininfo_reject::create_bindings()
     } else {
         cleaned
             .iter()
