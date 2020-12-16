@@ -435,6 +435,8 @@ mod unit {
     fn parse_raw_output_getblockchain_enforce_and_reject_fragment() {
         let expected_incoming =
             test::GETBLOCKCHAININFO_ENFORCE_AND_REJECT_FRAGMENT;
-        dbg!(parse_raw_output(expected_incoming));
+        let expected_results = r#"{"enforce":"{\"found\":\"Decimal\",\"required\":\"Decimal\",\"status\":\"bool\",\"window\":\"Decimal\"},","id":"String","reject":"{\"found\":\"Decimal\",\"required\":\"Decimal\",\"status\":\"bool\",\"window\":\"Decimal\"}","version":"Decimal"}"#;
+        let parsed = format!("{}", parse_raw_output(expected_incoming));
+        assert_eq!(parsed, expected_results);
     }
 }
