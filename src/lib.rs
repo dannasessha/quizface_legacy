@@ -143,7 +143,10 @@ fn label_identifier(
         .contains(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
         && cmd_name == "getblockchaininfo".to_string()
     {
-        meta_data = "foo";
+        meta_data = meta_data
+            .split(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
+            .collect::<Vec<&str>>()[0]
+            .trim();
     }
 
     #[allow(unused_assignments)]
