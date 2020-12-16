@@ -87,7 +87,6 @@ fn clean_observed(raw_observed: String) -> Vec<String> {
         i if i == "...".to_string() => ident_labels = vec![String::from(i)],
         catchall @ _ => {
             dbg!(catchall);
-            panic!("Unexpected object format!");
         }
     }
     ident_labels
@@ -177,7 +176,10 @@ struct Context {
     last_observed: char,
 }
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
-    let (cmd_name, data) = extract_name_and_result(raw_command_help);
+    let (cmd_name, mut data) = extract_name_and_result(raw_command_help);
+    if cmd_name == "getblockchaininfo".to_string() {
+        data = data.replace("[0..1]", "ZZZZZZ");
+    }
     let observed = &mut data.chars();
     let last_observed = observed.next().expect("Missing first char!");
     let context = &mut Context {
@@ -428,7 +430,7 @@ mod unit {
         }
     }
     #[test]
-    fn parse_raw_output_getblockchain_softforks_fragment() {
+    fn parse_raw_output_getblockchaininfo_softforks_fragment() {
         let expected_incoming = test::GETBLOCKCHAININFO_SOFTFORK_FRAGMENT;
         let expected_results = r#"{"softforks":"[{\"enforce\":\"{\\\"found\\\":\\\"Decimal\\\",\\\"required\\\":\\\"Decimal\\\",\\\"status\\\":\\\"bool\\\",\\\"window\\\":\\\"Decimal\\\"},\",\"id\":\"String\",\"reject\":\"{\\\"found\\\":\\\"Decimal\\\",\\\"required\\\":\\\"Decimal\\\",\\\"status\\\":\\\"bool\\\",\\\"window\\\":\\\"Decimal\\\"}\",\"version\":\"Decimal\"}],"}"#;
         assert_eq!(
@@ -437,11 +439,16 @@ mod unit {
         );
     }
     #[test]
-    fn parse_raw_output_getblockchain_enforce_and_reject_fragment() {
+    fn parse_raw_output_getblockchaininfo_enforce_and_reject_fragment() {
         let expected_incoming =
             test::GETBLOCKCHAININFO_ENFORCE_AND_REJECT_FRAGMENT;
         let expected_results = r#"{"enforce":"{\"found\":\"Decimal\",\"required\":\"Decimal\",\"status\":\"bool\",\"window\":\"Decimal\"},","id":"String","reject":"{\"found\":\"Decimal\",\"required\":\"Decimal\",\"status\":\"bool\",\"window\":\"Decimal\"}","version":"Decimal"}"#;
         let parsed = format!("{}", parse_raw_output(expected_incoming));
         assert_eq!(parsed, expected_results);
+    }
+
+    #[test]
+    fn parse_raw_output_getblockchaininfo_complete() {
+        parse_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE);
     }
 }
