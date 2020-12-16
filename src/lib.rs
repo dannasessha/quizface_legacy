@@ -430,7 +430,11 @@ mod unit {
     #[test]
     fn parse_raw_output_getblockchain_softforks_fragment() {
         let expected_incoming = test::GETBLOCKCHAININFO_SOFTFORK_FRAGMENT;
-        parse_raw_output(expected_incoming);
+        let expected_results = r#"{"softforks":"[{\"enforce\":\"{\\\"found\\\":\\\"Decimal\\\",\\\"required\\\":\\\"Decimal\\\",\\\"status\\\":\\\"bool\\\",\\\"window\\\":\\\"Decimal\\\"},\",\"id\":\"String\",\"reject\":\"{\\\"found\\\":\\\"Decimal\\\",\\\"required\\\":\\\"Decimal\\\",\\\"status\\\":\\\"bool\\\",\\\"window\\\":\\\"Decimal\\\"}\",\"version\":\"Decimal\"}],"}"#;
+        assert_eq!(
+            format!("{}", parse_raw_output(expected_incoming)),
+            expected_results
+        );
     }
     #[test]
     fn parse_raw_output_getblockchain_enforce_and_reject_fragment() {
