@@ -1,6 +1,3 @@
-//use crate::lib;
-//use quizface::lib;
-//pub mod test_blessed;
 fn main() {
     let commands = quizface::ingest_commands();
     let mut blessed: Vec<String> = Vec::new();
