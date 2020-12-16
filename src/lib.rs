@@ -163,7 +163,7 @@ fn label_identifier(
     (ident.to_string(), annotation)
 }
 
-fn label_by_position(raw_observed: String, cmd_name: String) -> Vec<Value> {
+fn label_by_position(raw_observed: String) -> Vec<Value> {
     let trimmed = raw_observed
         .trim_end_matches(|c| c != '}')
         .trim_start_matches(|c| c != '{');
@@ -241,10 +241,7 @@ fn annotate_result_section(
             loop {
                 match incoming_data.next().unwrap() {
                     ']' => {
-                        ordered_results = label_by_position(
-                            observed.clone(),
-                            context.cmd_name.clone(),
-                        );
+                        ordered_results = label_by_position(observed.clone());
                         break;
                     }
                     lastobs if lastobs == '[' || lastobs == '{' => {
