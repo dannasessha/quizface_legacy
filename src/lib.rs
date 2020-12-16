@@ -140,15 +140,29 @@ pub fn parse_raw_output(raw_command_help: &str) -> Value {
     annotate_result_section(context, observed)
 }
 
+fn recurse(
+    lastobs: char,
+    mut context: &mut Context,
+    observed: &mut String,
+    mut incoming_data: &mut std::str::Chars,
+) {
+    context.last_observed = lastobs;
+    let inner = serde_json::to_string(&annotate_result_section(
+        &mut context,
+        &mut incoming_data,
+    ))
+    .expect("couldn't get string from json");
+    &mut observed.push_str(&inner);
+}
 fn annotate_result_section(
     mut context: &mut Context,
     mut incoming_data: &mut std::str::Chars,
 ) -> serde_json::Value {
+    let mut observed = String::new();
     match context.last_observed {
         '{' => {
             #[allow(unused_assignments)]
             let mut ident_label_bindings = Map::new();
-            let mut observed = String::new();
             loop {
                 match incoming_data.next().unwrap() {
                     '}' => {
@@ -159,14 +173,12 @@ fn annotate_result_section(
                         break;
                     }
                     lastobs if lastobs == '[' || lastobs == '{' => {
-                        context.last_observed = lastobs;
-                        let inner =
-                            serde_json::to_string(&annotate_result_section(
-                                &mut context,
-                                &mut incoming_data,
-                            ))
-                            .expect("couldn't get string from json");
-                        observed.push_str(&inner);
+                        recurse(
+                            lastobs,
+                            &mut context,
+                            &mut observed,
+                            &mut incoming_data,
+                        );
                     }
                     // TODO: Handle unbalanced braces
                     x if x.is_ascii() => observed.push(x),
