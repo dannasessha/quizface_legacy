@@ -81,7 +81,7 @@ fn clean_observed(raw_observed: String) -> Vec<String> {
         .lines()
         .map(|x| x.to_string())
         .collect::<Vec<String>>();
-    match ident_labels.remove(0) {
+    match ident_labels.remove(0).trim() {
         empty if empty.is_empty() => (),
         description if description.contains("(object)") => (),
         i if i == "...".to_string() => ident_labels = vec![String::from(i)],
@@ -124,8 +124,30 @@ fn bind_idents_labels(
             .collect::<Map<String, Value>>()
     }
 }
+fn label_identifier(ident_with_metadata: String) -> (String, String) {
+    let ident_and_metadata = ident_with_metadata
+        .trim()
+        .splitn(2, ':')
+        .collect::<Vec<&str>>();
+    let ident = ident_and_metadata[0].trim_matches('"');
+    let meta_data = ident_and_metadata[1].trim();
+    #[allow(unused_assignments)]
+    let mut annotation = String::new();
+    if meta_data.starts_with('{') {
+        annotation = meta_data.to_string();
+    } else {
+        let raw_label: &str = meta_data
+            .split(|c| c == '(' || c == ')')
+            .collect::<Vec<&str>>()[1];
+
+        annotation = make_label(raw_label);
+    }
+    (ident.to_string(), annotation)
+}
 
 fn label_by_position(raw_observed: String, cmd_name: String) -> Vec<Value> {
+    dbg!(raw_observed);
+    dbg!(cmd_name);
     unimplemented!()
 }
 struct Context {
@@ -191,6 +213,7 @@ fn annotate_result_section(
             Value::Object(ident_label_bindings)
         }
         '[' => {
+            #[allow(unused_assignments)]
             let mut ordered_results: Vec<Value> = vec![];
             loop {
                 match incoming_data.next().unwrap() {
@@ -218,26 +241,6 @@ fn annotate_result_section(
         }
         _ => unimplemented!(),
     }
-}
-fn label_identifier(ident_with_metadata: String) -> (String, String) {
-    let ident_and_metadata = ident_with_metadata
-        .trim()
-        .splitn(2, ':')
-        .collect::<Vec<&str>>();
-    let ident = ident_and_metadata[0].trim_matches('"');
-    let meta_data = ident_and_metadata[1].trim();
-    #[allow(unused_assignments)]
-    let mut annotation = String::new();
-    if meta_data.starts_with('{') {
-        annotation = meta_data.to_string();
-    } else {
-        let raw_label: &str = meta_data
-            .split(|c| c == '(' || c == ')')
-            .collect::<Vec<&str>>()[1];
-
-        annotation = make_label(raw_label);
-    }
-    (ident.to_string(), annotation)
 }
 
 fn make_label(raw_label: &str) -> String {
@@ -406,5 +409,11 @@ mod unit {
     fn parse_raw_output_getblockchain_softforks_fragment() {
         let expected_incoming = test::GETBLOCKCHAININFO_SOFTFORK_FRAGMENT;
         parse_raw_output(expected_incoming);
+    }
+    #[test]
+    fn parse_raw_output_getblockchain_enforce_and_reject_fragment() {
+        let expected_incoming =
+            test::GETBLOCKCHAININFO_ENFORCE_AND_REJECT_FRAGMENT;
+        dbg!(parse_raw_output(expected_incoming));
     }
 }

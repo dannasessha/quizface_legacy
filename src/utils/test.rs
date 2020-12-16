@@ -85,6 +85,24 @@ Result:
 Examples:
 "##;
 
+pub const GETBLOCKCHAININFO_ENFORCE_AND_REJECT_FRAGMENT: &str = r##"getblockchaininfo
+
+Result:
+ {
+    "id": "xxxx",        (string) name of softfork
+    "version": xx,         (numeric) block version
+    "enforce": {           (object) progress toward enforcing the softfork rules for new-version blocks
+       "status": xx,       (boolean) true if threshold reached
+       "found": xx,        (numeric) number of blocks with the new version found
+       "required": xx,     (numeric) number of blocks required to trigger
+       "window": xx,       (numeric) maximum size of examined window of recent blocks
+    },
+    "reject": { ... }      (object) progress toward rejecting pre-softfork blocks (same fields as "enforce")
+ }
+
+Examples:
+"##;
+
 pub const HELP_GETBLOCKCHAININFO_RESULT: &str = r#"{
   "chain": "xxxx",        (string) current network name as defined in BIP70 (main, test, regtest)
   "blocks": xxxxxx,         (numeric) the current number of blocks processed in the server
