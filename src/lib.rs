@@ -94,6 +94,7 @@ fn clean_observed(raw_observed: String) -> Vec<String> {
 }
 mod special_cases {
     pub(crate) mod getblockchaininfo_reject {
+        pub const TRAILING_TRASH: &str = "      (object)";
         use serde_json::{json, Map, Value};
         pub const BINDINGS: [(&str, &str); 4] = [
             ("found", "Decimal"),
@@ -121,18 +122,30 @@ fn bind_idents_labels(
     } else {
         cleaned
             .iter()
-            .map(|ident_rawlabel| label_identifier(ident_rawlabel.to_string()))
+            .map(|ident_rawlabel| {
+                label_identifier(ident_rawlabel.to_string(), cmd_name.as_str())
+            })
             .map(|(a, b)| (a.to_string(), json!(b.to_string())))
             .collect::<Map<String, Value>>()
     }
 }
-fn label_identifier(ident_with_metadata: String) -> (String, String) {
+fn label_identifier(
+    ident_with_metadata: String,
+    cmd_name: &str,
+) -> (String, String) {
     let ident_and_metadata = ident_with_metadata
         .trim()
         .splitn(2, ':')
         .collect::<Vec<&str>>();
     let ident = ident_and_metadata[0].trim_matches('"');
-    let meta_data = ident_and_metadata[1].trim();
+    let mut meta_data = ident_and_metadata[1].trim();
+    if meta_data
+        .contains(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
+        && cmd_name == "getblockchaininfo".to_string()
+    {
+        meta_data = "foo";
+    }
+
     #[allow(unused_assignments)]
     let mut annotation = String::new();
     if meta_data.starts_with('{') {
@@ -274,7 +287,10 @@ mod unit {
         let raw_version =
             r#""version": xxxxx,           (numeric) the server version"#;
         let valid_annotation = ("version".to_string(), "Decimal".to_string());
-        assert_eq!(valid_annotation, label_identifier(raw_version.to_string()));
+        assert_eq!(
+            valid_annotation,
+            label_identifier(raw_version.to_string(), "")
+        );
     }
     #[test]
     fn parse_raw_output_expected_input_valid() {
