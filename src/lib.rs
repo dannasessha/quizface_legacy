@@ -151,7 +151,7 @@ fn label_identifier(
 
     #[allow(unused_assignments)]
     let mut annotation = String::new();
-    if meta_data.starts_with('{') {
+    if meta_data.starts_with('{') || meta_data.starts_with('[') {
         annotation = meta_data.to_string();
     } else {
         let raw_label: &str = meta_data
@@ -164,9 +164,13 @@ fn label_identifier(
 }
 
 fn label_by_position(raw_observed: String, cmd_name: String) -> Vec<Value> {
-    dbg!(raw_observed);
-    dbg!(cmd_name);
-    unimplemented!()
+    let trimmed = raw_observed
+        .trim_end_matches(|c| c != '}')
+        .trim_start_matches(|c| c != '{');
+    vec![Value::Object(
+        serde_json::from_str::<Map<String, Value>>(trimmed)
+            .expect("Couldn't map into a Map<String, Value>!"),
+    )]
 }
 struct Context {
     cmd_name: String,
@@ -196,6 +200,7 @@ fn recurse(
     ))
     .expect("couldn't get string from json");
     &mut observed.push_str(&inner);
+    //dbg!(&inner);
 }
 fn annotate_result_section(
     mut context: &mut Context,
@@ -426,7 +431,6 @@ mod unit {
         }
     }
     #[test]
-    #[ignore]
     fn parse_raw_output_getblockchain_softforks_fragment() {
         let expected_incoming = test::GETBLOCKCHAININFO_SOFTFORK_FRAGMENT;
         parse_raw_output(expected_incoming);
