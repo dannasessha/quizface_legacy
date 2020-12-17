@@ -75,22 +75,6 @@ fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
 
 use serde_json::{json, map::Map, Value};
 
-fn clean_observed(raw_observed: String) -> Vec<String> {
-    let mut ident_labels = raw_observed
-        .trim_end()
-        .lines()
-        .map(|x| x.to_string())
-        .collect::<Vec<String>>();
-    match ident_labels.remove(0).trim() {
-        empty if empty.is_empty() => (),
-        description if description.contains("(object)") => (),
-        i if i == "...".to_string() => ident_labels = vec![String::from(i)],
-        catchall @ _ => {
-            dbg!(catchall);
-        }
-    }
-    ident_labels
-}
 mod special_cases {
     pub(crate) mod getblockchaininfo_reject {
         pub const TRAILING_TRASH: &str = "      (object)";
@@ -108,6 +92,22 @@ mod special_cases {
                 .collect()
         }
     }
+}
+fn clean_observed(raw_observed: String) -> Vec<String> {
+    let mut ident_labels = raw_observed
+        .trim_end()
+        .lines()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>();
+    match ident_labels.remove(0).trim() {
+        empty if empty.is_empty() => (),
+        description if description.contains("(object)") => (),
+        i if i == "...".to_string() => ident_labels = vec![String::from(i)],
+        catchall @ _ => {
+            dbg!(catchall);
+        }
+    }
+    ident_labels
 }
 fn bind_idents_labels(
     raw_observed: String,
@@ -138,6 +138,13 @@ fn label_identifier(
         .collect::<Vec<&str>>();
     let ident = ident_and_metadata[0].trim_matches('"');
     let mut meta_data = ident_and_metadata[1].trim();
+    dbg!(&meta_data);
+    if meta_data.contains('{') && meta_data.contains('}') {
+        meta_data = meta_data
+            .trim_end_matches(|c| c != '}')
+            .trim_start_matches(|c| c != '{');
+    };
+    dbg!(&meta_data);
     if meta_data
         .contains(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
         && cmd_name == "getblockchaininfo".to_string()
@@ -419,6 +426,18 @@ mod unit {
             serde_json::from_str(test::SOFTFORK_EXTRACT_JSON).unwrap();
         assert_eq!(Value::Object(expected_enforce), annotated);
     }
+
+    #[test]
+    fn annotate_result_section_upgrades_in_obj_extracted() {
+        annotate_result_section(
+            &mut Context {
+                last_observed: '{',
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut test::UPGRADES_IN_OBJ_EXTRACTED.chars(),
+        );
+    }
+
     #[test]
     fn annotate_result_section_help_getblockchain_reject_fragment() {
         let expected_data = test::GETBLOCKCHAININFO_REJECT_FRAGMENT;
@@ -449,6 +468,6 @@ mod unit {
 
     #[test]
     fn parse_raw_output_getblockchaininfo_complete() {
-        parse_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE);
+        dbg!(parse_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE));
     }
 }
