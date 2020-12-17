@@ -63,7 +63,11 @@ Examples:
 > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getblockchaininfo", "params": [] }' -H 'content-type: text/plain;' http://127.0.0.1:8232/
 "##;
 
-pub const UPGRADES_IN_OBJ_EXTRACTED: &str = r##"upgrades": {                (object) status of network upgrades
+pub const UPGRADES_IN_OBJ_EXTRACTED: &str = r##"getblockchaininfo
+
+Result:
+{
+    "upgrades": {                (object) status of network upgrades
      "xxxx" : {                (string) branch ID of the upgrade
         "name": "xxxx",        (string) name of upgrade
         "activationheight": xxxxxx,  (numeric) block height of activation
@@ -71,7 +75,11 @@ pub const UPGRADES_IN_OBJ_EXTRACTED: &str = r##"upgrades": {                (obj
         "info": "xxxx",        (string) additional information about upgrade
      }, ...
   }
-}"##;
+}
+
+Examples:
+asd
+"##;
 
 pub const GETBLOCKCHAININFO_SOFTFORK_FRAGMENT: &str = r##"getblockchaininfo
 

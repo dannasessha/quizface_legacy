@@ -138,13 +138,6 @@ fn label_identifier(
         .collect::<Vec<&str>>();
     let ident = ident_and_metadata[0].trim_matches('"');
     let mut meta_data = ident_and_metadata[1].trim();
-    dbg!(&meta_data);
-    if meta_data.contains('{') && meta_data.contains('}') {
-        meta_data = meta_data
-            .trim_end_matches(|c| c != '}')
-            .trim_start_matches(|c| c != '{');
-    };
-    dbg!(&meta_data);
     if meta_data
         .contains(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
         && cmd_name == "getblockchaininfo".to_string()
@@ -186,6 +179,7 @@ pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let (cmd_name, mut data) = extract_name_and_result(raw_command_help);
     if cmd_name == "getblockchaininfo".to_string() {
         data = data.replace("[0..1]", "ZZZZZZ");
+        data = data.replace("}, ...", "}");
     }
     let observed = &mut data.chars();
     let last_observed = observed.next().expect("Missing first char!");
@@ -428,14 +422,8 @@ mod unit {
     }
 
     #[test]
-    fn annotate_result_section_upgrades_in_obj_extracted() {
-        annotate_result_section(
-            &mut Context {
-                last_observed: '{',
-                cmd_name: "getblockchaininfo".to_string(),
-            },
-            &mut test::UPGRADES_IN_OBJ_EXTRACTED.chars(),
-        );
+    fn parse_raw_output_upgrades_in_obj_extracted() {
+        dbg!(parse_raw_output(test::UPGRADES_IN_OBJ_EXTRACTED));
     }
 
     #[test]
