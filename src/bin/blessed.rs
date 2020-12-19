@@ -42,13 +42,10 @@ fn blessed_check(raw_command_help: &str, command: &String) -> bool {
 
 fn first_token_check(raw_command_help: &str, command: &String) -> bool {
     let mut raw_iter = raw_command_help.lines();
-    // take only first line with .next(), unwrap option
     if raw_iter.next().unwrap().split(" ").collect::<Vec<&str>>()[0] == command.as_str()
     {
         true
     } else {
-        dbg!(command.as_str());
-        dbg!(raw_iter.next().unwrap().split(" ").collect::<Vec<&str>>()[0]);
         false
     }
 }
@@ -109,19 +106,27 @@ mod unit {
     fn b12() {
         assert_eq!(false, blessed_check(BLESSED_TEST12, &(TEST_COMMAND.to_string())));
     }
+    #[test]
+    fn b13() {
+        assert_eq!(false, blessed_check(BLESSED_TEST13, &(TEST_COMMAND.to_string())));
+    }
+    #[test]
+    fn b14() {
+        assert_eq!(false, blessed_check(BLESSED_TEST14, &(TEST_COMMAND.to_string())));
+    }
 
     pub const TEST_COMMAND: &str = r#"unit_test_command"#;
 
-    pub const BLESSED_TEST00: &str = r#"
-unit_test_command 
+    pub const BLESSED_TEST00: &str = 
+r#"unit_test_command 
 There are one of each delimiter.
 Result:
 There is not only whitespace between delimiters.
 Examples:
 This should pass.
 "#;
-    pub const BLESSED_TEST01: &str = r#"
-unit_test_command 
+    pub const BLESSED_TEST01: &str = 
+r#"unit_test_command 
 This should also pass.
 Even though there is an extra Result:  it is not on its own line
 Result:
@@ -129,15 +134,15 @@ There is not only whitespace between delimiters.
 Examples:
 and the same is true for an extra Examples: not on its own line
 "#;
-    pub const BLESSED_TEST02: &str = r#"
-unit_test_command
+    pub const BLESSED_TEST02: &str = 
+r#"unit_test_command
 This should fail, as well as all subsequent BLESSED_TESTs.
 There is only whitespace between delimiters, with text before.
 Result:
 Examples:
 "#;
-    pub const BLESSED_TEST03: &str = r#"
-unit_test_command
+    pub const BLESSED_TEST03: &str = 
+r#"unit_test_command
 Result:
 Examples:
 There is only whitespace between delimiters, with text after.
@@ -145,57 +150,76 @@ All further text doesn't
 effect anything.
 ...
 "#;
-    pub const BLESSED_TEST04: &str = r#"
-unit_test_command
+    pub const BLESSED_TEST04: &str = 
+r#"unit_test_command
 Delimiters in the wrong order.
 Examples:
 Result:
 "#;
-    pub const BLESSED_TEST05: &str = r#"
-unit_test_command
+    pub const BLESSED_TEST05: &str = 
+r#"unit_test_command
 Only one delimiter.
 Examples:
 "#;
-    pub const BLESSED_TEST06: &str = r#"
-unit_test_command
+    pub const BLESSED_TEST06: &str = 
+r#"unit_test_command
 Only one delimiter.
 Result:
 "#;
-    pub const BLESSED_TEST07: &str = r#"
-unit_test_command
+    pub const BLESSED_TEST07: &str = 
+r#"unit_test_command
 More than one of the same delimiter, Result:.
 Result:
 Result:
 "#;
-    pub const BLESSED_TEST08: &str = r#"
-unit_test_command
+    pub const BLESSED_TEST08: &str = 
+r#"unit_test_command
 More than one of the same delimiter, Examples:.
 Examples:
 Examples:
 "#;
-    pub const BLESSED_TEST09: &str = r#"
-unit_test_command
+    pub const BLESSED_TEST09: &str = 
+r#"unit_test_command
 Delimiters in wrong order with text between them:
 Examples:
 some text here doesn't change anything; not blessed.
 Result:
 "#;
-    pub const BLESSED_TEST10: &str = r#"
-unit_test_command
+    pub const BLESSED_TEST10: &str = 
+r#"unit_test_command
 Seeing `bResult:` on its own line fails.
 bResult:
 Examples:
 "#;
-    pub const BLESSED_TEST11: &str = r#"
-same as passing BLESSED_TEST00, but without leading 'unit_test_command'
+    pub const BLESSED_TEST11: &str = 
+r#"same as passing BLESSED_TEST00, but without leading 'unit_test_command'
 There are one of each delimiter.
 Result:
 There is not only whitespace between delimiters.
 Examples:
 This should not pass.
 "#;
-    pub const BLESSED_TEST12: &str = r#"
-Same as passing BLESSED_TEST01, but without leading 'unit_test_command'
+    pub const BLESSED_TEST12: &str = 
+r#"Same as passing BLESSED_TEST01, but without leading 'unit_test_command'
+Even though there is an extra Result:  it is not on its own line
+Result:
+There is not only whitespace between delimiters.
+Examples:
+and the same is true for an extra Examples: not on its own line
+"#;
+    pub const BLESSED_TEST13: &str = 
+r#"
+unit_test_command
+Same as passing BLESSED_TEST01, but with leading 'unit_test_command' after an implicit `\n` newline
+Even though there is an extra Result:  it is not on its own line
+Result:
+There is not only whitespace between delimiters.
+Examples:
+and the same is true for an extra Examples: not on its own line
+"#;
+    pub const BLESSED_TEST14: &str = 
+r#"\nunit_test_command
+Same as passing BLESSED_TEST01, but with leading 'unit_test_command' after an explicit `\n` newline
 Even though there is an extra Result:  it is not on its own line
 Result:
 There is not only whitespace between delimiters.
