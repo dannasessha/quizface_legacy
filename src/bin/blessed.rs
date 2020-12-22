@@ -1,6 +1,6 @@
 fn main() {
-    // this function still creates directories, and logs
-    // a 'masterhelp' txt file
+    // this function creates directories and logs
+    // a 'masterhelp' txt file as well as logging blessed commands 
     let commands = quizface::ingest_commands();
     let mut blessed: Vec<String> = Vec::new();
     for command in commands {
@@ -15,8 +15,9 @@ fn main() {
             continue;
         }
     }
-    println!("{:?}", blessed);
-    println!("Number of blessed commands: {}", blessed.len());
+    println!("{:?}", &blessed);
+    println!("Number of blessed commands: {}", &blessed.len());
+    quizface::utils::logging::log_blessed_output(blessed);
 }
 
 fn blessed_check(raw_command_help: &str, command: &String) -> bool {
@@ -49,7 +50,6 @@ fn first_token_check(raw_command_help: &str, command: &String) -> bool {
         false
     }
 }
-
 
 #[cfg(test)]
 mod unit {
