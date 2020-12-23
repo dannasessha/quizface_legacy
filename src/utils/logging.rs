@@ -11,7 +11,8 @@ pub fn name_logdirs() -> (String, String, String) {
     let master_name: String =
         format!("{}masterhelp_output/raw/", log_parent_template);
     let base_name: String = format!("{}help_output/raw/", log_parent_template);
-    let blessed_name: String = format!("{}blessed_commands/", log_parent_template);
+    let blessed_name: String =
+        format!("{}blessed_commands/", log_parent_template);
     (master_name, base_name, blessed_name)
 }
 
@@ -54,13 +55,11 @@ pub fn log_raw_output(command: String, raw_command_help: String) {
     .expect("panic during fs::write command help!");
 }
 
-pub fn log_blessed_output(blessed: Vec<String>){
+pub fn log_blessed_output(blessed: Vec<String>) {
     let mut blessed_list = String::new();
     for command in blessed {
         blessed_list = blessed_list + &command + "\n"
     }
-    fs::write(
-        format!("{}blessed.txt", name_logdirs().2),
-    blessed_list)
-    .expect("panic during fs::write blessed!");
+    fs::write(format!("{}blessed.txt", name_logdirs().2), blessed_list)
+        .expect("panic during fs::write blessed!");
 }
