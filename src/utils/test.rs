@@ -519,3 +519,90 @@ pub fn valid_getinfo_annotation() -> serde_json::Value {
     .map(|(a, b)| (a.to_string(), b.to_string()))
     .collect::<HashMap<String, String>>())
 }
+
+pub fn bob_export() -> serde_json::Value {
+    let bob = serde_json::json!({
+        "name": "bob dude",
+        "age": 88,
+        "phones": [
+            "+01 616254827",
+            "+45 746492532",
+            "+01 345835351"
+        ]
+    });
+    bob
+}
+
+pub fn getinfo_export() -> serde_json::Value {
+    let  getinfo_serde_json_value = serde_json::json!({
+        "version": "Decimal",
+        "protocolversion": "Decimal",
+        "walletversion": "Decimal",
+        "balance": "Decimal",
+        "blocks": "Decimal",
+        "timeoffset": "Decimal",
+        "connections": "Decimal",
+        "proxy": "Option<String>",
+        "difficulty": "Decimal",
+        "testnet": "bool",
+        "keypoololdest": "Decimal",
+        "keypoolsize": "Decimal",
+        "unlocked_until": "Decimal",
+        "paytxfee": "Decimal",
+        "relayfee": "Decimal",
+        "errors": "String",
+    });
+    getinfo_serde_json_value
+}
+pub fn getblockchaininfo_export() -> serde_json::Value {
+    let  getblockchaininfo_serde_json_value = serde_json::json!({
+  "chain": "String",
+  "blocks": "Decimal",
+  "initial_block_download_complete": "bool",
+  "headers": "Decimal",
+  "bestblockhash": "String",
+  "difficulty": "Decimal",
+  "verificationprogress": "Decimal",
+  "estimatedheight": "Decimal",
+  "chainwork": "String",
+  "size_on_disk": "Decimal",
+  "commitments": "Decimal",
+  "softforks": [
+     {
+        "id": "String",
+        "version": "Decimal",
+        "enforce": {
+           "status": "bool",
+           "found": "Decimal",
+           "required": "Decimal",
+           "window": "Decimal"
+        },
+        "reject": { 
+           "status": "bool",
+           "found": "Decimal",
+           "required": "Decimal",
+           "window": "Decimal"
+        },
+     }
+  ],
+  "upgrades": {
+     "String": {
+        "name": "String",
+        "activationheight": "Decimal",
+        "status": "String",
+        "info": "String"
+     }
+  },
+  "consensus": {
+     "chaintip": "String",
+     "nextblock": "String"
+  }
+    });
+    getblockchaininfo_serde_json_value
+}
+// note: softforks had a trailing ... within the array's [ ], possibly
+// to allow for multiple softfork entries. Does this mean there are 
+// potentially unlimited softforks? Is 1 the minimum or could there
+// be 0? would that make it an option?
+// Similar `...` after upgrades, presumably to facilitate multiple upgrade IDs.
+// The leading `"String":` is the upgradeID
