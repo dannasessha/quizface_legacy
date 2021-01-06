@@ -496,6 +496,45 @@ Result:
 }
 "#;
 
+pub const SIMPLE_UNNESTED: &str = r#"
+a_command
+Result:
+{ 
+   "outer_id": "xxxx.xxx", (string) extra unimportant text
+}
+
+Examples:
+b
+"#;
+
+pub const SIMPLE_NESTED: &str = r#"
+a_command
+Result:
+{ 
+   "outer_id":  {
+   "inner_id": "xxxx",        (string) more unimportant text
+   }
+}
+
+Examples:
+b
+"#;
+
+pub fn simple_nested_json_generator() -> serde_json::Value {
+    let simple_nested_json = serde_json::json!({
+        "outer_id":
+        {"inner_id": "String",},
+        });
+    simple_nested_json
+}
+
+pub fn simple_unnested_json_generator() -> serde_json::Value {
+    let simple_nested_json = serde_json::json!({
+        "outer_id": "String",
+        });
+    simple_nested_json
+}
+
 pub fn valid_getinfo_annotation() -> serde_json::Value {
     serde_json::json!([
         ("version", "Decimal"),
@@ -518,19 +557,6 @@ pub fn valid_getinfo_annotation() -> serde_json::Value {
     .iter()
     .map(|(a, b)| (a.to_string(), b.to_string()))
     .collect::<HashMap<String, String>>())
-}
-
-pub fn bob_export() -> serde_json::Value {
-    let bob = serde_json::json!({
-        "name": "bob dude",
-        "age": 88,
-        "phones": [
-            "+01 616254827",
-            "+45 746492532",
-            "+01 345835351"
-        ]
-    });
-    bob
 }
 
 pub fn getinfo_export() -> serde_json::Value {

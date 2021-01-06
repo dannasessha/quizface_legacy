@@ -461,25 +461,23 @@ mod unit {
     }
 
     #[test]
-    // this is only to test the equivalence of passing in a 
-    // serde_json::Value from test:: to constructing one here
-    fn serde_json_stub() {
-    let bob_import = test::bob_export();
-     // The type of `bob` is `serde_json::Value`
-    let bob = json!({
-        "name": "bob dude",
-        "age": 88,
-        "phones": [
-            "+01 616254827",
-            "+45 746492532",
-            "+01 345835351"
-        ]
-    });
-    assert_eq!(bob, bob_import); 
+    fn parse_raw_output_simple_unnested() {
+    let simple_unnested = test::SIMPLE_UNNESTED;
+    let parsed = parse_raw_output(simple_unnested);
+    let expected_json_results = test::simple_unnested_json_generator();
+    assert_eq!(parsed, expected_json_results); 
     }
 
     #[test]
-    fn serde_jason_value_help_getinfo() {
+    fn parse_raw_output_simple_nested() {
+    let simple_nested = test::SIMPLE_NESTED;
+    let parsed = parse_raw_output(simple_nested);
+    let expected_json_results = test::simple_nested_json_generator();
+    assert_eq!(parsed, simple_nested); 
+    }
+
+    #[test]
+    fn serde_json_value_help_getinfo() {
     let getinfo_serde_json_value = test::getinfo_export();
     let help_getinfo = parse_raw_output(test::HELP_GETINFO);
     assert_eq!(getinfo_serde_json_value, help_getinfo); 
