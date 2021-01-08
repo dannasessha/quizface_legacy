@@ -507,8 +507,7 @@ Examples:
 b
 "#;
 
-pub const SIMPLE_NESTED_GETBLOCKCHAININFO: &str = r#"
-{ 
+pub const SIMPLE_NESTED_GETBLOCKCHAININFO: &str = r#"{ 
      "xxxx" : {                (string) branch ID of the upgrade
         "name": "xxxx",        (string) name of upgrade
    }
@@ -517,16 +516,16 @@ pub const SIMPLE_NESTED_GETBLOCKCHAININFO: &str = r#"
 
 pub fn simple_nested_json_generator() -> serde_json::Value {
     let simple_nested_json = serde_json::json!({
-        "outer_id":
-        {"inner_id": "String",},
-        });
+    "outer_id":
+    {"inner_id": "String",},
+    });
     simple_nested_json
 }
 
 pub fn simple_unnested_json_generator() -> serde_json::Value {
     let simple_nested_json = serde_json::json!({
-        "outer_id": "String",
-        });
+    "outer_id": "String",
+    });
     simple_nested_json
 }
 
@@ -555,7 +554,7 @@ pub fn valid_getinfo_annotation() -> serde_json::Value {
 }
 
 pub fn getinfo_export() -> serde_json::Value {
-    let  getinfo_serde_json_value = serde_json::json!({
+    let getinfo_serde_json_value = serde_json::json!({
         "version": "Decimal",
         "protocolversion": "Decimal",
         "walletversion": "Decimal",
@@ -576,53 +575,53 @@ pub fn getinfo_export() -> serde_json::Value {
     getinfo_serde_json_value
 }
 pub fn getblockchaininfo_export() -> serde_json::Value {
-    let  getblockchaininfo_serde_json_value = serde_json::json!({
-  "chain": "String",
-  "blocks": "Decimal",
-  "initial_block_download_complete": "bool",
-  "headers": "Decimal",
-  "bestblockhash": "String",
-  "difficulty": "Decimal",
-  "verificationprogress": "Decimal",
-  "estimatedheight": "Decimal",
-  "chainwork": "String",
-  "size_on_disk": "Decimal",
-  "commitments": "Decimal",
-  "softforks": [
-     {
-        "id": "String",
-        "version": "Decimal",
-        "enforce": {
-           "status": "bool",
-           "found": "Decimal",
-           "required": "Decimal",
-           "window": "Decimal"
-        },
-        "reject": { 
-           "status": "bool",
-           "found": "Decimal",
-           "required": "Decimal",
-           "window": "Decimal"
-        },
-     }
-  ],
-  "upgrades": {
-     "String": {
-        "name": "String",
-        "activationheight": "Decimal",
-        "status": "String",
-        "info": "String"
-     }
-  },
-  "consensus": {
-     "chaintip": "String",
-     "nextblock": "String"
-  }
-    });
+    let getblockchaininfo_serde_json_value = serde_json::json!({
+    "chain": "String",
+    "blocks": "Decimal",
+    "initial_block_download_complete": "bool",
+    "headers": "Decimal",
+    "bestblockhash": "String",
+    "difficulty": "Decimal",
+    "verificationprogress": "Decimal",
+    "estimatedheight": "Decimal",
+    "chainwork": "String",
+    "size_on_disk": "Decimal",
+    "commitments": "Decimal",
+    "softforks": [
+       {
+          "id": "String",
+          "version": "Decimal",
+          "enforce": {
+             "status": "bool",
+             "found": "Decimal",
+             "required": "Decimal",
+             "window": "Decimal"
+          },
+          "reject": {
+             "status": "bool",
+             "found": "Decimal",
+             "required": "Decimal",
+             "window": "Decimal"
+          },
+       }
+    ],
+    "upgrades": {
+       "String": {
+          "name": "String",
+          "activationheight": "Decimal",
+          "status": "String",
+          "info": "String"
+       }
+    },
+    "consensus": {
+       "chaintip": "String",
+       "nextblock": "String"
+    }
+      });
     getblockchaininfo_serde_json_value
 }
 // note: softforks had a trailing ... within the array's [ ], possibly
-// to allow for multiple softfork entries. Does this mean there are 
+// to allow for multiple softfork entries. Does this mean there are
 // potentially unlimited softforks? Is 1 the minimum or could there
 // be 0? would that make it an option?
 // Similar `...` after upgrades, presumably to facilitate multiple upgrade IDs.

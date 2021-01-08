@@ -287,9 +287,9 @@ fn make_label(raw_label: &str) -> String {
 
 #[cfg(test)]
 mod unit {
-    use serde_json::json;
     use super::*;
     use crate::utils::test;
+    use serde_json::json;
 
     #[test]
     fn label_identifier_with_expected_input_valid() {
@@ -424,16 +424,19 @@ mod unit {
 
     #[test]
     fn annotate_result_section_simple_nested_blockchaininfo() {
-    let mut simple_nested_blockchainfo = &mut test::SIMPLE_NESTED_GETBLOCKCHAININFO.chars();
-    let last_observed = simple_nested_blockchainfo.next().expect("Missing first char!");
-    let annotated = annotate_result_section(
-        &mut Context {
-        last_observed,
-        cmd_name: "getblockchaininfo".to_string(),
-    },
-        &mut simple_nested_blockchainfo,
-    );
-    assert_eq!("fuckaduck", annotated); 
+        let mut simple_nested_blockchainfo =
+            &mut test::SIMPLE_NESTED_GETBLOCKCHAININFO.chars();
+        let last_observed = simple_nested_blockchainfo
+            .next()
+            .expect("Missing first char!");
+        let annotated = annotate_result_section(
+            &mut Context {
+                last_observed,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_nested_blockchainfo,
+        );
+        assert_eq!("aduck", annotated);
     }
 
     #[test]
@@ -476,24 +479,25 @@ mod unit {
 
     #[test]
     fn parse_raw_output_simple_unnested() {
-    let simple_unnested = test::SIMPLE_UNNESTED;
-    let parsed = parse_raw_output(simple_unnested);
-    let expected_json_results = test::simple_unnested_json_generator();
-    assert_eq!(parsed, expected_json_results); 
+        let simple_unnested = test::SIMPLE_UNNESTED;
+        let parsed = parse_raw_output(simple_unnested);
+        let expected_json_results = test::simple_unnested_json_generator();
+        assert_eq!(parsed, expected_json_results);
     }
-
 
     #[test]
     fn serde_json_value_help_getinfo() {
-    let getinfo_serde_json_value = test::getinfo_export();
-    let help_getinfo = parse_raw_output(test::HELP_GETINFO);
-    assert_eq!(getinfo_serde_json_value, help_getinfo); 
+        let getinfo_serde_json_value = test::getinfo_export();
+        let help_getinfo = parse_raw_output(test::HELP_GETINFO);
+        assert_eq!(getinfo_serde_json_value, help_getinfo);
     }
 
     #[test]
     fn serde_json_value_help_getblockchaininfo() {
-    let getblockchaininfo_serde_json_value = test::getblockchaininfo_export();
-    let help_getblockchaininfo = parse_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE);
-    assert_eq!(getblockchaininfo_serde_json_value, help_getblockchaininfo); 
+        let getblockchaininfo_serde_json_value =
+            test::getblockchaininfo_export();
+        let help_getblockchaininfo =
+            parse_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE);
+        assert_eq!(getblockchaininfo_serde_json_value, help_getblockchaininfo);
     }
 }
