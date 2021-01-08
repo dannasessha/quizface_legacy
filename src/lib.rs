@@ -473,7 +473,7 @@ mod unit {
     let simple_nested = test::SIMPLE_NESTED;
     let parsed = parse_raw_output(simple_nested);
     let expected_json_results = test::simple_nested_json_generator();
-    assert_eq!(parsed, simple_nested); 
+    assert_eq!(parsed, expected_json_results); 
     }
 
     #[test]
