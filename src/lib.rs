@@ -423,6 +423,20 @@ mod unit {
     }
 
     #[test]
+    fn annotate_result_section_simple_nested_blockchaininfo() {
+    let mut simple_nested_blockchainfo = &mut test::SIMPLE_NESTED_GETBLOCKCHAININFO.chars();
+    let last_observed = simple_nested_blockchainfo.next().expect("Missing first char!");
+    let annotated = annotate_result_section(
+        &mut Context {
+        last_observed,
+        cmd_name: "getblockchaininfo".to_string(),
+    },
+        &mut simple_nested_blockchainfo,
+    );
+    assert_eq!("fuckaduck", annotated); 
+    }
+
+    #[test]
     fn parse_raw_output_upgrades_in_obj_extracted() {
         dbg!(parse_raw_output(test::UPGRADES_IN_OBJ_EXTRACTED));
     }
@@ -468,13 +482,6 @@ mod unit {
     assert_eq!(parsed, expected_json_results); 
     }
 
-    #[test]
-    fn parse_raw_output_simple_nested() {
-    let simple_nested = test::SIMPLE_NESTED;
-    let parsed = parse_raw_output(simple_nested);
-    let expected_json_results = test::simple_nested_json_generator();
-    assert_eq!(parsed, expected_json_results); 
-    }
 
     #[test]
     fn serde_json_value_help_getinfo() {

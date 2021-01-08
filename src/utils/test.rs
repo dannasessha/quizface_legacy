@@ -507,17 +507,12 @@ Examples:
 b
 "#;
 
-pub const SIMPLE_NESTED: &str = r#"
-a_command
-Result:
+pub const SIMPLE_NESTED_GETBLOCKCHAININFO: &str = r#"
 { 
-   "outer_id":  {
-   "inner_id": "xxxx",        (string) more unimportant text
+     "xxxx" : {                (string) branch ID of the upgrade
+        "name": "xxxx",        (string) name of upgrade
    }
 }
-
-Examples:
-b
 "#;
 
 pub fn simple_nested_json_generator() -> serde_json::Value {
