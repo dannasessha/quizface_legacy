@@ -496,6 +496,13 @@ Result:
 }
 "#;
 
+pub fn simple_unnested_json_generator() -> serde_json::Value {
+    let simple_nested_json = serde_json::json!({
+    "outer_id": "String",
+    });
+    simple_nested_json
+}
+
 pub const SIMPLE_UNNESTED: &str = r#"
 a_command
 Result:
@@ -507,6 +514,37 @@ Examples:
 b
 "#;
 
+pub const SIMPLE_UNNESTED_RESULT: &str = r#"{"outer_id":"String"}"#;
+
+pub fn simple_nested_json_generator() -> serde_json::Value {
+    let simple_nested_json = serde_json::json!({
+    "outer_id":
+    {"inner_id": "String",}
+    });
+    simple_nested_json
+}
+
+pub const SIMPLE_NESTED: &str = r#"
+a_command
+Result:
+{ 
+    "outer_id": {
+        "inner_id":, "xxxx",      (string) extra unimportant text
+    }
+}
+Examples:
+b
+"#;
+
+pub const SIMPLE_NESTED_RESULT: &str = r#"{"outer_id":{"inner_id":"String"}}"#;
+
+pub const SIMPLE_UNNESTED_GETBLOCKCHAININFO: &str = r#"{ 
+     "name": "xxxx",        (string) name of upgrade
+}
+"#;
+
+pub const SIMPLE_UNNESTED_GETBLOCKCHAININFO_RESULT: &str = r#"{"name":"String"}"#;
+
 pub const SIMPLE_NESTED_GETBLOCKCHAININFO: &str = r#"{ 
      "xxxx" : {                (string) branch ID of the upgrade
         "name": "xxxx",        (string) name of upgrade
@@ -514,20 +552,7 @@ pub const SIMPLE_NESTED_GETBLOCKCHAININFO: &str = r#"{
 }
 "#;
 
-pub fn simple_nested_json_generator() -> serde_json::Value {
-    let simple_nested_json = serde_json::json!({
-    "outer_id":
-    {"inner_id": "String",},
-    });
-    simple_nested_json
-}
-
-pub fn simple_unnested_json_generator() -> serde_json::Value {
-    let simple_nested_json = serde_json::json!({
-    "outer_id": "String",
-    });
-    simple_nested_json
-}
+pub const SIMPLE_NESTED_GETBLOCKCHAININFO_RESULT: &str = r#"{"String":{"name":"String"}}"#;
 
 pub fn valid_getinfo_annotation() -> serde_json::Value {
     serde_json::json!([

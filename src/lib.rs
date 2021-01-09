@@ -175,6 +175,9 @@ struct Context {
     cmd_name: String,
     last_observed: char,
 }
+
+// TODO make return a str
+// to pass simple nested and unnested tests
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let (cmd_name, mut data) = extract_name_and_result(raw_command_help);
     if cmd_name == "getblockchaininfo".to_string() {
@@ -205,6 +208,9 @@ fn recurse(
     &mut observed.push_str(&inner);
     //dbg!(&inner);
 }
+
+// TODO make return a str
+// to pass simple nested and unnested tests
 fn annotate_result_section(
     mut context: &mut Context,
     mut incoming_data: &mut std::str::Chars,
@@ -423,6 +429,71 @@ mod unit {
     }
 
     #[test]
+    fn annotate_result_section_help_getblockchain_reject_fragment() {
+        let expected_data = test::GETBLOCKCHAININFO_REJECT_FRAGMENT;
+        let (cmd_name, _) = extract_name_and_result(expected_data);
+        let fake_ident_label = "...".to_string();
+        let bound = bind_idents_labels(fake_ident_label, cmd_name);
+        for (k, v) in test::INTERMEDIATE_REPR_ENFORCE.iter() {
+            assert_eq!(&bound.get(k.clone()).unwrap().as_str().unwrap(), v);
+        }
+    }
+/*
+    #[test]
+    fn annotate_result_section_simple_unnested() {
+        let mut simple_unnested =
+            &mut test::SIMPLE_UNNESTED.chars();
+        let last_observed = simple_unnested
+            .next()
+            .expect("Missing first char!");
+        let annotated = annotate_result_section(
+            &mut Context {
+                last_observed,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_unnested,
+        );
+        let expected_result = test::SIMPLE_UNNESTED_RESULT;
+        assert_eq!(expected_result, annotated);
+    }
+
+    #[test]
+    fn annotate_result_section_simple_nested() {
+        let mut simple_nested =
+            &mut test::SIMPLE_NESTED.chars();
+        let last_observed = simple_unnested_blockchaininfo
+            .next()
+            .expect("Missing first char!");
+        let annotated = annotate_result_section(
+            &mut Context {
+                last_observed,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_unnested_blockchaininfo,
+        );
+        let expected_result = test::SIMPLE_UNNESTED_GETBLOCKCHAININFO_RESULT;
+        assert_eq!(expected_result, annotated);
+    }
+*/
+    #[test]
+    fn annotate_result_section_simple_unnested_getblockchaininfo() {
+        let mut simple_unnested_blockchaininfo =
+            &mut test::SIMPLE_UNNESTED_GETBLOCKCHAININFO.chars();
+        let last_observed = simple_unnested_blockchaininfo
+            .next()
+            .expect("Missing first char!");
+        let annotated = annotate_result_section(
+            &mut Context {
+                last_observed,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_unnested_blockchaininfo,
+        );
+        let expected_result = test::SIMPLE_UNNESTED_GETBLOCKCHAININFO_RESULT;
+        assert_eq!(expected_result, annotated);
+    }
+
+    #[test]
     fn annotate_result_section_simple_nested_blockchaininfo() {
         let mut simple_nested_blockchainfo =
             &mut test::SIMPLE_NESTED_GETBLOCKCHAININFO.chars();
@@ -436,7 +507,23 @@ mod unit {
             },
             &mut simple_nested_blockchainfo,
         );
-        assert_eq!("aduck", annotated);
+        let expected_result = test::SIMPLE_NESTED_GETBLOCKCHAININFO_RESULT;
+        assert_eq!(expected_result, annotated);
+    }
+
+    #[test]
+    fn sanity_check_simple_unnested() {
+        let simple_unnested_result = test::SIMPLE_UNNESTED_RESULT.to_string();
+        let simple_unnested_json = test::simple_unnested_json_generator().to_string();
+        assert_eq!(simple_unnested_result, simple_unnested_json);
+    }
+
+    #[test]
+    fn sanity_check_simple_nested() {
+        let simple_nested_result = test::SIMPLE_NESTED_RESULT.to_string();
+        let simple_nested_json = test::simple_nested_json_generator().to_string();
+        assert_eq!(simple_nested_result, simple_nested_json);
+
     }
 
     #[test]
@@ -444,16 +531,6 @@ mod unit {
         dbg!(parse_raw_output(test::UPGRADES_IN_OBJ_EXTRACTED));
     }
 
-    #[test]
-    fn annotate_result_section_help_getblockchain_reject_fragment() {
-        let expected_data = test::GETBLOCKCHAININFO_REJECT_FRAGMENT;
-        let (cmd_name, _) = extract_name_and_result(expected_data);
-        let fake_ident_label = "...".to_string();
-        let bound = bind_idents_labels(fake_ident_label, cmd_name);
-        for (k, v) in test::INTERMEDIATE_REPR_ENFORCE.iter() {
-            assert_eq!(&bound.get(k.clone()).unwrap().as_str().unwrap(), v);
-        }
-    }
     #[test]
     fn parse_raw_output_getblockchaininfo_softforks_fragment() {
         let expected_incoming = test::GETBLOCKCHAININFO_SOFTFORK_FRAGMENT;
@@ -481,10 +558,20 @@ mod unit {
     fn parse_raw_output_simple_unnested() {
         let simple_unnested = test::SIMPLE_UNNESTED;
         let parsed = parse_raw_output(simple_unnested);
-        let expected_json_results = test::simple_unnested_json_generator();
-        assert_eq!(parsed, expected_json_results);
+        let expected_result = test::SIMPLE_UNNESTED_RESULT;
+        assert_eq!(parsed, expected_result);
     }
 
+    #[test]
+    fn parse_raw_output_simple_nested() {
+        let simple_nested = test::SIMPLE_NESTED;
+        let parsed = parse_raw_output(simple_nested);
+        let expected_result = test::SIMPLE_NESTED_RESULT;
+        assert_eq!(parsed, expected_result);
+    }
+
+    // if we move away from serde_json this may 
+    // need to be retooled or be deprecated
     #[test]
     fn serde_json_value_help_getinfo() {
         let getinfo_serde_json_value = test::getinfo_export();
@@ -492,6 +579,8 @@ mod unit {
         assert_eq!(getinfo_serde_json_value, help_getinfo);
     }
 
+    // if we move away from serde_json this may 
+    // need to be retooled or be deprecated
     #[test]
     fn serde_json_value_help_getblockchaininfo() {
         let getblockchaininfo_serde_json_value =
