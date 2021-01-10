@@ -503,7 +503,11 @@ pub fn simple_unnested_json_generator() -> serde_json::Value {
     simple_nested_json
 }
 
-pub const SIMPLE_UNNESTED: &str = r#"
+pub const SIMPLE_UNNESTED: &str = r#"{ 
+   "outer_id": "xxxx.xxx", (string) extra unimportant text
+}"#;
+
+pub const SIMPLE_UNNESTED_FULL: &str = r#"
 a_command
 Result:
 { 
@@ -524,7 +528,13 @@ pub fn simple_nested_json_generator() -> serde_json::Value {
     simple_nested_json
 }
 
-pub const SIMPLE_NESTED: &str = r#"
+pub const SIMPLE_NESTED: &str = r#"{ 
+    "outer_id": {
+        "inner_id":, "xxxx",      (string) extra unimportant text
+    }
+}"#;
+
+pub const SIMPLE_NESTED_FULL: &str = r#"
 a_command
 Result:
 { 

@@ -438,7 +438,7 @@ mod unit {
             assert_eq!(&bound.get(k.clone()).unwrap().as_str().unwrap(), v);
         }
     }
-/*
+
     #[test]
     fn annotate_result_section_simple_unnested() {
         let mut simple_unnested =
@@ -461,7 +461,7 @@ mod unit {
     fn annotate_result_section_simple_nested() {
         let mut simple_nested =
             &mut test::SIMPLE_NESTED.chars();
-        let last_observed = simple_unnested_blockchaininfo
+        let last_observed = simple_nested
             .next()
             .expect("Missing first char!");
         let annotated = annotate_result_section(
@@ -469,12 +469,12 @@ mod unit {
                 last_observed,
                 cmd_name: "getblockchaininfo".to_string(),
             },
-            &mut simple_unnested_blockchaininfo,
+            &mut simple_nested,
         );
-        let expected_result = test::SIMPLE_UNNESTED_GETBLOCKCHAININFO_RESULT;
+        let expected_result = test::SIMPLE_NESTED_RESULT;
         assert_eq!(expected_result, annotated);
     }
-*/
+
     #[test]
     fn annotate_result_section_simple_unnested_getblockchaininfo() {
         let mut simple_unnested_blockchaininfo =
@@ -555,23 +555,23 @@ mod unit {
     }
 
     #[test]
-    fn parse_raw_output_simple_unnested() {
-        let simple_unnested = test::SIMPLE_UNNESTED;
-        let parsed = parse_raw_output(simple_unnested);
+    fn parse_raw_output_simple_unnested_full() {
+        let simple_unnested_full = test::SIMPLE_UNNESTED_FULL;
+        let parsed = parse_raw_output(simple_unnested_full);
         let expected_result = test::SIMPLE_UNNESTED_RESULT;
         assert_eq!(parsed, expected_result);
     }
 
     #[test]
-    fn parse_raw_output_simple_nested() {
-        let simple_nested = test::SIMPLE_NESTED;
-        let parsed = parse_raw_output(simple_nested);
+    fn parse_raw_output_simple_nested_full() {
+        let simple_nested_full = test::SIMPLE_NESTED_FULL;
+        let parsed = parse_raw_output(simple_nested_full);
         let expected_result = test::SIMPLE_NESTED_RESULT;
         assert_eq!(parsed, expected_result);
     }
 
     // if we move away from serde_json this may 
-    // need to be retooled or be deprecated
+    // need to be retooled or deprecated
     #[test]
     fn serde_json_value_help_getinfo() {
         let getinfo_serde_json_value = test::getinfo_export();
@@ -580,7 +580,7 @@ mod unit {
     }
 
     // if we move away from serde_json this may 
-    // need to be retooled or be deprecated
+    // need to be retooled or deprecated
     #[test]
     fn serde_json_value_help_getblockchaininfo() {
         let getblockchaininfo_serde_json_value =
