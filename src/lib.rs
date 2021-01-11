@@ -495,9 +495,9 @@ mod unit {
 
     #[test]
     fn annotate_result_section_simple_nested_blockchaininfo() {
-        let mut simple_nested_blockchainfo =
+        let mut simple_nested_blockchaininfo =
             &mut test::SIMPLE_NESTED_GETBLOCKCHAININFO.chars();
-        let last_observed = simple_nested_blockchainfo
+        let last_observed = simple_nested_blockchaininfo
             .next()
             .expect("Missing first char!");
         let annotated = annotate_result_section(
@@ -505,7 +505,7 @@ mod unit {
                 last_observed,
                 cmd_name: "getblockchaininfo".to_string(),
             },
-            &mut simple_nested_blockchainfo,
+            &mut simple_nested_blockchaininfo,
         );
         let expected_result = test::SIMPLE_NESTED_GETBLOCKCHAININFO_RESULT;
         assert_eq!(expected_result, annotated);
