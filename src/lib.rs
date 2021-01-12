@@ -58,9 +58,7 @@ pub fn check_success(output: &std::process::ExitStatus) {
     }
 }
 
-// TODO make return a str ?
-// to pass simple nested and unnested tests
-pub fn parse_raw_output(raw_command_help: &str) -> Value {
+pub fn parse_raw_output(raw_command_help: &str) -> &str {
     let (cmd_name, mut data) = extract_name_and_result(raw_command_help);
     if cmd_name == "getblockchaininfo".to_string() {
         data = data.replace("[0..1]", "ZZZZZZ");
@@ -91,12 +89,10 @@ struct Context {
     last_observed: char,
 }
 
-// TODO change return type to &str
-// to pass simple nested and unnested tests
 fn annotate_result_section(
     mut context: &mut Context,
     mut incoming_data: &mut std::str::Chars,
-) -> Value {
+) -> &str {
     let mut observed = String::new();
     match context.last_observed {
         '{' => {
