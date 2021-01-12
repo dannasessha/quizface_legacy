@@ -1,18 +1,17 @@
 pub mod utils;
+use utils::logging;
 use crate::logging::create_log_dirs;
 use crate::logging::log_masterhelp_output;
 use std::path::Path;
-use utils::logging;
+use serde_json::{json, map::Map, Value};
 
 pub fn ingest_commands() -> Vec<String> {
     create_log_dirs();
     let cli_help_output = get_command_help("");
     check_success(&cli_help_output.status);
-
     let raw_help = std::string::String::from_utf8(cli_help_output.stdout)
         .expect("Invalid, not UTF-8. Error!");
     log_masterhelp_output(&raw_help);
-
     let help_lines_iter = raw_help.lines();
     let mut help_lines = Vec::new();
     for li in help_lines_iter {
@@ -20,11 +19,9 @@ pub fn ingest_commands() -> Vec<String> {
             help_lines.push(li);
         }
     }
-
     // currently, with zcashd from version 4.1.0, 132 lines.
     // this matches 151 (`zcash-cli | wc -l`) - 19 (manual count of
     // empty lines or 'category' lines that begin with "=")
-
     let mut commands_str = Vec::new();
     for line in help_lines {
         let mut temp_iter = line.split_ascii_whitespace();
@@ -33,7 +30,6 @@ pub fn ingest_commands() -> Vec<String> {
             None => panic!("error during command parsing"),
         }
     }
-
     let mut commands = Vec::new();
     for c in commands_str {
         commands.push(c.to_string());
@@ -62,121 +58,7 @@ pub fn check_success(output: &std::process::ExitStatus) {
     }
 }
 
-fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
-    let sections = raw_command_help.split("Result:\n").collect::<Vec<&str>>();
-    assert_eq!(sections.len(), 2, "Wrong number of Results!");
-    let cmd_name =
-        sections[0].split_ascii_whitespace().collect::<Vec<&str>>()[0];
-    let end = sections[1];
-    let end_sections = end.split("Examples:\n").collect::<Vec<&str>>();
-    assert_eq!(end_sections.len(), 2, "Wrong number of Examples!");
-    (cmd_name.to_string(), end_sections[0].trim().to_string())
-}
-
-use serde_json::{json, map::Map, Value};
-
-mod special_cases {
-    pub(crate) mod getblockchaininfo_reject {
-        pub const TRAILING_TRASH: &str = "      (object)";
-        use serde_json::{json, Map, Value};
-        pub const BINDINGS: [(&str, &str); 4] = [
-            ("found", "Decimal"),
-            ("required", "Decimal"),
-            ("status", "bool"),
-            ("window", "Decimal"),
-        ];
-        pub fn create_bindings() -> Map<String, Value> {
-            BINDINGS
-                .iter()
-                .map(|(a, b)| (a.to_string(), json!(b)))
-                .collect()
-        }
-    }
-}
-fn clean_observed(raw_observed: String) -> Vec<String> {
-    let mut ident_labels = raw_observed
-        .trim_end()
-        .lines()
-        .map(|x| x.to_string())
-        .collect::<Vec<String>>();
-    match ident_labels.remove(0).trim() {
-        empty if empty.is_empty() => (),
-        description if description.contains("(object)") => (),
-        i if i == "...".to_string() => ident_labels = vec![String::from(i)],
-        catchall @ _ => {
-            dbg!(catchall);
-        }
-    }
-    ident_labels
-}
-fn bind_idents_labels(
-    raw_observed: String,
-    cmd_name: String,
-) -> Map<String, Value> {
-    let cleaned = clean_observed(raw_observed);
-    if cleaned[0] == "...".to_string()
-        && cmd_name == "getblockchaininfo".to_string()
-    {
-        special_cases::getblockchaininfo_reject::create_bindings()
-    } else {
-        cleaned
-            .iter()
-            .map(|ident_rawlabel| {
-                label_identifier(ident_rawlabel.to_string(), cmd_name.as_str())
-            })
-            .map(|(a, b)| (a.to_string(), json!(b.to_string())))
-            .collect::<Map<String, Value>>()
-    }
-}
-fn label_identifier(
-    ident_with_metadata: String,
-    cmd_name: &str,
-) -> (String, String) {
-    let ident_and_metadata = ident_with_metadata
-        .trim()
-        .splitn(2, ':')
-        .collect::<Vec<&str>>();
-    let ident = ident_and_metadata[0].trim_matches('"');
-    let mut meta_data = ident_and_metadata[1].trim();
-    if meta_data
-        .contains(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
-        && cmd_name == "getblockchaininfo".to_string()
-    {
-        meta_data = meta_data
-            .split(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
-            .collect::<Vec<&str>>()[0]
-            .trim();
-    }
-
-    #[allow(unused_assignments)]
-    let mut annotation = String::new();
-    if meta_data.starts_with('{') || meta_data.starts_with('[') {
-        annotation = meta_data.to_string();
-    } else {
-        let raw_label: &str = meta_data
-            .split(|c| c == '(' || c == ')')
-            .collect::<Vec<&str>>()[1];
-
-        annotation = make_label(raw_label);
-    }
-    (ident.to_string(), annotation)
-}
-
-fn label_by_position(raw_observed: String) -> Vec<Value> {
-    let trimmed = raw_observed
-        .trim_end_matches(|c| c != '}')
-        .trim_start_matches(|c| c != '{');
-    vec![Value::Object(
-        serde_json::from_str::<Map<String, Value>>(trimmed)
-            .expect("Couldn't map into a Map<String, Value>!"),
-    )]
-}
-struct Context {
-    cmd_name: String,
-    last_observed: char,
-}
-
-// TODO make return a str
+// TODO make return a str ?
 // to pass simple nested and unnested tests
 pub fn parse_raw_output(raw_command_help: &str) -> Value {
     let (cmd_name, mut data) = extract_name_and_result(raw_command_help);
@@ -193,28 +75,28 @@ pub fn parse_raw_output(raw_command_help: &str) -> Value {
     annotate_result_section(context, observed)
 }
 
-fn recurse(
-    lastobs: char,
-    mut context: &mut Context,
-    observed: &mut String,
-    mut incoming_data: &mut std::str::Chars,
-) {
-    context.last_observed = lastobs;
-    let inner = serde_json::to_string(&annotate_result_section(
-        &mut context,
-        &mut incoming_data,
-    ))
-    .expect("couldn't get string from json");
-    &mut observed.push_str(&inner);
-    //dbg!(&inner);
+fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
+    let sections = raw_command_help.split("Result:\n").collect::<Vec<&str>>();
+    assert_eq!(sections.len(), 2, "Wrong number of Results!");
+    let cmd_name =
+        sections[0].split_ascii_whitespace().collect::<Vec<&str>>()[0];
+    let end = sections[1];
+    let end_sections = end.split("Examples:\n").collect::<Vec<&str>>();
+    assert_eq!(end_sections.len(), 2, "Wrong number of Examples!");
+    (cmd_name.to_string(), end_sections[0].trim().to_string())
 }
 
-// TODO make return a str
+struct Context {
+    cmd_name: String,
+    last_observed: char,
+}
+
+// TODO change return type to &str
 // to pass simple nested and unnested tests
 fn annotate_result_section(
     mut context: &mut Context,
     mut incoming_data: &mut std::str::Chars,
-) -> serde_json::Value {
+) -> Value {
     let mut observed = String::new();
     match context.last_observed {
         '{' => {
@@ -272,9 +154,96 @@ fn annotate_result_section(
     }
 }
 
+fn bind_idents_labels(
+    raw_observed: String,
+    cmd_name: String,
+) -> Map<String, Value> {
+    let cleaned = clean_observed(raw_observed);
+    if cleaned[0] == "...".to_string()
+        && cmd_name == "getblockchaininfo".to_string()
+    {
+        special_cases::getblockchaininfo_reject::create_bindings()
+    } else {
+        cleaned
+            .iter()
+            .map(|ident_rawlabel| {
+                label_identifier(ident_rawlabel.to_string(), cmd_name.as_str())
+            })
+            .map(|(a, b)| (a.to_string(), json!(b.to_string())))
+            .collect::<Map<String, Value>>()
+    }
+}
+
+fn clean_observed(raw_observed: String) -> Vec<String> {
+    let mut ident_labels = raw_observed
+        .trim_end()
+        .lines()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>();
+    match ident_labels.remove(0).trim() {
+        empty if empty.is_empty() => (),
+        description if description.contains("(object)") => (),
+        i if i == "...".to_string() => ident_labels = vec![String::from(i)],
+        catchall @ _ => {
+            dbg!(catchall);
+        }
+    }
+    ident_labels
+}
+
+mod special_cases {
+    pub(crate) mod getblockchaininfo_reject {
+        pub const TRAILING_TRASH: &str = "      (object)";
+        use serde_json::{json, Map, Value};
+        pub const BINDINGS: [(&str, &str); 4] = [
+            ("found", "Decimal"),
+            ("required", "Decimal"),
+            ("status", "bool"),
+            ("window", "Decimal"),
+        ];
+        pub fn create_bindings() -> Map<String, Value> {
+            BINDINGS
+                .iter()
+                .map(|(a, b)| (a.to_string(), json!(b)))
+                .collect()
+        }
+    }
+}
+
+fn label_identifier(
+    ident_with_metadata: String,
+    cmd_name: &str,
+) -> (String, String) {
+    let ident_and_metadata = ident_with_metadata
+        .trim()
+        .splitn(2, ':')
+        .collect::<Vec<&str>>();
+    let ident = ident_and_metadata[0].trim_matches('"');
+    let mut meta_data = ident_and_metadata[1].trim();
+    if meta_data
+        .contains(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
+        && cmd_name == "getblockchaininfo".to_string()
+    {
+        meta_data = meta_data
+            .split(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
+            .collect::<Vec<&str>>()[0]
+            .trim();
+    }
+    #[allow(unused_assignments)]
+    let mut annotation = String::new();
+    if meta_data.starts_with('{') || meta_data.starts_with('[') {
+        annotation = meta_data.to_string();
+    } else {
+        let raw_label: &str = meta_data
+            .split(|c| c == '(' || c == ')')
+            .collect::<Vec<&str>>()[1];
+        annotation = make_label(raw_label);
+    }
+    (ident.to_string(), annotation)
+}
+
 fn make_label(raw_label: &str) -> String {
     let mut annotation = String::new();
-
     if raw_label.starts_with("numeric") {
         annotation.push_str("Decimal");
     } else if raw_label.starts_with("string") {
@@ -284,11 +253,36 @@ fn make_label(raw_label: &str) -> String {
     } else {
         panic!("annotation should have a value at this point.");
     }
-
     if raw_label.contains(", optional") {
         return format!("Option<{}>", annotation);
     }
     annotation
+}
+
+fn recurse(
+    lastobs: char,
+    mut context: &mut Context,
+    observed: &mut String,
+    mut incoming_data: &mut std::str::Chars,
+) {
+    context.last_observed = lastobs;
+    let inner = serde_json::to_string(&annotate_result_section(
+        &mut context,
+        &mut incoming_data,
+    ))
+    .expect("couldn't get string from json");
+    &mut observed.push_str(&inner);
+    //dbg!(&inner);
+}
+
+fn label_by_position(raw_observed: String) -> Vec<Value> {
+    let trimmed = raw_observed
+        .trim_end_matches(|c| c != '}')
+        .trim_start_matches(|c| c != '{');
+    vec![Value::Object(
+        serde_json::from_str::<Map<String, Value>>(trimmed)
+            .expect("Couldn't map into a Map<String, Value>!"),
+    )]
 }
 
 #[cfg(test)]

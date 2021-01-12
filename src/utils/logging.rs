@@ -2,6 +2,15 @@ use std::fs;
 use std::path::Path;
 const QUIZFACE_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
+pub fn create_log_dirs() {
+    fs::create_dir_all(Path::new(&name_logdirs().0))
+        .expect("error crating master dir!");
+    fs::create_dir_all(Path::new(&name_logdirs().1))
+        .expect("error creating commands dir!");
+    fs::create_dir_all(Path::new(&name_logdirs().2))
+        .expect("error creating blessed dir!");
+}
+
 pub fn name_logdirs() -> (String, String, String) {
     let log_parent_template: String = format!(
         "./logs/{zdver}_{qfver}/",
@@ -14,15 +23,6 @@ pub fn name_logdirs() -> (String, String, String) {
     let blessed_name: String =
         format!("{}blessed_commands/", log_parent_template);
     (master_name, base_name, blessed_name)
-}
-
-pub fn create_log_dirs() {
-    fs::create_dir_all(Path::new(&name_logdirs().0))
-        .expect("error crating master dir!");
-    fs::create_dir_all(Path::new(&name_logdirs().1))
-        .expect("error creating commands dir!");
-    fs::create_dir_all(Path::new(&name_logdirs().2))
-        .expect("error creating blessed dir!");
 }
 
 pub fn get_zcashd_version() -> String {
