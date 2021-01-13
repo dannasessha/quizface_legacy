@@ -19,9 +19,6 @@ pub fn ingest_commands() -> Vec<String> {
             help_lines.push(li);
         }
     }
-    // currently, with zcashd from version 4.1.0, 132 lines.
-    // this matches 151 (`zcash-cli | wc -l`) - 19 (manual count of
-    // empty lines or 'category' lines that begin with "=")
     let mut commands_str = Vec::new();
     for line in help_lines {
         let mut temp_iter = line.split_ascii_whitespace();
@@ -59,29 +56,42 @@ pub fn check_success(output: &std::process::ExitStatus) {
 }
 
 pub fn parse_raw_output(raw_command_help: &str) -> &str {
-    let (cmd_name, mut data) = extract_name_and_result(raw_command_help);
+    let (cmd_name, mut result_data) = extract_name_and_result(raw_command_help);
+    // pre-cleaning `mut data` (String)
+    // TODO remove these kind of special cases or consolidate
     if cmd_name == "getblockchaininfo".to_string() {
-        data = data.replace("[0..1]", "ZZZZZZ");
-        data = data.replace("}, ...", "}");
+        // TODO this token does appear, but it is read?
+        // possible to stop reading a line when a match is made?
+        result_data = result_data.replace("[0..1]", "ZZZZZZ");
+        // TODO this token seems to be meaningful, therefore should
+        // be used or incorporated elsewhere
+        result_data = result_data.replace("}, ...", "}");
+        // TODO consider also, "reject" (same fields as "enforce")
+        // special case?
     }
-    let observed = &mut data.chars();
+    // String is always valid UTF-8 encoded
+    let result = &mut result_data.chars();
     let last_observed = observed.next().expect("Missing first char!");
     let context = &mut Context {
         cmd_name,
         last_observed,
     };
-    annotate_result_section(context, observed)
+    annotate_result_section(context, result)
 }
 
 fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
-    let sections = raw_command_help.split("Result:\n").collect::<Vec<&str>>();
-    assert_eq!(sections.len(), 2, "Wrong number of Results!");
+    let result_sections = raw_command_help.split("Result:\n").collect::<Vec<&str>>();
+    // test for conforming to expectation. 
+    // TODO without this, instead of panicing, break to next command
+    // OR only run on conforming commands (synonymnous with blessed?)
+    assert_eq!(result_sections.len(), 2, "Wrong number of Results!");
     let cmd_name =
-        sections[0].split_ascii_whitespace().collect::<Vec<&str>>()[0];
-    let end = sections[1];
-    let end_sections = end.split("Examples:\n").collect::<Vec<&str>>();
-    assert_eq!(end_sections.len(), 2, "Wrong number of Examples!");
-    (cmd_name.to_string(), end_sections[0].trim().to_string())
+        result_sections[0].split_ascii_whitespace().collect::<Vec<&str>>()[0];
+    let end_section = result_sections[1];
+    let example_sections = end_section.split("Examples:\n").collect::<Vec<&str>>();
+    // TODO same as or see last comment.
+    assert_eq!(example_sections.len(), 2, "Wrong number of Examples!");
+    (cmd_name.to_string(), example_sections[0].trim().to_string())
 }
 
 struct Context {
@@ -89,38 +99,43 @@ struct Context {
     last_observed: char,
 }
 
+// TODO rename without `section`?
 fn annotate_result_section(
     mut context: &mut Context,
     mut incoming_data: &mut std::str::Chars,
-) -> &str {
-    let mut observed = String::new();
+) -> String {
+    let mut viewed = String::new();
     match context.last_observed {
         '{' => {
-            #[allow(unused_assignments)]
+            // #[allow(unused_assignments)]
+            // TODO : decide if MAP is better for intermediate
+            // OR just keep everything str / String
             let mut ident_label_bindings = Map::new();
             loop {
                 match incoming_data.next().unwrap() {
                     '}' => {
                         ident_label_bindings = bind_idents_labels(
-                            observed.clone(),
+                            viewed.clone(),
                             context.cmd_name.clone(),
                         );
                         break;
                     }
-                    lastobs if lastobs == '[' || lastobs == '{' => {
+                    last_viewed if last_viewed == '[' || last_viewed == '{' => {
                         recurse(
-                            lastobs,
+                            last_viewed,
                             &mut context,
-                            &mut observed,
+                            &mut viewed,
                             &mut incoming_data,
                         );
                     }
                     // TODO: Handle unbalanced braces
-                    x if x.is_ascii() => observed.push(x),
+                    // x if x.is_ascii() => viewed.push(x),
+                    x => viewed.push(x),
                     _ => panic!(),
                 }
             }
-            Value::Object(ident_label_bindings)
+            ident_label_bindings.
+            //Value::Object(ident_label_bindings)
         }
         '[' => {
             #[allow(unused_assignments)]
@@ -128,34 +143,35 @@ fn annotate_result_section(
             loop {
                 match incoming_data.next().unwrap() {
                     ']' => {
-                        ordered_results = label_by_position(observed.clone());
+                        ordered_results = label_by_position(viewed.clone());
                         break;
                     }
-                    lastobs if lastobs == '[' || lastobs == '{' => {
+                    last_viewed if last_viewed == '[' || last_viewed == '{' => {
                         recurse(
-                            lastobs,
+                            last_viewed,
                             &mut context,
-                            &mut observed,
+                            &mut viewed,
                             &mut incoming_data,
                         );
                     }
                     // TODO: Handle unbalanced braces
-                    x if x.is_ascii() => observed.push(x),
+                    x => viewed.push(x),
                     _ => panic!(),
                 }
             }
-            Value::Array(ordered_results)
+            ordered_results.djhsv;
+            //Value::Array(ordered_results)
         }
         _ => unimplemented!(),
     }
 }
 
 fn bind_idents_labels(
-    raw_observed: String,
+    viewed: String,
     cmd_name: String,
 ) -> Map<String, Value> {
-    let cleaned = clean_observed(raw_observed);
-    if cleaned[0] == "...".to_string()
+    let cleaned = clean_viewed(viewed);
+    if cleaned[0] == "...".to_string() // awkward, try to remove or consolodate
         && cmd_name == "getblockchaininfo".to_string()
     {
         special_cases::getblockchaininfo_reject::create_bindings()
@@ -170,23 +186,27 @@ fn bind_idents_labels(
     }
 }
 
-fn clean_observed(raw_observed: String) -> Vec<String> {
-    let mut ident_labels = raw_observed
-        .trim_end()
-        .lines()
-        .map(|x| x.to_string())
+// consolodate with other preparation? 
+fn clean_viewed(raw_viewed: String) -> Vec<String> {
+    let mut ident_labels = raw_viewed
+        .trim_end() // trailing whitespace. needed?
+        .lines() // line iterator, as string slices
+        .map(|x| x.to_string()) // back to string. replace with `for`?
         .collect::<Vec<String>>();
-    match ident_labels.remove(0).trim() {
+    match ident_labels.remove(0).trim() { //operates on each element of vec in turn. removes leading and trailing whitespace. `for` or `if/let else
         empty if empty.is_empty() => (),
-        description if description.contains("(object)") => (),
-        i if i == "...".to_string() => ident_labels = vec![String::from(i)],
+        description if description.contains("(object)") => (), // this
+        // seems questionable. 
+        i if i == "...".to_string() => ident_labels = vec![String::from(i)], // this is a match only if the whole line is "..." and then rebinds ident_labels!? or matches only the end of `softforks`? and thus returns a vec 
         catchall @ _ => {
             dbg!(catchall);
+            // add panic?
         }
     }
     ident_labels
 }
 
+// is there a way to eliminate or consolidate special cases?
 mod special_cases {
     pub(crate) mod getblockchaininfo_reject {
         pub const TRAILING_TRASH: &str = "      (object)";

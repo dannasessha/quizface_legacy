@@ -655,9 +655,3 @@ pub fn getblockchaininfo_export() -> serde_json::Value {
       });
     getblockchaininfo_serde_json_value
 }
-// note: softforks had a trailing ... within the array's [ ], possibly
-// to allow for multiple softfork entries. Does this mean there are
-// potentially unlimited softforks? Is 1 the minimum or could there
-// be 0? would that make it an option?
-// Similar `...` after upgrades, presumably to facilitate multiple upgrade IDs.
-// The leading `"String":` is the upgradeID
