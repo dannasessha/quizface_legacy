@@ -530,7 +530,7 @@ pub fn simple_nested_json_generator() -> serde_json::Value {
 
 pub const SIMPLE_NESTED: &str = r#"{ 
     "outer_id": {
-        "inner_id":, "xxxx",      (string) extra unimportant text
+        "inner_id": "xxxx",      (string) extra unimportant text
     }
 }"#;
 
@@ -539,7 +539,7 @@ a_command
 Result:
 { 
     "outer_id": {
-        "inner_id":, "xxxx",      (string) extra unimportant text
+        "inner_id": "xxxx",      (string) extra unimportant text
     }
 }
 Examples:

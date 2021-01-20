@@ -20,6 +20,8 @@ fn main() {
     quizface::utils::logging::log_blessed_output(blessed);
 }
 
+// TODO cover possibility of multiple `Result:` and `Examples:`
+// instead of != 1 --> == 2 would be more strict
 fn blessed_check(raw_command_help: &str, command: &String) -> bool {
     let delimiter_test_1: Vec<&str> =
         raw_command_help.split("Result:\n").collect();
