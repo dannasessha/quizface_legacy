@@ -112,7 +112,6 @@ fn annotate_result(
     mut result_chars: &mut std::str::Chars,
 ) -> serde_json::Value {
     let mut viewed = String::new();
-    //let outer_value = serde_json::Value::Null;
     match context.last_char {
         '{' => {
             let mut ident_label_bindings = Map::new();
@@ -164,8 +163,8 @@ fn annotate_result(
             dbg!(&ident_label_bindings);
             return Value::Object(ident_label_bindings);
         }
+        //TODO bring arrays up to speed
         '[' => {
-            //#[allow(unused_assignments)]
             let mut ordered_results: Vec<Value> = vec![];
             loop {
                 match result_chars.next().unwrap() {
@@ -374,7 +373,7 @@ fn label_by_position(raw_observed: String) -> Vec<Value> {
     )]
 }
 
-// ------------------- tests -------------------
+// ------------------- tests ----------------------------------------
 
 #[cfg(test)]
 mod unit {
@@ -412,7 +411,6 @@ mod unit {
         assert_eq!(expected_result, annotated);
     }
 
-    #[ignore]
     #[test]
     fn annotate_result_simple_unnested() {
         let mut simple_unnested = &mut test::SIMPLE_UNNESTED.chars();
@@ -425,7 +423,7 @@ mod unit {
             &mut simple_unnested,
         );
         let expected_result = test::SIMPLE_UNNESTED_RESULT;
-        assert_eq!(expected_result, annotated);
+        assert_eq!(expected_result, annotated.to_string());
     }
 
     #[test]
@@ -442,7 +440,7 @@ mod unit {
         let expected_result = test::simple_nested_json_generator();
         assert_eq!(expected_result, annotated);
     }
-    #[ignore]
+
     #[test]
     fn annotate_result_simple_nested() {
         let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
@@ -455,10 +453,9 @@ mod unit {
             &mut simple_nested,
         );
         let expected_result = test::SIMPLE_NESTED_RESULT;
-        assert_eq!(expected_result, annotated);
+        assert_eq!(expected_result, annotated.to_string());
     }
 
-    #[ignore]
     #[test]
     fn annotate_result_simple_unnested_getblockchaininfo() {
         let mut simple_unnested_blockchaininfo =
@@ -474,27 +471,10 @@ mod unit {
             &mut simple_unnested_blockchaininfo,
         );
         let expected_result = test::SIMPLE_UNNESTED_GETBLOCKCHAININFO_RESULT;
-        assert_eq!(expected_result, annotated);
+        assert_eq!(expected_result, annotated.to_string());
     }
 
-    #[ignore]
-    #[test]
-    fn annotate_result_simple_nested_blockchaininfo() {
-        let mut simple_nested_blockchaininfo =
-            &mut test::SIMPLE_NESTED_GETBLOCKCHAININFO.chars();
-        let last_char = simple_nested_blockchaininfo
-            .next()
-            .expect("Missing first char!");
-        let annotated = annotate_result(
-            &mut Context {
-                last_char,
-                cmd_name: "getblockchaininfo".to_string(),
-            },
-            &mut simple_nested_blockchaininfo,
-        );
-        let expected_result = test::SIMPLE_NESTED_GETBLOCKCHAININFO_RESULT;
-        assert_eq!(expected_result, annotated);
-    }
+    // ------------------ annotate_result : ignored --------
 
     //rename function for clarity?
     #[ignore]
@@ -509,8 +489,24 @@ mod unit {
         }
     }
 
-    // ------------------ annotate_result : ignored --------
-
+    #[ignore]
+    #[test]
+    fn annotate_result_special_nested_blockchaininfo() {
+        let mut special_nested_blockchaininfo =
+            &mut test::SPECIAL_NESTED_GETBLOCKCHAININFO.chars();
+        let last_char = special_nested_blockchaininfo
+            .next()
+            .expect("Missing first char!");
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut special_nested_blockchaininfo,
+        );
+        let expected_result = test::SPECIAL_NESTED_GETBLOCKCHAININFO_RESULT;
+        assert_eq!(expected_result, annotated.to_string());
+    }
     #[ignore]
     #[test]
     fn annotate_result_from_getinfo_expected() {

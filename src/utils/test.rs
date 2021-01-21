@@ -556,15 +556,15 @@ pub const SIMPLE_UNNESTED_GETBLOCKCHAININFO: &str = r#"{
 pub const SIMPLE_UNNESTED_GETBLOCKCHAININFO_RESULT: &str =
     r#"{"name":"String"}"#;
 
-pub const SIMPLE_NESTED_GETBLOCKCHAININFO: &str = r#"{ 
+pub const SPECIAL_NESTED_GETBLOCKCHAININFO: &str = r#"{ 
      "xxxx" : {                (string) branch ID of the upgrade
         "name": "xxxx",        (string) name of upgrade
    }
 }
 "#;
 
-pub const SIMPLE_NESTED_GETBLOCKCHAININFO_RESULT: &str =
-    r#"{"SPECIALSYNTAX":{"name":"String"}}"#;
+pub const SPECIAL_NESTED_GETBLOCKCHAININFO_RESULT: &str =
+    r#"{"String":{"name":"String"}}"#;
 
 pub fn valid_getinfo_annotation() -> serde_json::Value {
     serde_json::json!([
