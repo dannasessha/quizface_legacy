@@ -1,9 +1,9 @@
 pub mod utils;
-use utils::logging;
 use crate::logging::create_log_dirs;
 use crate::logging::log_masterhelp_output;
-use std::path::Path;
 use serde_json::{json, map::Map, Value, Value::Array};
+use std::path::Path;
+use utils::logging;
 
 pub fn ingest_commands() -> Vec<String> {
     create_log_dirs();
@@ -57,9 +57,9 @@ pub fn check_success(output: &std::process::ExitStatus) {
 
 pub fn parse_raw_output(raw_command_help: &str) -> String {
     let (cmd_name, mut result_data) = extract_name_and_result(raw_command_help);
-    // pre-cleaning `mut result_data` (String)
     // TODO remove these kind of special cases or consolidate
     // OR use tests to demonstrate?
+    /*
     if cmd_name == "getblockchaininfo".to_string() {
         // TODO this token does appear, but it is read?
         // ie, possible to stop reading a line when a match is made?
@@ -70,34 +70,37 @@ pub fn parse_raw_output(raw_command_help: &str) -> String {
         // TODO consider also, "reject" (same fields as "enforce")
         // special case? `{ ... }` on line
     }
+    */
     let result_chars = &mut result_data.chars();
     let last_char = result_chars.next().expect("Missing first char!");
     let context = &mut Context {
         cmd_name,
         last_char,
     };
-    let blazz = annotate_result(context, result_chars).to_string();
-    dbg!(&blazz);
-    blazz
+    let annotated = annotate_result(context, result_chars).to_string();
+    annotated
 }
 
 fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
-    let result_sections = raw_command_help.split("Result:\n").collect::<Vec<&str>>();
+    let result_sections =
+        raw_command_help.split("Result:\n").collect::<Vec<&str>>();
     // TODO? instead of panicing, failed check break to next command
-    // related to `blessed` commands, defined slightly differently, 
-    // these checks could be folded into or serve to augment blessed. 
+    // related to `blessed` commands, defined slightly differently,
+    // these checks could be folded into or serve to augment blessed.
     assert_eq!(result_sections.len(), 2, "Wrong number of Results!");
-    let cmd_name =
-        result_sections[0].split_ascii_whitespace().collect::<Vec<&str>>()[0];
+    let cmd_name = result_sections[0]
+        .split_ascii_whitespace()
+        .collect::<Vec<&str>>()[0];
     let end_section = result_sections[1];
-    let example_sections = end_section.split("Examples:\n").collect::<Vec<&str>>();
+    let example_sections =
+        end_section.split("Examples:\n").collect::<Vec<&str>>();
     // TODO same as last comment.
     assert_eq!(example_sections.len(), 2, "Wrong number of Examples!");
     (cmd_name.to_string(), example_sections[0].trim().to_string())
 }
 
 // TODO consider need for struct; related to 'special cases' revisions
-// also, last_char changes within parsing individual command but 
+// also, last_char changes within parsing individual command but
 // cmd_name doesn't, why bind a variable and a 'constant' in a struct?
 struct Context {
     cmd_name: String,
@@ -113,24 +116,32 @@ fn annotate_result(
     match context.last_char {
         '{' => {
             let mut ident_label_bindings = Map::new();
-            // map is what's IN an object... this is probably correct.
-            // map is nice because it's key/value type.
-            // returns from inner should be set as value.
-            // the map should be added to as things are discovered.
             loop {
                 match result_chars.next().unwrap() {
+                    /*'\n' => {
+                        let returned = bind_idents_labels(
+                            viewed.clone(),
+                            //TODO evaluate / remove cmd_name things
+                            context.cmd_name.clone()
+                            // need to pass on inner
+                        )
+                        // this approach here would need to accept
+                        // lines that did not process correctly,
+                        // in getblockchaininfo
+                    }*/
                     '}' => {
+                        dbg!("end brace");
                         ident_label_bindings = bind_idents_labels(
                             viewed.clone(),
                             context.cmd_name.clone(),
                             None,
                         );
-                        //write to map: probably continue.
-                        //how does the loop end? when there is no next.
-                        //if the string goes beyond the final `}` no 
+                        dbg!(&ident_label_bindings);
+                        //write to containing value and close,
+                        //then continue.
                         break;
                     }
-                    last_viewed if last_viewed == '[' || last_viewed == '{' => { 
+                    last_viewed if last_viewed == '[' || last_viewed == '{' => {
                         dbg!("recursing");
                         let inner_value = recurse(
                             last_viewed,
@@ -138,12 +149,12 @@ fn annotate_result(
                             //&mut viewed,
                             &mut result_chars,
                         );
-                        //&inner_value is serde_json::Value,
-                        bind_idents_labels(
+                        ident_label_bindings = bind_idents_labels(
                             viewed.clone(),
                             context.cmd_name.clone(),
                             Some(inner_value),
-                            );
+                        );
+                        break;
                     }
                     // TODO: Handle unbalanced braces
                     x if x.is_ascii() => viewed.push(x),
@@ -151,9 +162,7 @@ fn annotate_result(
                 }
             }
             dbg!(&ident_label_bindings);
-            // Map<String, Value>
-            return Value::Object(ident_label_bindings)
-            //Value::Object(ident_label_bindings).to_string()
+            return Value::Object(ident_label_bindings);
         }
         '[' => {
             //#[allow(unused_assignments)]
@@ -175,7 +184,7 @@ fn annotate_result(
                             viewed.clone(),
                             context.cmd_name.clone(),
                             Some(inner_value),
-                            );
+                        );
                         /*dbg!(&inner_value);
                         if inner_value.is_object() {
                             //inner = serde_json::Value::Object(temp);
@@ -192,8 +201,7 @@ fn annotate_result(
                     _ => panic!("character is UTF-8 but not ASCII!"),
                 }
             }
-            return Value::Array(ordered_results)
-            //Value::Array(ordered_results).to_string()
+            return Value::Array(ordered_results);
         }
         _ => unimplemented!(),
     }
@@ -214,69 +222,59 @@ fn bind_idents_labels(
         special_cases::getblockchaininfo_reject::create_bindings()
     } else {
     */
+    dbg!(&cleaned);
     dbg!(&inner_value);
-
     if inner_value != None {
-        dbg!("hey");
         let map_with_inner = Map::new();
-        let mut i = 1;
-        while i < cleaned.len(){
-                let indent_and_metadata = cleaned
-                    .iter()
-                    .next()
-                    .trim()
-                    .splitn(2, ':')
-                    .collect::<Vec<&str>>();
-                let ident = ident_and_metadata[0].trim_matches('"');
-                let mut meta_data = ident_and_metadata[1].trim();
-                let mut annotation = String::new();
-                dbg!(&meta_data);
-                dbg!(&meta_data.split(|c| c == '(' || c == ')'));
-                let raw_label: &str = meta_data
-                    .split(|c| c == '(' || c == ')')
-                    .collect::<Vec<&str>>()[1];
-                annotation = make_label(raw_label);
-                map_with_inner.insert(ident, Value(annotation));
-        // push annotation to map
-                i += 1;
-        }
-        if i == cleaned.len(){
-            cleaned
+        let mut cleaned_mutable = cleaned.clone();
+        let last_ident_untrimmed = cleaned_mutable.pop().unwrap();
+        let last_ident = last_ident_untrimmed
+            .trim()
+            .splitn(2, ':')
+            .collect::<Vec<&str>>()[0]
+            .trim_matches('"');
+        let mut begin_map = Map::new();
+        if cleaned_mutable.len() > 0 {
+            begin_map = cleaned_mutable
                 .iter()
-                .next();
-
-            // pull stunt binding ident to value
+                .map(|ident_rawlabel| {
+                    label_identifier(
+                        ident_rawlabel.to_string(),
+                        cmd_name.as_str(),
+                    )
+                })
+                .map(|(a, b)| (a.to_string(), json!(b.to_string())))
+                .collect::<Map<String, Value>>();
         }
-        if i > cleaned.len(){
-            panic!("cleaned length panic");
-        }
-        // return Map of resulting stunt.
-        return Map::new()
+        dbg!(&begin_map);
+        return [(last_ident, inner_value.unwrap())]
+            .iter()
+            .cloned()
+            .map(|(a, b)| (a.to_string(), b))
+            .collect::<Map<String, Value>>();
     } else {
-        dbg!("yo");
-        return cleaned.iter()
+        return cleaned
+            .iter()
             .map(|ident_rawlabel| {
                 label_identifier(ident_rawlabel.to_string(), cmd_name.as_str())
             })
             .map(|(a, b)| (a.to_string(), json!(b.to_string())))
-            .collect::<Map<String, Value>>()
+            .collect::<Map<String, Value>>();
     }
     //}
 }
 
-// consolodate with other preparation? 
+// consolodate with other preparation?
 fn clean_viewed(raw_viewed: String) -> Vec<String> {
     let mut ident_labels = raw_viewed
-        .trim_end() // trailing whitespace. needed?
-        .lines() // line iterator, as string slices
-        .map(|x| x.to_string()) // back to string. replace with `for`?
+        .trim_end()
+        .lines()
+        .map(|x| x.to_string())
         .collect::<Vec<String>>();
-    match ident_labels.remove(0).trim() { //operates on each element of vec in turn. removes leading and trailing whitespace. `for` or `if/let else
+    match ident_labels.remove(0).trim() {
         empty if empty.is_empty() => (),
-        description if description.contains("(object)") => (), // this
-        // seems questionable... but, unfortunately, not 
-        // every object is labeled as such in getblockchaininfo. 
-        i if i == "...".to_string() => ident_labels = vec![String::from(i)], // this is a match only if the whole line is "..." and then rebinds ident_labels!? or matches only the end of `softforks`? and thus returns a vec 
+        description if description.contains("(object)") => (),
+        i if i == "...".to_string() => ident_labels = vec![String::from(i)],
         catchall @ _ => {
             dbg!(catchall);
         }
@@ -304,28 +302,18 @@ mod special_cases {
     }
 }
 
-//label_identifier expects a vec of strings which are lines of 'viewed'.
-// this is called inside a .map() |closure |`ident_rawlabel`| which 
-// passed `ident_rawlabel.to_string() and
-// here names it `ident_with_metadata`
-// could add exception for when the second string can't be found?
-
+// assumes well-formed `ident_with_metadata`
 fn label_identifier(
     ident_with_metadata: String,
     cmd_name: &str,
-//    inner_value: Option<Value>,
 ) -> (String, String) {
     let ident_and_metadata = ident_with_metadata
         .trim()
         .splitn(2, ':')
         .collect::<Vec<&str>>();
     let ident = ident_and_metadata[0].trim_matches('"');
-    //if ident_and_metadata.len() == 2 {
-        let mut meta_data = ident_and_metadata[1].trim();
-    //} else {
-      //  let mut meta_data = inner_value.unwrap();
-   // }
-        /*
+    let mut meta_data = ident_and_metadata[1].trim();
+    /*
     if meta_data
         .contains(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
         && cmd_name == "getblockchaininfo".to_string()
@@ -336,11 +324,8 @@ fn label_identifier(
             .trim();
     }
     */
-    #[allow(unused_assignments)]
     let mut annotation = String::new();
-    // in some cases meta_data seems to be empty, and the code panics.
     dbg!(&meta_data);
-    dbg!(&meta_data.split(|c| c == '(' || c == ')'));
     if meta_data.starts_with('{') || meta_data.starts_with('[') {
         annotation = meta_data.to_string();
     } else {
@@ -376,13 +361,7 @@ fn recurse(
     mut result_chars: &mut std::str::Chars,
 ) -> serde_json::value::Value {
     context.last_char = last_viewed;
-    annotate_result(
-        &mut context,
-        &mut result_chars,
-    )
-        //.expect("couldn't get string from json")
-    //&mut viewed.push_str(&inner);
-    //dbg!(&inner);
+    annotate_result(&mut context, &mut result_chars)
 }
 
 fn label_by_position(raw_observed: String) -> Vec<Value> {
@@ -403,7 +382,7 @@ mod unit {
     use crate::utils::test;
     use serde_json::json;
 
-// ----------------label_identifier---------------
+    // ----------------label_identifier---------------
 
     #[test]
     fn label_identifier_with_expected_input_valid() {
@@ -416,15 +395,12 @@ mod unit {
         );
     }
 
-// ----------------annotate_result---------------
+    // ----------------annotate_result---------------
 
     #[test]
     fn annotate_result_simple_unnested_generate() {
-        let mut simple_unnested =
-            &mut test::SIMPLE_UNNESTED.chars();
-        let last_char = simple_unnested
-            .next()
-            .expect("Missing first char!");
+        let mut simple_unnested = &mut test::SIMPLE_UNNESTED.chars();
+        let last_char = simple_unnested.next().expect("Missing first char!");
         let annotated = annotate_result(
             &mut Context {
                 last_char,
@@ -439,11 +415,8 @@ mod unit {
     #[ignore]
     #[test]
     fn annotate_result_simple_unnested() {
-        let mut simple_unnested =
-            &mut test::SIMPLE_UNNESTED.chars();
-        let last_char = simple_unnested
-            .next()
-            .expect("Missing first char!");
+        let mut simple_unnested = &mut test::SIMPLE_UNNESTED.chars();
+        let last_char = simple_unnested.next().expect("Missing first char!");
         let annotated = annotate_result(
             &mut Context {
                 last_char,
@@ -457,11 +430,8 @@ mod unit {
 
     #[test]
     fn annotate_result_simple_nested_generate() {
-        let mut simple_nested =
-            &mut test::SIMPLE_NESTED.chars();
-        let last_char = simple_nested
-            .next()
-            .expect("Missing first char!");
+        let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
+        let last_char = simple_nested.next().expect("Missing first char!");
         let annotated = annotate_result(
             &mut Context {
                 last_char,
@@ -475,11 +445,8 @@ mod unit {
     #[ignore]
     #[test]
     fn annotate_result_simple_nested() {
-        let mut simple_nested =
-            &mut test::SIMPLE_NESTED.chars();
-        let last_char = simple_nested
-            .next()
-            .expect("Missing first char!");
+        let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
+        let last_char = simple_nested.next().expect("Missing first char!");
         let annotated = annotate_result(
             &mut Context {
                 last_char,
@@ -542,8 +509,8 @@ mod unit {
         }
     }
 
-// ------------------ annotate_result : ignored --------
-    
+    // ------------------ annotate_result : ignored --------
+
     #[ignore]
     #[test]
     fn annotate_result_from_getinfo_expected() {
@@ -563,8 +530,7 @@ mod unit {
         assert_eq!(annotated, expected_testdata_annotated);
     }
 
-
-    #[ignore]    
+    #[ignore]
     #[test]
     fn annotate_result_enforce_as_input() {
         use std::collections::HashMap;
@@ -583,7 +549,7 @@ mod unit {
             )
         );
     }
-    
+
     #[ignore]
     #[test]
     fn annotate_result_nested_obj_extracted_from_softfork() {
@@ -601,24 +567,25 @@ mod unit {
         assert_eq!(Value::Object(expected_enforce), annotated);
     }
 
-// ----------------sanity_check---------------
+    // ----------------sanity_check---------------
 
     #[test]
     fn sanity_check_simple_unnested() {
         let simple_unnested_result = test::SIMPLE_UNNESTED_RESULT.to_string();
-        let simple_unnested_json = test::simple_unnested_json_generator().to_string();
+        let simple_unnested_json =
+            test::simple_unnested_json_generator().to_string();
         assert_eq!(simple_unnested_result, simple_unnested_json);
     }
 
     #[test]
     fn sanity_check_simple_nested() {
         let simple_nested_result = test::SIMPLE_NESTED_RESULT.to_string();
-        let simple_nested_json = test::simple_nested_json_generator().to_string();
+        let simple_nested_json =
+            test::simple_nested_json_generator().to_string();
         assert_eq!(simple_nested_result, simple_nested_json);
-
     }
 
-// ----------------parse_raw_output---------------
+    // ----------------parse_raw_output---------------
 
     #[ignore]
     #[test]
@@ -686,7 +653,7 @@ mod unit {
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 
-// ----------------parse_raw_output : ignored---------------
+    // ----------------parse_raw_output : ignored---------------
 
     // TODO look at these first few
     #[ignore]
@@ -709,14 +676,14 @@ mod unit {
         let valid_help_in = parse_raw_output(test::RBRACKETY_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
-    
+
     #[ignore]
     #[test]
     fn parse_raw_output_early_extrabrackets_input() {
         let valid_help_in = parse_raw_output(test::EXTRABRACKETS1_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
-    
+
     #[ignore]
     #[test]
     fn parse_raw_output_late_extrabrackets_input() {
@@ -757,8 +724,8 @@ mod unit {
         dbg!(parse_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE));
     }
 
-// ----------------serde_json_value : ignored---------------
-    // if we move away from serde_json this may 
+    // ----------------serde_json_value : ignored---------------
+    // if we move away from serde_json this may
     // need to be retooled or deprecated
     #[ignore]
     #[test]
@@ -768,7 +735,7 @@ mod unit {
         assert_eq!(getinfo_serde_json_value, help_getinfo);
     }
 
-    // if we move away from serde_json this may 
+    // if we move away from serde_json this may
     // need to be retooled or deprecated
     #[ignore]
     #[test]
