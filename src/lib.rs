@@ -136,8 +136,6 @@ fn annotate_result(
                             None,
                         );
                         dbg!(&ident_label_bindings);
-                        //write to containing value and close,
-                        //then continue.
                         break;
                     }
                     last_viewed if last_viewed == '[' || last_viewed == '{' => {
@@ -145,7 +143,6 @@ fn annotate_result(
                         let inner_value = recurse(
                             last_viewed,
                             &mut context,
-                            //&mut viewed,
                             &mut result_chars,
                         );
                         ident_label_bindings = bind_idents_labels(
@@ -184,8 +181,8 @@ fn annotate_result(
                             context.cmd_name.clone(),
                             Some(inner_value),
                         );
-                        /*dbg!(&inner_value);
-                        if inner_value.is_object() {
+                        //dbg!(&inner_value);
+                        /*if inner_value.is_object() {
                             //inner = serde_json::Value::Object(temp);
                             inner_object = inner_value.as_object().unwrap().clone();
                             dbg!(&inner_object);
@@ -281,7 +278,7 @@ fn clean_viewed(raw_viewed: String) -> Vec<String> {
     ident_labels
 }
 
-// is there a way to eliminate or consolidate special cases?
+// TODO eliminate or consolidate special cases?
 mod special_cases {
     pub(crate) mod getblockchaininfo_reject {
         pub const TRAILING_TRASH: &str = "      (object)";
@@ -356,7 +353,6 @@ fn make_label(raw_label: &str) -> String {
 fn recurse(
     last_viewed: char,
     mut context: &mut Context,
-    //viewed: &mut String,
     mut result_chars: &mut std::str::Chars,
 ) -> serde_json::value::Value {
     context.last_char = last_viewed;
@@ -474,6 +470,42 @@ mod unit {
         assert_eq!(expected_result, annotated.to_string());
     }
 
+    #[test]
+    fn annotate_result_from_getinfo_expected() {
+        let expected_testdata_annotated = test::valid_getinfo_annotation();
+        let (cmd_name, section_data) =
+            extract_name_and_result(test::HELP_GETINFO);
+        let data_stream = &mut section_data.chars();
+        let last_char = data_stream.next().unwrap();
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name,
+            },
+            data_stream,
+        );
+        assert_eq!(annotated, expected_testdata_annotated);
+    }
+
+    #[test]
+    fn annotate_result_enforce_as_input() {
+        use std::collections::HashMap;
+        let testmap = json!(test::INTERMEDIATE_REPR_ENFORCE
+            .iter()
+            .map(|(a, b)| (a.to_string(), json!(b.to_string())))
+            .collect::<HashMap<String, Value>>());
+        assert_eq!(
+            testmap,
+            annotate_result(
+                &mut Context {
+                    last_char: '{',
+                    cmd_name: "getblockchaininfo".to_string()
+                },
+                &mut test::ENFORCE_EXTRACTED.chars(),
+            )
+        );
+    }
+
     // ------------------ annotate_result : ignored --------
 
     //rename function for clarity?
@@ -506,44 +538,6 @@ mod unit {
         );
         let expected_result = test::SPECIAL_NESTED_GETBLOCKCHAININFO_RESULT;
         assert_eq!(expected_result, annotated.to_string());
-    }
-    #[ignore]
-    #[test]
-    fn annotate_result_from_getinfo_expected() {
-        // serde_json::Value
-        let expected_testdata_annotated = test::valid_getinfo_annotation();
-        let (cmd_name, section_data) =
-            extract_name_and_result(test::HELP_GETINFO);
-        let data_stream = &mut section_data.chars();
-        let last_char = data_stream.next().unwrap();
-        let annotated = annotate_result(
-            &mut Context {
-                last_char,
-                cmd_name,
-            },
-            data_stream,
-        );
-        assert_eq!(annotated, expected_testdata_annotated);
-    }
-
-    #[ignore]
-    #[test]
-    fn annotate_result_enforce_as_input() {
-        use std::collections::HashMap;
-        let testmap = json!(test::INTERMEDIATE_REPR_ENFORCE
-            .iter()
-            .map(|(a, b)| (a.to_string(), json!(b.to_string())))
-            .collect::<HashMap<String, Value>>());
-        assert_eq!(
-            testmap,
-            annotate_result(
-                &mut Context {
-                    last_char: '{',
-                    cmd_name: "getblockchaininfo".to_string()
-                },
-                &mut test::ENFORCE_EXTRACTED.chars(),
-            )
-        );
     }
 
     #[ignore]
@@ -583,7 +577,6 @@ mod unit {
 
     // ----------------parse_raw_output---------------
 
-    #[ignore]
     #[test]
     fn parse_raw_output_simple_unnested_full() {
         let simple_unnested_full = test::SIMPLE_UNNESTED_FULL;
@@ -592,13 +585,17 @@ mod unit {
         assert_eq!(parsed, expected_result);
     }
 
-    #[ignore]
     #[test]
     fn parse_raw_output_simple_nested_full() {
         let simple_nested_full = test::SIMPLE_NESTED_FULL;
         let parsed = parse_raw_output(simple_nested_full);
         let expected_result = test::SIMPLE_NESTED_RESULT;
         assert_eq!(parsed, expected_result);
+    }
+
+    #[test]
+    fn parse_raw_output_upgrades_in_obj_extracted() {
+        dbg!(parse_raw_output(test::UPGRADES_IN_OBJ_EXTRACTED));
     }
 
     #[test]
@@ -652,6 +649,7 @@ mod unit {
     // ----------------parse_raw_output : ignored---------------
 
     // TODO look at these first few
+    // what is test::valid_getinfo_annotation()
     #[ignore]
     #[test]
     fn parse_raw_output_expected_input_valid() {
@@ -689,12 +687,6 @@ mod unit {
 
     #[ignore]
     #[test]
-    fn parse_raw_output_upgrades_in_obj_extracted() {
-        dbg!(parse_raw_output(test::UPGRADES_IN_OBJ_EXTRACTED));
-    }
-
-    #[ignore]
-    #[test]
     fn parse_raw_output_getblockchaininfo_softforks_fragment() {
         let expected_incoming = test::GETBLOCKCHAININFO_SOFTFORK_FRAGMENT;
         let expected_results = r#"{"softforks":"[{\"enforce\":\"{\\\"found\\\":\\\"Decimal\\\",\\\"required\\\":\\\"Decimal\\\",\\\"status\\\":\\\"bool\\\",\\\"window\\\":\\\"Decimal\\\"},\",\"id\":\"String\",\"reject\":\"{\\\"found\\\":\\\"Decimal\\\",\\\"required\\\":\\\"Decimal\\\",\\\"status\\\":\\\"bool\\\",\\\"window\\\":\\\"Decimal\\\"}\",\"version\":\"Decimal\"}],"}"#;
@@ -721,7 +713,6 @@ mod unit {
     }
 
     // ----------------serde_json_value : ignored---------------
-    // if we move away from serde_json this may
     // need to be retooled or deprecated
     #[ignore]
     #[test]
@@ -731,7 +722,6 @@ mod unit {
         assert_eq!(getinfo_serde_json_value, help_getinfo);
     }
 
-    // if we move away from serde_json this may
     // need to be retooled or deprecated
     #[ignore]
     #[test]

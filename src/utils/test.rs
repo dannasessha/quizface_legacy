@@ -566,6 +566,7 @@ pub const SPECIAL_NESTED_GETBLOCKCHAININFO: &str = r#"{
 pub const SPECIAL_NESTED_GETBLOCKCHAININFO_RESULT: &str =
     r#"{"String":{"name":"String"}}"#;
 
+//TODO review this function and its tests
 pub fn valid_getinfo_annotation() -> serde_json::Value {
     serde_json::json!([
         ("version", "Decimal"),
