@@ -76,7 +76,8 @@ pub fn interpret_raw_output(raw_command_help: &str) -> String {
         cmd_name,
         last_char,
     };
-    let annotated_serialized = annotate_result(context, result_chars).to_string();
+    let annotated_serialized =
+        annotate_result(context, result_chars).to_string();
     annotated_serialized
 }
 
@@ -600,7 +601,8 @@ mod unit {
     #[test]
     #[should_panic]
     fn interpret_raw_output_extrabrackets_within_input_lines() {
-        let valid_help_in = interpret_raw_output(test::EXTRABRACKETS3_HELP_GETINFO);
+        let valid_help_in =
+            interpret_raw_output(test::EXTRABRACKETS3_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 
@@ -634,7 +636,8 @@ mod unit {
     #[test]
     #[should_panic]
     fn interpret_raw_output_no_end_bracket_input() {
-        let valid_help_in = interpret_raw_output(test::NO_END_BRACKET_HELP_GETINFO);
+        let valid_help_in =
+            interpret_raw_output(test::NO_END_BRACKET_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
@@ -673,14 +676,16 @@ mod unit {
     #[ignore]
     #[test]
     fn interpret_raw_output_early_extrabrackets_input() {
-        let valid_help_in = interpret_raw_output(test::EXTRABRACKETS1_HELP_GETINFO);
+        let valid_help_in =
+            interpret_raw_output(test::EXTRABRACKETS1_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 
     #[ignore]
     #[test]
     fn interpret_raw_output_late_extrabrackets_input() {
-        let valid_help_in = interpret_raw_output(test::EXTRABRACKETS2_HELP_GETINFO);
+        let valid_help_in =
+            interpret_raw_output(test::EXTRABRACKETS2_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 
@@ -701,7 +706,8 @@ mod unit {
         let expected_incoming =
             test::GETBLOCKCHAININFO_ENFORCE_AND_REJECT_FRAGMENT;
         let expected_results = r#"{"enforce":"{\"found\":\"Decimal\",\"required\":\"Decimal\",\"status\":\"bool\",\"window\":\"Decimal\"},","id":"String","reject":"{\"found\":\"Decimal\",\"required\":\"Decimal\",\"status\":\"bool\",\"window\":\"Decimal\"}","version":"Decimal"}"#;
-        let interpreted = format!("{}", interpret_raw_output(expected_incoming));
+        let interpreted =
+            format!("{}", interpret_raw_output(expected_incoming));
         assert_eq!(interpreted, expected_results);
     }
 
