@@ -56,7 +56,7 @@ pub fn check_success(output: &std::process::ExitStatus) {
 }
 
 pub fn interpret_raw_output(raw_command_help: &str) -> String {
-    let (cmd_name, mut result_data) = extract_name_and_result(raw_command_help);
+    let (cmd_name, result_data) = extract_name_and_result(raw_command_help);
     // TODO remove these kind of special cases or consolidate
     // OR use tests to demonstrate?
     /*
@@ -76,9 +76,9 @@ pub fn interpret_raw_output(raw_command_help: &str) -> String {
         cmd_name,
         last_char,
     };
-    let annotated_serialized =
+    let annotated_json_text =
         annotate_result(context, result_chars).to_string();
-    annotated_serialized
+    annotated_json_text
 }
 
 fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
@@ -120,13 +120,8 @@ fn annotate_result(
                     /*'\n' => {
                         let returned = bind_idents_labels(
                             viewed.clone(),
-                            //TODO evaluate / remove cmd_name things
                             context.cmd_name.clone()
-                            // need to pass on inner
                         )
-                        // this approach here would need to accept
-                        // lines that did not process correctly,
-                        // in getblockchaininfo
                     }*/
                     '}' => {
                         dbg!("end brace");
@@ -221,7 +216,6 @@ fn bind_idents_labels(
     //dbg!(&cleaned);
     //dbg!(&inner_value);
     if inner_value != None {
-        let map_with_inner = Map::new();
         let mut cleaned_mutable = cleaned.clone();
         let last_ident_untrimmed = cleaned_mutable.pop().unwrap();
         let last_ident = last_ident_untrimmed
@@ -243,6 +237,9 @@ fn bind_idents_labels(
                 .collect::<Map<String, Value>>();
         }
         //dbg!(&begin_map);
+        // TODO create return from begin_map and following;
+        // currently set to `return`
+        // && make acceptable to outer Value
         return [(last_ident, inner_value.unwrap())]
             .iter()
             .cloned()
@@ -277,7 +274,7 @@ fn clean_viewed(raw_viewed: String) -> Vec<String> {
     ident_labels
 }
 
-// TODO consolidate special cases?
+// TODO consolidate special cases
 /*mod special_cases {
     pub(crate) mod getblockchaininfo_reject {
         pub const TRAILING_TRASH: &str = "      (object)";
@@ -307,7 +304,7 @@ fn label_identifier(
         .splitn(2, ':')
         .collect::<Vec<&str>>();
     let ident = ident_and_metadata[0].trim_matches('"');
-    let mut meta_data = ident_and_metadata[1].trim();
+    let meta_data = ident_and_metadata[1].trim();
     /*
     // consolodate
     if meta_data
