@@ -714,16 +714,16 @@ mod unit {
         dbg!(interpret_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE));
     }
 
-    // ----------------serde_json_value : ignored---------------
+    // ----------------serde_json_value----------------
     // need to be retooled or deprecated
-    #[ignore]
     #[test]
     fn serde_json_value_help_getinfo() {
         let getinfo_serde_json_value = test::getinfo_export();
         let help_getinfo = interpret_raw_output(test::HELP_GETINFO);
-        assert_eq!(getinfo_serde_json_value, help_getinfo);
+        assert_eq!(getinfo_serde_json_value.to_string(), help_getinfo);
     }
 
+    // ----------------serde_json_value : ignored---------------
     // need to be retooled or deprecated
     #[ignore]
     #[test]
@@ -732,6 +732,6 @@ mod unit {
             test::getblockchaininfo_export();
         let help_getblockchaininfo =
             interpret_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE);
-        assert_eq!(getblockchaininfo_serde_json_value, help_getblockchaininfo);
+        assert_eq!(getblockchaininfo_serde_json_value.to_string(), help_getblockchaininfo);
     }
 }
