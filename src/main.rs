@@ -14,9 +14,9 @@ fn main() {
 
         // TODO : make more general and remove `if`
         if command == "getinfo".to_string() {
-            let parsed_command_help =
-                quizface::parse_raw_output(raw_command_help);
-            dbg!(&parsed_command_help);
+            let interpreted_command_help =
+                quizface::interpret_raw_output(raw_command_help);
+            dbg!(&interpreted_command_help);
         }
     }
     println!("main() complete!");
