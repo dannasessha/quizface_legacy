@@ -518,6 +518,8 @@ Examples:
 b
 "#;
 
+// TODO rename RESULT in following tests 
+// to ANNOTATED or ANNOTATED_JSON_STRING?
 pub const SIMPLE_UNNESTED_RESULT: &str = r#"{"outer_id":"String"}"#;
 
 pub fn simple_nested_json_generator() -> serde_json::Value {
@@ -548,6 +550,56 @@ b
 
 pub const SIMPLE_NESTED_RESULT: &str = r#"{"outer_id":{"inner_id":"String"}}"#;
 
+pub const MULTIPLE_NESTED: &str = r#"{ 
+    "outer_id": {
+        "inner_id": "xxxx",      (string) extra unimportant text
+    }
+    "second_outer_id": {
+        "second_inner_id": "xxxx",   (string) extra text 
+    }
+}"#;
+
+// TODO double check proper serialized JSON string format
+// and make generating functions using serde and/or sanity checks
+pub const MULTIPLE_NESTED_ANNOTATION: &str = r#"{"outer_id":{"inner_id":"String"}"second_outer_id":{"second_inner_id":"String"}}"#;
+
+pub const MULTIPLE_NESTED_2: &str = r#"{ 
+    "outer_id": {
+        "inner_id": "xxxx",      (string) extra unimportant text
+    }
+     "second_outer_id": {
+        "second_inner_id_one": "xxxx",   (string) extra text
+        "second_inner_id_two": "xxxx",   (string) extra text
+        }
+    "third_outer_id": {
+        "third_inner_id_one": "xxxx",   (string) extra text
+        "third_inner_id_two": "xxxx",   (string) extra text
+        "third_inner_id_three": "xxxx",   (string) extra text
+        }
+}"#;
+
+pub const MULTIPLE_NESTED_3: &str = r#"{ 
+    "outer_id": {
+        "inner_id": "xxxx",      (string) extra unimportant text
+    }
+    "second_outer_id": {
+        "second_inner_id": "xxxx",   (string) extra text
+        "second_inner_id_two": "xxxx",   (string) extra text
+        }
+    "third_outer_id": {
+        "third_inner_id_one": "xxxx",   (string) extra text
+        "third_inner_id_two": "xxxx",   (string) extra text
+        "third_inner_id_three": "xxxx",   (string) extra text
+        }
+    "fourth_outer_id": {
+        "fourth_inner_id_with_object_value": {
+            "innermost_id_one": "xxxx"   (string) extra text
+            "innermost_id_two": "xxxx"   (string) extra text
+            "innermost_id_three": "xxxx"   (string) extra extra
+        }
+    }
+}"#;
+
 pub const SIMPLE_UNNESTED_GETBLOCKCHAININFO: &str = r#"{ 
      "name": "xxxx",        (string) name of upgrade
 }
@@ -567,6 +619,7 @@ pub const SPECIAL_NESTED_GETBLOCKCHAININFO_RESULT: &str =
     r#"{"String":{"name":"String"}}"#;
 
 //TODO review this function and its tests
+// I do not believe this is valid getinfo info.
 pub fn valid_getinfo_annotation() -> serde_json::Value {
     serde_json::json!([
         ("version", "Decimal"),

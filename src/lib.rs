@@ -450,6 +450,21 @@ mod unit {
     }
 
     #[test]
+    fn annotate_result_multiple_nested_in_outer_object(){
+        let mut multiple_nested = &mut test::MULTIPLE_NESTED.chars();
+        let last_char = multiple_nested.next().expect("Missing first char!");
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(), 
+            },
+            &mut multiple_nested,
+            );
+        let expected_annotation = test::MULTIPLE_NESTED_ANNOTATION;
+        assert_eq!(expected_annotation, annotated.to_string());
+    }
+
+    #[test]
     fn annotate_result_simple_unnested_getblockchaininfo() {
         let mut simple_unnested_blockchaininfo =
             &mut test::SIMPLE_UNNESTED_GETBLOCKCHAININFO.chars();
@@ -734,4 +749,5 @@ mod unit {
             interpret_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE);
         assert_eq!(getblockchaininfo_serde_json_value.to_string(), help_getblockchaininfo);
     }
+
 }
