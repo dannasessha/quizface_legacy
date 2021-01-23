@@ -518,7 +518,7 @@ Examples:
 b
 "#;
 
-// TODO rename RESULT in following tests 
+// TODO rename RESULT in following tests
 // to ANNOTATED or ANNOTATED_JSON_STRING?
 pub const SIMPLE_UNNESTED_RESULT: &str = r#"{"outer_id":"String"}"#;
 
