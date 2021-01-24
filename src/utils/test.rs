@@ -550,6 +550,18 @@ b
 
 pub const SIMPLE_NESTED_RESULT: &str = r#"{"outer_id":{"inner_id":"String"}}"#;
 
+// TODO double check strict comma syntax, 
+// proper serialized JSON string format
+pub fn multiple_nested_json_generator() -> serde_json::Value {
+    let multiple_nested_json = serde_json::json!({
+    "outer_id":
+        {"inner_id": "String"},
+    "second_outer_id":
+        {"second_inner_id": "String"}
+    });
+    multiple_nested_json
+}
+
 pub const MULTIPLE_NESTED: &str = r#"{ 
     "outer_id": {
         "inner_id": "xxxx",      (string) extra unimportant text
@@ -559,9 +571,26 @@ pub const MULTIPLE_NESTED: &str = r#"{
     }
 }"#;
 
-// TODO double check proper serialized JSON string format
-// and make generating functions using serde and/or sanity checks
-pub const MULTIPLE_NESTED_ANNOTATION: &str = r#"{"outer_id":{"inner_id":"String"}"second_outer_id":{"second_inner_id":"String"}}"#;
+pub const MULTIPLE_NESTED_ANNOTATION: &str = r#"{"outer_id":{"inner_id":"String"},"second_outer_id":{"second_inner_id":"String"}}"#;
+
+// TODO conform tests to test for valid JSON objects, not JSON strings?
+// this generator under current tests produces a different order
+// for the members of the Value (object) of "third_outer_id"
+// than are typed here into the macro.
+pub fn multiple_nested_2_json_generator() -> serde_json::Value {
+    let multiple_nested_2_json = serde_json::json!({
+    "outer_id":
+        {"inner_id": "String"},
+    "second_outer_id":
+        {"second_inner_id_one": "String",
+        "second_inner_id_two": "String"},
+    "third_outer_id":
+        {"third_inner_id_one": "String",
+        "third_inner_id_two": "String",
+        "third_inner_id_three": "String"}
+    });
+    multiple_nested_2_json
+}
 
 pub const MULTIPLE_NESTED_2: &str = r#"{ 
     "outer_id": {
@@ -578,7 +607,7 @@ pub const MULTIPLE_NESTED_2: &str = r#"{
         }
 }"#;
 
-pub const MULTIPLE_NESTED_2_ANNOTATION: &str = r#"{"outer_id":{"inner_id":"String"}"second_outer_id":{"second_inner_id_one":"String","second_inner_id_two":"String"}"third_outer_id":{"third_inner_id_one":"String","third_inner_id_two":"String","third_inner_id_three":"String"}}"#;
+pub const MULTIPLE_NESTED_2_ANNOTATION: &str = r#"{"outer_id":{"inner_id":"String"},"second_outer_id":{"second_inner_id_one":"String","second_inner_id_two":"String"},"third_outer_id":{"third_inner_id_one":"String","third_inner_id_two":"String","third_inner_id_three":"String"}}"#;
 
 pub const MULTIPLE_NESTED_3: &str = r#"{ 
     "outer_id": {

@@ -620,6 +620,27 @@ mod unit {
         assert_eq!(simple_nested_result, simple_nested_json);
     }
 
+    #[test]
+    fn sanity_check_multiple_nested() {
+        let multiple_nested_annotation = test::MULTIPLE_NESTED_ANNOTATION.to_string();
+        let multiple_nested_json =
+            test::multiple_nested_json_generator().to_string();
+        assert_eq!(multiple_nested_annotation, multiple_nested_json);
+    }
+
+    // this test returns a non-equivalence (failure) due to the macro
+    // in `multiple_nested_2_json_generator().to_string()` 
+    // serializing key-value pairs in a different order than is 
+    // provided as the input to the macro.
+    // One possible solution is to compare actual JSON values as opposed
+    // to testing for the equivalence of the serialized JSON strings.
+    #[test]
+    fn sanity_check_multiple_nested_2() {
+        let multiple_nested_2_annotation = test::MULTIPLE_NESTED_2_ANNOTATION.to_string();
+        let multiple_nested_2_json =
+            test::multiple_nested_2_json_generator().to_string();
+        assert_eq!(multiple_nested_2_annotation, multiple_nested_2_json);
+    }
     // ----------------interpret_raw_output---------------
 
     #[test]
