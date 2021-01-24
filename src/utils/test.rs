@@ -578,6 +578,8 @@ pub const MULTIPLE_NESTED_2: &str = r#"{
         }
 }"#;
 
+pub const MULTIPLE_NESTED_2_ANNOTATION: &str = r#"{"outer_id":{"inner_id":"String"}"second_outer_id":{"second_inner_id_one":"String","second_inner_id_two":"String"}"third_outer_id":{"third_inner_id_one":"String","third_inner_id_two":"String","third_inner_id_three":"String"}}"#;
+
 pub const MULTIPLE_NESTED_3: &str = r#"{ 
     "outer_id": {
         "inner_id": "xxxx",      (string) extra unimportant text
@@ -599,6 +601,8 @@ pub const MULTIPLE_NESTED_3: &str = r#"{
         }
     }
 }"#;
+
+pub const MULTIPLE_NESTED_3_ANNOTATION: &str = r#"{"outer_id":{"inner_id":"String"}"second_outer_id":{"second_inner_id_one":"String","second_inner_id_two":"String"}"third_outer_id":{"third_inner_id_one":"String","third_inner_id_two":"String","third_inner_id_three":"String"}"fourth_outer_id":{"fourth_inner_id_with_object_value":{"innermost_id_one":"String","innermost_id_two":"String","innermost_id_three":"String"}}}"#;
 
 pub const SIMPLE_UNNESTED_GETBLOCKCHAININFO: &str = r#"{ 
      "name": "xxxx",        (string) name of upgrade
