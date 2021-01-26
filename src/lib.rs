@@ -193,7 +193,7 @@ fn annotate_result(
             }
             return Value::Array(ordered_results);
         }
-        _ => unimplemented!(),
+        _ => todo!(),
     }
 }
 
@@ -215,7 +215,7 @@ fn bind_idents_labels(
     */
     //dbg!(&cleaned);
     //dbg!(&inner_value);
-    if inner_value != None {
+    if inner_value != None { // possible if/let
         let mut cleaned_mutable = cleaned.clone();
         let last_ident_untrimmed = cleaned_mutable.pop().unwrap();
         let last_ident = last_ident_untrimmed
@@ -247,11 +247,11 @@ fn bind_idents_labels(
             .collect::<Map<String, Value>>();
     } else {
         return cleaned
-            .iter()
+            .iter() // back into iter, could streamline?
             .map(|ident_rawlabel| {
                 label_identifier(ident_rawlabel.to_string(), cmd_name.as_str())
             })
-            .map(|(a, b)| (a.to_string(), json!(b.to_string())))
+            .map(|(ident, annotation)| (ident.to_string(), json!(annotation.to_string())))
             .collect::<Map<String, Value>>();
     }
 }
@@ -261,9 +261,9 @@ fn clean_viewed(raw_viewed: String) -> Vec<String> {
     let mut ident_labels = raw_viewed
         .trim_end()
         .lines()
-        .map(|x| x.to_string())
+        .map(|line| line.to_string())
         .collect::<Vec<String>>();
-    match ident_labels.remove(0).trim() {
+    match ident_labels.remove(0).trim() { //TODO these are special cases
         empty if empty.is_empty() => (),
         description if description.contains("(object)") => (),
         i if i == "...".to_string() => ident_labels = vec![String::from(i)],
@@ -320,7 +320,7 @@ fn label_identifier(
     let mut annotation = String::new();
     //dbg!(&meta_data);
     if meta_data.starts_with('{') || meta_data.starts_with('[') {
-        annotation = meta_data.to_string();
+        annotation = meta_data.to_string(); // TODO special case
     } else {
         let raw_label: &str = meta_data
             .split(|c| c == '(' || c == ')')
