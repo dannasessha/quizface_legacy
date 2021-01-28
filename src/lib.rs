@@ -120,11 +120,16 @@ fn annotate_result(
                 match result_chars.next().unwrap() {
                     '}' => {
                         dbg!("end brace");
+                        dbg!(&viewed);
+                        if viewed.trim().is_empty(){
+                            break;
+                        }
                         partial_ident_label_bindings = bind_idents_labels(
                             viewed.clone(),
                             context.cmd_name.clone(),
                             None,
                         );
+                        viewed.clear();
                         dbg!(&partial_ident_label_bindings);
                         ident_label_bindings.append(&mut partial_ident_label_bindings);
 
@@ -147,9 +152,11 @@ fn annotate_result(
                             context.cmd_name.clone(),
                             Some(inner_value),
                         );
+                        viewed.clear();
+
                         ident_label_bindings.append(&mut partial_ident_label_bindings);
                           
-                        break;
+                        //break;
                     }
                     // TODO: Handle unbalanced braces
                     x if x.is_ascii() => viewed.push(x),
@@ -208,6 +215,7 @@ fn bind_idents_labels(
     cmd_name: String,
     inner_value: Option<Value>,
 ) -> Map<String, Value> {
+    dbg!("bind_idents_labels called");
     let cleaned = clean_viewed(viewed);
     //cleaned is now a Vec of strings (that were lines in viewed).
     /*
@@ -427,21 +435,6 @@ mod unit {
     }
 
     #[test]
-    fn annotate_result_simple_nested_generate() {
-        let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
-        let last_char = simple_nested.next().expect("Missing first char!");
-        let annotated = annotate_result(
-            &mut Context {
-                last_char,
-                cmd_name: "getblockchaininfo".to_string(),
-            },
-            &mut simple_nested,
-        );
-        let expected_result = test::simple_nested_json_generator();
-        assert_eq!(expected_result, annotated);
-    }
-
-    #[test]
     fn annotate_result_simple_nested() {
         let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
         let last_char = simple_nested.next().expect("Missing first char!");
@@ -560,6 +553,23 @@ mod unit {
 
     // ------------------ annotate_result : ignored --------
 
+    //TODO generators may be inherently flawed 
+    #[ignore]
+    #[test]
+    fn annotate_result_simple_nested_generate() {
+        let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
+        let last_char = simple_nested.next().expect("Missing first char!");
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_nested,
+        );
+        let expected_result = test::simple_nested_json_generator();
+        assert_eq!(expected_result, annotated);
+    }
+
     //rename function for clarity?
     #[ignore]
     #[test]
@@ -641,6 +651,7 @@ mod unit {
     // provided as the input to the macro.
     // One possible solution is to compare actual JSON values as opposed
     // to testing for the equivalence of the serialized JSON strings.
+    #[ignore]
     #[test]
     fn sanity_check_multiple_nested_2() {
         let multiple_nested_2_annotation = test::MULTIPLE_NESTED_2_ANNOTATION.to_string();
@@ -666,10 +677,6 @@ mod unit {
         assert_eq!(interpreted, expected_result);
     }
 
-    #[test]
-    fn interpret_raw_output_upgrades_in_obj_extracted() {
-        dbg!(interpret_raw_output(test::UPGRADES_IN_OBJ_EXTRACTED));
-    }
 
     #[test]
     #[should_panic]
@@ -724,6 +731,11 @@ mod unit {
     // ----------------interpret_raw_output : ignored---------------
 
     // TODO look at these first few
+    #[ignore]
+    #[test]
+    fn interpret_raw_output_upgrades_in_obj_extracted() {
+        dbg!(interpret_raw_output(test::UPGRADES_IN_OBJ_EXTRACTED));
+    }
     // what is test::valid_getinfo_annotation()
     #[ignore]
     #[test]
