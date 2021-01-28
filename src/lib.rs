@@ -420,6 +420,21 @@ mod unit {
     }
 
     #[test]
+    fn annotate_result_simple_unnested_to_string() {
+        let mut simple_unnested = &mut test::SIMPLE_UNNESTED.chars();
+        let last_char = simple_unnested.next().expect("Missing first char!");
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_unnested,
+        );
+        let expected_annotation = test::SIMPLE_UNNESTED_RESULT;
+        assert_eq!(expected_annotation, annotated.to_string());
+    }
+
+    #[test]
     fn annotate_result_simple_unnested() {
         let mut simple_unnested = &mut test::SIMPLE_UNNESTED.chars();
         let last_char = simple_unnested.next().expect("Missing first char!");
@@ -430,8 +445,24 @@ mod unit {
             },
             &mut simple_unnested,
         );
-        let expected_result = test::SIMPLE_UNNESTED_RESULT;
-        assert_eq!(expected_result, annotated.to_string());
+        let expected_annotation: Value = serde_json::de::from_str(test::SIMPLE_UNNESTED_RESULT).unwrap();
+        assert_eq!(expected_annotation, annotated);
+    }
+
+    #[test]
+    fn annotate_result_simple_nested_to_string() {
+        let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
+        let last_char = simple_nested.next().expect("Missing first char!");
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_nested,
+        );
+        //TODO rename this const in test?
+        let expected_annotation = test::SIMPLE_NESTED_RESULT;
+        assert_eq!(expected_annotation, annotated.to_string());
     }
 
     #[test]
@@ -445,8 +476,8 @@ mod unit {
             },
             &mut simple_nested,
         );
-        let expected_result = test::SIMPLE_NESTED_RESULT;
-        assert_eq!(expected_result, annotated.to_string());
+        let expected_annotation: Value = serde_json::de::from_str(test::SIMPLE_NESTED_RESULT).unwrap();
+        assert_eq!(expected_annotation, annotated);
     }
 
     #[test]
@@ -460,13 +491,12 @@ mod unit {
             },
             &mut multiple_nested,
         );
-        let expected_annotation = test::MULTIPLE_NESTED_ANNOTATION;
-        assert_eq!(expected_annotation, annotated.to_string());
+        let expected_annotation: Value = serde_json::de::from_str(test::MULTIPLE_NESTED_ANNOTATION).unwrap();
+        assert_eq!(expected_annotation, annotated);
     }
 
     //TODO 
-    //(and eventually 3)
-    //and make sanity checks
+    // make saner sanity checks
     #[test]
     fn annotate_result_multiple_nested_2() {
         let mut multiple_nested = &mut test::MULTIPLE_NESTED_2.chars();
@@ -478,8 +508,8 @@ mod unit {
             },
             &mut multiple_nested,
         );
-        let expected_annotation = test::MULTIPLE_NESTED_2_ANNOTATION;
-        assert_eq!(expected_annotation, annotated.to_string());
+        let expected_annotation: Value = serde_json::de::from_str(test::MULTIPLE_NESTED_2_ANNOTATION).unwrap();
+        assert_eq!(expected_annotation, annotated);
     }
 
     #[test]
@@ -493,8 +523,8 @@ mod unit {
             },
             &mut multiple_nested,
         );
-        let expected_annotation = test::MULTIPLE_NESTED_3_ANNOTATION;
-        assert_eq!(expected_annotation, annotated.to_string());
+        let expected_annotation: Value = serde_json::de::from_str(test::MULTIPLE_NESTED_ANNOTATION).unwrap();
+        assert_eq!(expected_annotation, annotated);
     }
 
     #[test]
