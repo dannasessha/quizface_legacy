@@ -115,21 +115,19 @@ fn annotate_result(
     match context.last_char {
         '{' => {
             let mut ident_label_bindings = Map::new();
+            let mut partial_ident_label_bindings = Map::new();
             loop {
                 match result_chars.next().unwrap() {
-                    /*'\n' => {
-                        let returned = bind_idents_labels(
-                            viewed.clone(),
-                            context.cmd_name.clone()
-                        )
-                    }*/
                     '}' => {
                         dbg!("end brace");
-                        ident_label_bindings = bind_idents_labels(
+                        partial_ident_label_bindings = bind_idents_labels(
                             viewed.clone(),
                             context.cmd_name.clone(),
                             None,
                         );
+                        dbg!(&partial_ident_label_bindings);
+                        ident_label_bindings.append(&mut partial_ident_label_bindings);
+
                         dbg!(&ident_label_bindings);
                         break;
                     }
@@ -140,11 +138,17 @@ fn annotate_result(
                             &mut context,
                             &mut result_chars,
                         );
-                        ident_label_bindings = bind_idents_labels(
+                        dbg!(&inner_value);
+                        // needs a different funtion to construct
+                        // intermediate Map.
+                        // bind_ident_labels returns a Map.
+                        partial_ident_label_bindings = bind_idents_labels(
                             viewed.clone(),
                             context.cmd_name.clone(),
                             Some(inner_value),
                         );
+                        ident_label_bindings.append(&mut partial_ident_label_bindings);
+                          
                         break;
                     }
                     // TODO: Handle unbalanced braces
@@ -197,6 +201,8 @@ fn annotate_result(
     }
 }
 
+// could be cleaned up, and/or broken into cases 
+// as opposed to internal conditional logic.
 fn bind_idents_labels(
     viewed: String,
     cmd_name: String,
@@ -294,6 +300,7 @@ fn clean_viewed(raw_viewed: String) -> Vec<String> {
     }
 }
 */
+
 // assumes well-formed `ident_with_metadata`
 fn label_identifier(
     ident_with_metadata: String,
@@ -305,7 +312,10 @@ fn label_identifier(
         .collect::<Vec<&str>>();
     let ident = ident_and_metadata[0].trim_matches('"');
     let meta_data = ident_and_metadata[1].trim();
+    //dbg!(&meta_data);
+    let mut annotation = String::new();
     /*
+    // TODO special case
     // consolodate
     if meta_data
         .contains(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
@@ -316,17 +326,14 @@ fn label_identifier(
             .collect::<Vec<&str>>()[0]
             .trim();
     }
-    */
-    let mut annotation = String::new();
-    //dbg!(&meta_data);
     if meta_data.starts_with('{') || meta_data.starts_with('[') {
-        annotation = meta_data.to_string(); // TODO special case
-    } else {
+        annotation = meta_data.to_string(); 
+    } else {*/
         let raw_label: &str = meta_data
             .split(|c| c == '(' || c == ')')
             .collect::<Vec<&str>>()[1];
         annotation = make_label(raw_label);
-    }
+    //}
     (ident.to_string(), annotation)
 }
 
