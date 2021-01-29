@@ -463,7 +463,6 @@ mod unit {
             },
             &mut simple_nested,
         );
-        //TODO rename this const in test?
         let expected_annotation = test::SIMPLE_NESTED_RESULT;
         assert_eq!(expected_annotation, annotated.to_string());
     }
@@ -498,8 +497,6 @@ mod unit {
         assert_eq!(expected_annotation, annotated);
     }
 
-    //TODO 
-    // make saner sanity checks
     #[test]
     fn annotate_result_multiple_nested_2() {
         let mut multiple_nested = &mut test::MULTIPLE_NESTED_2.chars();
@@ -584,10 +581,6 @@ mod unit {
         );
     }
 
-    // ------------------ annotate_result : ignored --------
-
-    //TODO generators may be inherently flawed 
-    #[ignore]
     #[test]
     fn annotate_result_simple_nested_generate() {
         let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
@@ -602,6 +595,25 @@ mod unit {
         let expected_result = test::simple_nested_json_generator();
         assert_eq!(expected_result, annotated);
     }
+
+    //TODO check name of test and associated consts in test
+    #[test]
+    fn annotate_result_nested_obj_extracted_from_softfork() {
+        let mut expected_nested = test::SIMPLIFIED_SOFTFORK.chars();
+        let last_char = expected_nested.next().expect("Missing first char!");
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut expected_nested,
+        );
+        let expected_annotation: Value =
+            serde_json::de::from_str(test::SOFTFORK_EXTRACT_JSON).unwrap();
+        assert_eq!(expected_annotation, annotated);
+    }
+
+    // ------------------ annotate_result : ignored --------
 
     //rename function for clarity?
     #[ignore]
@@ -635,25 +647,10 @@ mod unit {
         assert_eq!(expected_result, annotated.to_string());
     }
 
-//TODO check name of test and associated consts in test
-    #[test]
-    fn annotate_result_nested_obj_extracted_from_softfork() {
-        let mut expected_nested = test::SIMPLIFIED_SOFTFORK.chars();
-        let last_char = expected_nested.next().expect("Missing first char!");
-        let annotated = annotate_result(
-            &mut Context {
-                last_char,
-                cmd_name: "getblockchaininfo".to_string(),
-            },
-            &mut expected_nested,
-        );
-        let expected_annotation: Value =
-            serde_json::de::from_str(test::SOFTFORK_EXTRACT_JSON).unwrap();
-        assert_eq!(expected_annotation, annotated);
-    }
-
     // ----------------sanity_check---------------
 
+    //TODO 
+    // make saner sanity checks
     #[test]
     fn sanity_check_simple_unnested() {
         let simple_unnested_result = test::SIMPLE_UNNESTED_RESULT.to_string();
@@ -761,14 +758,14 @@ mod unit {
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 
-    // ----------------interpret_raw_output : ignored---------------
-
-    // TODO look at these first few
-    #[ignore]
     #[test]
     fn interpret_raw_output_upgrades_in_obj_extracted() {
         dbg!(interpret_raw_output(test::UPGRADES_IN_OBJ_EXTRACTED));
     }
+
+    // ----------------interpret_raw_output : ignored---------------
+
+    // TODO look at these first few
     // what is test::valid_getinfo_annotation()
     #[ignore]
     #[test]
@@ -836,7 +833,7 @@ mod unit {
     }
 
     // ----------------serde_json_value----------------
-    // need to be retooled or deprecated
+
     #[test]
     fn serde_json_value_help_getinfo() {
         let getinfo_serde_json_value = test::getinfo_export();
@@ -845,7 +842,7 @@ mod unit {
     }
 
     // ----------------serde_json_value : ignored---------------
-    // need to be retooled or deprecated
+    // TODO need to be retooled or deprecated
     #[ignore]
     #[test]
     fn serde_json_value_help_getblockchaininfo() {
