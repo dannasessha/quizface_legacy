@@ -169,17 +169,11 @@ pub const SIMPLIFIED_SOFTFORK: &str = r#"{
            "found": xx,        (numeric) number of blocks with the new version found
            "required": xx,     (numeric) number of blocks required to trigger
            "window": xx,       (numeric) maximum size of examined window of recent blocks
-        },
+        }
      }"#;
-pub const SOFTFORK_EXTRACT_JSON: &str = r##"{
-    "enforce":
-        "{\"found\":\"Decimal\",\"required\":\"Decimal\",\"status\":\"bool\",\"window\":\"Decimal\"},",
-    "id":
-        "String",
-    "version":
-        "Decimal"
-}
-"##;
+//TODO rename
+pub const SOFTFORK_EXTRACT_JSON: &str = r#"{"enforce":{"found":"Decimal","required":"Decimal","status":"bool","window":"Decimal"},"id":"String","version":"Decimal"}"#;
+
 pub const GETBLOCKCHAININFO_REJECT_FRAGMENT: &str = r##"getblockchaininfo
 Returns an object containing various state info regarding block chain processing.
 XXX

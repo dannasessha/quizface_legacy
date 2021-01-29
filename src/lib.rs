@@ -217,6 +217,7 @@ fn bind_idents_labels(
 ) -> Map<String, Value> {
     dbg!("bind_idents_labels called");
     let cleaned = clean_viewed(viewed);
+    dbg!(&cleaned);
     //cleaned is now a Vec of strings (that were lines in viewed).
     /*
     // consolodate special cases
@@ -227,8 +228,7 @@ fn bind_idents_labels(
     } else { ...
      }
     */
-    //dbg!(&cleaned);
-    //dbg!(&inner_value);
+    dbg!(&inner_value);
     if inner_value != None { // possible if/let
         let mut cleaned_mutable = cleaned.clone();
         let last_ident_untrimmed = cleaned_mutable.pop().unwrap();
@@ -250,15 +250,18 @@ fn bind_idents_labels(
                 .map(|(a, b)| (a.to_string(), json!(b.to_string())))
                 .collect::<Map<String, Value>>();
         }
-        //dbg!(&begin_map);
+        dbg!(&begin_map);
         // TODO create return from begin_map and following;
         // currently set to `return`
         // && make acceptable to outer Value
-        return [(last_ident, inner_value.unwrap())]
+        dbg!(&last_ident);
+        let mut end_map = [(last_ident, inner_value.unwrap())]
             .iter()
             .cloned()
             .map(|(a, b)| (a.to_string(), b))
             .collect::<Map<String, Value>>();
+        begin_map.append(&mut end_map);
+        begin_map
     } else {
         return cleaned
             .iter() // back into iter, could streamline?
@@ -632,11 +635,11 @@ mod unit {
         assert_eq!(expected_result, annotated.to_string());
     }
 
-    #[ignore]
+//TODO check name of test and associated consts in test
     #[test]
     fn annotate_result_nested_obj_extracted_from_softfork() {
         let mut expected_nested = test::SIMPLIFIED_SOFTFORK.chars();
-        let last_char = expected_nested.nth(0).unwrap();
+        let last_char = expected_nested.next().expect("Missing first char!");
         let annotated = annotate_result(
             &mut Context {
                 last_char,
@@ -644,9 +647,9 @@ mod unit {
             },
             &mut expected_nested,
         );
-        let expected_enforce: Map<String, Value> =
-            serde_json::from_str(test::SOFTFORK_EXTRACT_JSON).unwrap();
-        assert_eq!(Value::Object(expected_enforce), annotated);
+        let expected_annotation: Value =
+            serde_json::de::from_str(test::SOFTFORK_EXTRACT_JSON).unwrap();
+        assert_eq!(expected_annotation, annotated);
     }
 
     // ----------------sanity_check---------------
