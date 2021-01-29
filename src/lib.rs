@@ -523,7 +523,7 @@ mod unit {
             },
             &mut multiple_nested,
         );
-        let expected_annotation: Value = serde_json::de::from_str(test::MULTIPLE_NESTED_ANNOTATION).unwrap();
+        let expected_annotation: Value = serde_json::de::from_str(test::MULTIPLE_NESTED_3_ANNOTATION).unwrap();
         assert_eq!(expected_annotation, annotated);
     }
 
