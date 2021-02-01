@@ -133,10 +133,10 @@ fn annotate_object(
             }
             last_viewed if last_viewed == '[' || last_viewed == '{' => {
                 dbg!("recursing");
-                let inner_value = if last_viewed == '[' {
-                    annotate_array(result_chars)
-                } else {
-                    annotate_object(result_chars)
+                let inner_value = match last_viewed {
+                    '[' => annotate_array(result_chars),
+                    '{' => annotate_object(result_chars),
+                    _ => unreachable!("last_viewed is either '[' or '{'"),
                 };
                 dbg!(&inner_value);
                 // needs a different funtion to construct
