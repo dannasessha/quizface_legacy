@@ -5,12 +5,6 @@ pub const ENFORCE_EXTRACTED: &str = r#"           (object) progress toward enfor
 "required": xx,     (numeric) number of blocks required to trigger
 "window": xx,       (numeric) maximum size of examined window of recent blocks
 }"#;
-pub const INTERMEDIATE_REPR_ENFORCE: [(&str, &str); 4] = [
-    ("status", "bool"),
-    ("found", "Decimal"),
-    ("required", "Decimal"),
-    ("window", "Decimal"),
-];
 
 pub const HELP_GETBLOCKCHAININFO_COMPLETE: &str = r##"getblockchaininfo
 Returns an object containing various state info regarding block chain processing.
@@ -161,7 +155,7 @@ pub const HELP_GETBLOCKCHAININFO_RESULT: &str = r#"{
 }
 "#;
 
-pub const SIMPLIFIED_SOFTFORK: &str = r#"{
+pub const GETBLOCKCHAININFO_FRAGMENT: &str = r#"{
         "id": "xxxx",        (string) name of softfork
         "version": xx,         (numeric) block version
         "enforce": {           (object) progress toward enforcing the softfork rules for new-version blocks
@@ -171,21 +165,32 @@ pub const SIMPLIFIED_SOFTFORK: &str = r#"{
            "window": xx,       (numeric) maximum size of examined window of recent blocks
         }
      }"#;
-//TODO rename
-pub const SOFTFORK_EXTRACT_JSON: &str = r#"{"enforce":{"found":"Decimal","required":"Decimal","status":"bool","window":"Decimal"},"id":"String","version":"Decimal"}"#;
 
-pub const GETBLOCKCHAININFO_REJECT_FRAGMENT: &str = r##"getblockchaininfo
+pub const GETBLOCKCHAININFO_FRAGMENT_JSON: &str = r#"{"enforce":{"found":"Decimal","required":"Decimal","status":"bool","window":"Decimal"},"id":"String","version":"Decimal"}"#;
+
+pub const GETBLOCKCHAININFO_ENFORCE_FRAGMENT: &str = r##"getblockchaininfo
 Returns an object containing various state info regarding block chain processing.
 XXX
 
 Result:
-{
-    "reject": { ... }      (object) progress toward rejecting pre-softfork blocks (same fields as "enforce")
-}
+"enforce": {           (object) progress toward enforcing the softfork rules for new-version blocks
+           "status": xx,       (boolean) true if threshold reached
+           "found": xx,        (numeric) number of blocks with the new version found
+           "required": xx,     (numeric) number of blocks required to trigger
+           "window": xx,       (numeric) maximum size of examined window of recent blocks
+        }
 
 Examples:
 > zcash-cli getblockchaininfo XXX
 "##;
+
+pub const GETBLOCKCHAININFO_ENFORCE_FRAGMENT_RESULT: &str = r##""enforce": {           (object) progress toward enforcing the softfork rules for new-version blocks
+           "status": xx,       (boolean) true if threshold reached
+           "found": xx,        (numeric) number of blocks with the new version found
+           "required": xx,     (numeric) number of blocks required to trigger
+           "window": xx,       (numeric) maximum size of examined window of recent blocks
+        }"##;
+
 pub const HELP_GETINFO: &str = r#"
 getinfo
 Returns an object containing various state info.
@@ -544,7 +549,7 @@ b
 
 pub const SIMPLE_NESTED_RESULT: &str = r#"{"outer_id":{"inner_id":"String"}}"#;
 
-// TODO double check strict comma syntax, 
+// TODO double check strict comma syntax,
 // proper serialized JSON string format
 pub fn multiple_nested_json_generator() -> serde_json::Value {
     let multiple_nested_json = serde_json::json!({
@@ -568,9 +573,6 @@ pub const MULTIPLE_NESTED: &str = r#"{
 pub const MULTIPLE_NESTED_ANNOTATION: &str = r#"{"outer_id":{"inner_id":"String"},"second_outer_id":{"second_inner_id":"String"}}"#;
 
 // TODO conform tests to test for valid JSON objects, not JSON strings?
-// this generator under current tests produces a different order
-// for the members of the Value (object) of "third_outer_id"
-// than are typed here into the macro.
 pub fn multiple_nested_2_json_generator() -> serde_json::Value {
     let multiple_nested_2_json = serde_json::json!({
     "outer_id":
@@ -738,3 +740,10 @@ pub fn getblockchaininfo_export() -> serde_json::Value {
       });
     getblockchaininfo_serde_json_value
 }
+
+pub const BINDING_ENFORCE: [(&str, &str); 4] = [
+    ("status", "bool"),
+    ("found", "Decimal"),
+    ("required", "Decimal"),
+    ("window", "Decimal"),
+];

@@ -121,7 +121,7 @@ fn annotate_result(
                     '}' => {
                         dbg!("end brace");
                         dbg!(&viewed);
-                        if viewed.trim().is_empty(){
+                        if viewed.trim().is_empty() {
                             break;
                         }
                         partial_ident_label_bindings = bind_idents_labels(
@@ -131,7 +131,8 @@ fn annotate_result(
                         );
                         viewed.clear();
                         dbg!(&partial_ident_label_bindings);
-                        ident_label_bindings.append(&mut partial_ident_label_bindings);
+                        ident_label_bindings
+                            .append(&mut partial_ident_label_bindings);
 
                         dbg!(&ident_label_bindings);
                         break;
@@ -154,8 +155,9 @@ fn annotate_result(
                         );
                         viewed.clear();
 
-                        ident_label_bindings.append(&mut partial_ident_label_bindings);
-                          
+                        ident_label_bindings
+                            .append(&mut partial_ident_label_bindings);
+
                         //break;
                     }
                     // TODO: Handle unbalanced braces
@@ -208,7 +210,7 @@ fn annotate_result(
     }
 }
 
-// could be cleaned up, and/or broken into cases 
+// could be cleaned up, and/or broken into cases
 // as opposed to internal conditional logic.
 fn bind_idents_labels(
     viewed: String,
@@ -229,7 +231,8 @@ fn bind_idents_labels(
      }
     */
     dbg!(&inner_value);
-    if inner_value != None { // possible if/let
+    if inner_value != None {
+        // possible if/let
         let mut cleaned_mutable = cleaned.clone();
         let last_ident_untrimmed = cleaned_mutable.pop().unwrap();
         let last_ident = last_ident_untrimmed
@@ -268,7 +271,9 @@ fn bind_idents_labels(
             .map(|ident_rawlabel| {
                 label_identifier(ident_rawlabel.to_string(), cmd_name.as_str())
             })
-            .map(|(ident, annotation)| (ident.to_string(), json!(annotation.to_string())))
+            .map(|(ident, annotation)| {
+                (ident.to_string(), json!(annotation.to_string()))
+            })
             .collect::<Map<String, Value>>();
     }
 }
@@ -280,7 +285,8 @@ fn clean_viewed(raw_viewed: String) -> Vec<String> {
         .lines()
         .map(|line| line.to_string())
         .collect::<Vec<String>>();
-    match ident_labels.remove(0).trim() { //TODO these are special cases
+    match ident_labels.remove(0).trim() {
+        //TODO these are special cases
         empty if empty.is_empty() => (),
         description if description.contains("(object)") => (),
         i if i == "...".to_string() => ident_labels = vec![String::from(i)],
@@ -338,12 +344,12 @@ fn label_identifier(
             .trim();
     }
     if meta_data.starts_with('{') || meta_data.starts_with('[') {
-        annotation = meta_data.to_string(); 
+        annotation = meta_data.to_string();
     } else {*/
-        let raw_label: &str = meta_data
-            .split(|c| c == '(' || c == ')')
-            .collect::<Vec<&str>>()[1];
-        annotation = make_label(raw_label);
+    let raw_label: &str = meta_data
+        .split(|c| c == '(' || c == ')')
+        .collect::<Vec<&str>>()[1];
+    annotation = make_label(raw_label);
     //}
     (ident.to_string(), annotation)
 }
@@ -391,6 +397,17 @@ mod unit {
     use super::*;
     use crate::utils::test;
     use serde_json::json;
+
+    // ------------------ extract_name_and_result --------
+    #[test]
+    fn extract_name_and_result_getblockchaininfo_enforce_fragment() {
+        let expected_data = test::GETBLOCKCHAININFO_ENFORCE_FRAGMENT;
+        let (cmd_name, result) = extract_name_and_result(expected_data);
+        let expected_result = test::GETBLOCKCHAININFO_ENFORCE_FRAGMENT_RESULT;
+        //let bound = bind_idents_labels(fake_ident_label, cmd_name, None);
+        assert_eq!(cmd_name, "getblockchaininfo".to_string());
+        assert_eq!(result, expected_result);
+    }
 
     // ----------------label_identifier---------------
 
@@ -448,7 +465,8 @@ mod unit {
             },
             &mut simple_unnested,
         );
-        let expected_annotation: Value = serde_json::de::from_str(test::SIMPLE_UNNESTED_RESULT).unwrap();
+        let expected_annotation: Value =
+            serde_json::de::from_str(test::SIMPLE_UNNESTED_RESULT).unwrap();
         assert_eq!(expected_annotation, annotated);
     }
 
@@ -478,7 +496,8 @@ mod unit {
             },
             &mut simple_nested,
         );
-        let expected_annotation: Value = serde_json::de::from_str(test::SIMPLE_NESTED_RESULT).unwrap();
+        let expected_annotation: Value =
+            serde_json::de::from_str(test::SIMPLE_NESTED_RESULT).unwrap();
         assert_eq!(expected_annotation, annotated);
     }
 
@@ -493,7 +512,8 @@ mod unit {
             },
             &mut multiple_nested,
         );
-        let expected_annotation: Value = serde_json::de::from_str(test::MULTIPLE_NESTED_ANNOTATION).unwrap();
+        let expected_annotation: Value =
+            serde_json::de::from_str(test::MULTIPLE_NESTED_ANNOTATION).unwrap();
         assert_eq!(expected_annotation, annotated);
     }
 
@@ -508,7 +528,9 @@ mod unit {
             },
             &mut multiple_nested,
         );
-        let expected_annotation: Value = serde_json::de::from_str(test::MULTIPLE_NESTED_2_ANNOTATION).unwrap();
+        let expected_annotation: Value =
+            serde_json::de::from_str(test::MULTIPLE_NESTED_2_ANNOTATION)
+                .unwrap();
         assert_eq!(expected_annotation, annotated);
     }
 
@@ -523,7 +545,9 @@ mod unit {
             },
             &mut multiple_nested,
         );
-        let expected_annotation: Value = serde_json::de::from_str(test::MULTIPLE_NESTED_3_ANNOTATION).unwrap();
+        let expected_annotation: Value =
+            serde_json::de::from_str(test::MULTIPLE_NESTED_3_ANNOTATION)
+                .unwrap();
         assert_eq!(expected_annotation, annotated);
     }
 
@@ -565,7 +589,7 @@ mod unit {
     #[test]
     fn annotate_result_enforce_as_input() {
         use std::collections::HashMap;
-        let testmap = json!(test::INTERMEDIATE_REPR_ENFORCE
+        let testmap = json!(test::BINDING_ENFORCE
             .iter()
             .map(|(a, b)| (a.to_string(), json!(b.to_string())))
             .collect::<HashMap<String, Value>>());
@@ -596,10 +620,9 @@ mod unit {
         assert_eq!(expected_result, annotated);
     }
 
-    //TODO check name of test and associated consts in test
     #[test]
-    fn annotate_result_nested_obj_extracted_from_softfork() {
-        let mut expected_nested = test::SIMPLIFIED_SOFTFORK.chars();
+    fn annotate_result_nested_obj_fragment_from_getblockchaininfo() {
+        let mut expected_nested = test::GETBLOCKCHAININFO_FRAGMENT.chars();
         let last_char = expected_nested.next().expect("Missing first char!");
         let annotated = annotate_result(
             &mut Context {
@@ -609,25 +632,13 @@ mod unit {
             &mut expected_nested,
         );
         let expected_annotation: Value =
-            serde_json::de::from_str(test::SOFTFORK_EXTRACT_JSON).unwrap();
+            serde_json::de::from_str(test::GETBLOCKCHAININFO_FRAGMENT_JSON)
+                .unwrap();
         assert_eq!(expected_annotation, annotated);
     }
 
     // ------------------ annotate_result : ignored --------
-
-    //rename function for clarity?
-    #[ignore]
-    #[test]
-    fn annotate_result_help_getblockchain_reject_fragment() {
-        let expected_data = test::GETBLOCKCHAININFO_REJECT_FRAGMENT;
-        let (cmd_name, _) = extract_name_and_result(expected_data);
-        let fake_ident_label = "...".to_string();
-        let bound = bind_idents_labels(fake_ident_label, cmd_name, None);
-        for (k, v) in test::INTERMEDIATE_REPR_ENFORCE.iter() {
-            assert_eq!(&bound.get(k.clone()).unwrap().as_str().unwrap(), v);
-        }
-    }
-
+    // special case
     #[ignore]
     #[test]
     fn annotate_result_special_nested_blockchaininfo() {
@@ -649,7 +660,7 @@ mod unit {
 
     // ----------------sanity_check---------------
 
-    //TODO 
+    //TODO
     // make saner sanity checks
     #[test]
     fn sanity_check_simple_unnested() {
@@ -669,26 +680,28 @@ mod unit {
 
     #[test]
     fn sanity_check_multiple_nested() {
-        let multiple_nested_annotation = test::MULTIPLE_NESTED_ANNOTATION.to_string();
+        let multiple_nested_annotation =
+            test::MULTIPLE_NESTED_ANNOTATION.to_string();
         let multiple_nested_json =
             test::multiple_nested_json_generator().to_string();
         assert_eq!(multiple_nested_annotation, multiple_nested_json);
     }
 
-    // this test returns a non-equivalence (failure) due to the macro
-    // in `multiple_nested_2_json_generator().to_string()` 
-    // serializing key-value pairs in a different order than is 
-    // provided as the input to the macro.
-    // One possible solution is to compare actual JSON values as opposed
-    // to testing for the equivalence of the serialized JSON strings.
-    #[ignore]
+    /* more complex tests of the preceeding pattern fail
+    due to the macro in
+    `multiple_nested_2_json_generator().to_string()`
+    serializing key-value pairs in a different order than is
+    provided as the input to the macro. Therefore the following
+    tests will deserialize str test vectors into Values */
     #[test]
     fn sanity_check_multiple_nested_2() {
-        let multiple_nested_2_annotation = test::MULTIPLE_NESTED_2_ANNOTATION.to_string();
-        let multiple_nested_2_json =
-            test::multiple_nested_2_json_generator().to_string();
-        assert_eq!(multiple_nested_2_annotation, multiple_nested_2_json);
+        let multiple_nested_2_value = serde_json::de::from_str::<Value>(
+            test::MULTIPLE_NESTED_2_ANNOTATION,
+        );
+        let multiple_nested_2_json = test::multiple_nested_2_json_generator();
+        assert_eq!(multiple_nested_2_value.unwrap(), multiple_nested_2_json);
     }
+
     // ----------------interpret_raw_output---------------
 
     #[test]
@@ -706,7 +719,6 @@ mod unit {
         let expected_result = test::SIMPLE_NESTED_RESULT;
         assert_eq!(interpreted, expected_result);
     }
-
 
     #[test]
     #[should_panic]
