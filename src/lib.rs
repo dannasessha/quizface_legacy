@@ -72,12 +72,8 @@ pub fn interpret_raw_output(raw_command_help: &str) -> String {
     */
     let result_chars = &mut result_data.chars();
     let last_char = result_chars.next().expect("Missing first char!");
-    let context = &mut Context {
-        cmd_name,
-        last_char,
-    };
     let annotated_json_text =
-        annotate_result(context, result_chars).to_string();
+        annotate_result(last_char, result_chars).to_string();
     annotated_json_text
 }
 
@@ -102,17 +98,13 @@ fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
 // TODO consider need for struct; related to 'special cases' revisions
 // also, last_char changes within parsing individual command but
 // cmd_name doesn't, why bind a variable and a 'constant' in a struct?
-struct Context {
-    cmd_name: String,
-    last_char: char,
-}
 
 fn annotate_result(
-    mut context: &mut Context,
+    mut last_char: char,
     mut result_chars: &mut std::str::Chars,
 ) -> serde_json::Value {
     let mut viewed = String::new();
-    match context.last_char {
+    match last_char {
         '{' => {
             let mut ident_label_bindings = Map::new();
             let mut partial_ident_label_bindings = Map::new();
@@ -124,11 +116,8 @@ fn annotate_result(
                         if viewed.trim().is_empty() {
                             break;
                         }
-                        partial_ident_label_bindings = bind_idents_labels(
-                            viewed.clone(),
-                            context.cmd_name.clone(),
-                            None,
-                        );
+                        partial_ident_label_bindings =
+                            bind_idents_labels(viewed.clone(), None);
                         viewed.clear();
                         dbg!(&partial_ident_label_bindings);
                         ident_label_bindings
@@ -139,18 +128,14 @@ fn annotate_result(
                     }
                     last_viewed if last_viewed == '[' || last_viewed == '{' => {
                         dbg!("recursing");
-                        let inner_value = recurse(
-                            last_viewed,
-                            &mut context,
-                            &mut result_chars,
-                        );
+                        let inner_value =
+                            annotate_result(last_viewed, &mut result_chars);
                         dbg!(&inner_value);
                         // needs a different funtion to construct
                         // intermediate Map.
                         // bind_ident_labels returns a Map.
                         partial_ident_label_bindings = bind_idents_labels(
                             viewed.clone(),
-                            context.cmd_name.clone(),
                             Some(inner_value),
                         );
                         viewed.clear();
@@ -178,16 +163,9 @@ fn annotate_result(
                         break;
                     }
                     last_viewed if last_viewed == '[' || last_viewed == '{' => {
-                        let inner_value = recurse(
-                            last_viewed,
-                            &mut context,
-                            &mut result_chars,
-                        );
-                        bind_idents_labels(
-                            viewed.clone(),
-                            context.cmd_name.clone(),
-                            Some(inner_value),
-                        );
+                        let inner_value =
+                            annotate_result(last_viewed, &mut result_chars);
+                        bind_idents_labels(viewed.clone(), Some(inner_value));
                         //dbg!(&inner_value);
                         /*if inner_value.is_object() {
                             //inner = serde_json::Value::Object(temp);
@@ -214,7 +192,6 @@ fn annotate_result(
 // as opposed to internal conditional logic.
 fn bind_idents_labels(
     viewed: String,
-    cmd_name: String,
     inner_value: Option<Value>,
 ) -> Map<String, Value> {
     dbg!("bind_idents_labels called");
@@ -245,10 +222,7 @@ fn bind_idents_labels(
             begin_map = cleaned_mutable
                 .iter()
                 .map(|ident_rawlabel| {
-                    label_identifier(
-                        ident_rawlabel.to_string(),
-                        cmd_name.as_str(),
-                    )
+                    label_identifier(ident_rawlabel.to_string())
                 })
                 .map(|(a, b)| (a.to_string(), json!(b.to_string())))
                 .collect::<Map<String, Value>>();
@@ -268,9 +242,7 @@ fn bind_idents_labels(
     } else {
         return cleaned
             .iter() // back into iter, could streamline?
-            .map(|ident_rawlabel| {
-                label_identifier(ident_rawlabel.to_string(), cmd_name.as_str())
-            })
+            .map(|ident_rawlabel| label_identifier(ident_rawlabel.to_string()))
             .map(|(ident, annotation)| {
                 (ident.to_string(), json!(annotation.to_string()))
             })
@@ -319,10 +291,7 @@ fn clean_viewed(raw_viewed: String) -> Vec<String> {
 */
 
 // assumes well-formed `ident_with_metadata`
-fn label_identifier(
-    ident_with_metadata: String,
-    cmd_name: &str,
-) -> (String, String) {
+fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let ident_and_metadata = ident_with_metadata
         .trim()
         .splitn(2, ':')
@@ -369,15 +338,6 @@ fn make_label(raw_label: &str) -> String {
         return format!("Option<{}>", annotation);
     }
     annotation
-}
-
-fn recurse(
-    last_viewed: char,
-    mut context: &mut Context,
-    mut result_chars: &mut std::str::Chars,
-) -> serde_json::value::Value {
-    context.last_char = last_viewed;
-    annotate_result(&mut context, &mut result_chars)
 }
 
 fn label_by_position(raw_observed: String) -> Vec<Value> {
