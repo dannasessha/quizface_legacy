@@ -71,9 +71,7 @@ pub fn interpret_raw_output(raw_command_help: &str) -> String {
     }
     */
     let result_chars = &mut result_data.chars();
-    let last_char = result_chars.next().expect("Missing first char!");
-    let annotated_json_text =
-        annotate_result(last_char, result_chars).to_string();
+    let annotated_json_text = annotate_result(result_chars).to_string();
     annotated_json_text
 }
 
@@ -100,94 +98,97 @@ fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
 // cmd_name doesn't, why bind a variable and a 'constant' in a struct?
 
 fn annotate_result(
-    last_char: char,
     mut result_chars: &mut std::str::Chars,
 ) -> serde_json::Value {
-    let mut viewed = String::new();
-    match last_char {
-        '{' => {
-            let mut ident_label_bindings = Map::new();
-            let mut partial_ident_label_bindings = Map::new();
-            loop {
-                match result_chars.next().unwrap() {
-                    '}' => {
-                        dbg!("end brace");
-                        dbg!(&viewed);
-                        if viewed.trim().is_empty() {
-                            break;
-                        }
-                        partial_ident_label_bindings =
-                            bind_idents_labels(viewed.clone(), None);
-                        viewed.clear();
-                        dbg!(&partial_ident_label_bindings);
-                        ident_label_bindings
-                            .append(&mut partial_ident_label_bindings);
-
-                        dbg!(&ident_label_bindings);
-                        break;
-                    }
-                    last_viewed if last_viewed == '[' || last_viewed == '{' => {
-                        dbg!("recursing");
-                        let inner_value =
-                            annotate_result(last_viewed, &mut result_chars);
-                        dbg!(&inner_value);
-                        // needs a different funtion to construct
-                        // intermediate Map.
-                        // bind_ident_labels returns a Map.
-                        partial_ident_label_bindings = bind_idents_labels(
-                            viewed.clone(),
-                            Some(inner_value),
-                        );
-                        viewed.clear();
-
-                        ident_label_bindings
-                            .append(&mut partial_ident_label_bindings);
-
-                        //break;
-                    }
-                    // TODO: Handle unbalanced braces
-                    x if x.is_ascii() => viewed.push(x),
-                    _ => panic!("character is UTF-8 but not ASCII!"),
-                }
-            }
-            dbg!(&ident_label_bindings);
-            return Value::Object(ident_label_bindings);
-        }
+    match result_chars.next().unwrap() {
+        '{' => annotate_object(result_chars),
         //TODO bring arrays up to speed
-        '[' => {
-            let mut ordered_results: Vec<Value> = vec![];
-            loop {
-                match result_chars.next().unwrap() {
-                    ']' => {
-                        ordered_results = label_by_position(viewed.clone());
-                        break;
-                    }
-                    last_viewed if last_viewed == '[' || last_viewed == '{' => {
-                        let inner_value =
-                            annotate_result(last_viewed, &mut result_chars);
-                        bind_idents_labels(viewed.clone(), Some(inner_value));
-                        //dbg!(&inner_value);
-                        /*if inner_value.is_object() {
-                            //inner = serde_json::Value::Object(temp);
-                            inner_object = inner_value.as_object().unwrap().clone();
-                            dbg!(&inner_object);
-                        } else if inner_value.is_array() {
-                            //inner = serde_json::Value::Array(temp);
-                            inner_array = Array(inner_value.as_array().unwrap().clone());
-                            dbg!(&inner_array);
-                        }*/
-                    }
-                    // TODO: Handle unbalanced braces
-                    x if x.is_ascii() => viewed.push(x),
-                    _ => panic!("character is UTF-8 but not ASCII!"),
-                }
-            }
-            return Value::Array(ordered_results);
-        }
+        '[' => annotate_array(result_chars),
         _ => todo!(),
     }
 }
 
+fn annotate_object(
+    mut result_chars: &mut std::str::Chars,
+) -> serde_json::Value {
+    let mut viewed = String::new();
+    let mut ident_label_bindings = Map::new();
+    let mut partial_ident_label_bindings = Map::new();
+    loop {
+        match result_chars.next().unwrap() {
+            '}' => {
+                dbg!("end brace");
+                dbg!(&viewed);
+                if viewed.trim().is_empty() {
+                    break;
+                }
+                partial_ident_label_bindings =
+                    bind_idents_labels(viewed.clone(), None);
+                viewed.clear();
+                dbg!(&partial_ident_label_bindings);
+                ident_label_bindings.append(&mut partial_ident_label_bindings);
+
+                dbg!(&ident_label_bindings);
+                break;
+            }
+            last_viewed if last_viewed == '[' || last_viewed == '{' => {
+                dbg!("recursing");
+                let inner_value = if last_viewed == '[' {
+                    annotate_array(result_chars)
+                } else {
+                    annotate_object(result_chars)
+                };
+                dbg!(&inner_value);
+                // needs a different funtion to construct
+                // intermediate Map.
+                // bind_ident_labels returns a Map.
+                partial_ident_label_bindings =
+                    bind_idents_labels(viewed.clone(), Some(inner_value));
+                viewed.clear();
+
+                ident_label_bindings.append(&mut partial_ident_label_bindings);
+
+                //break;
+            }
+            // TODO: Handle unbalanced braces
+            x if x.is_ascii() => viewed.push(x),
+            _ => panic!("character is UTF-8 but not ASCII!"),
+        }
+    }
+    dbg!(&ident_label_bindings);
+    return Value::Object(ident_label_bindings);
+}
+
+fn annotate_array(mut result_chars: &mut std::str::Chars) -> serde_json::Value {
+    let mut viewed = String::new();
+    let mut ordered_results: Vec<Value> = vec![];
+    loop {
+        match result_chars.next().unwrap() {
+            ']' => {
+                ordered_results = label_by_position(viewed.clone());
+                break;
+            }
+            last_viewed if last_viewed == '[' || last_viewed == '{' => {
+                let inner_value = recurse(&mut result_chars);
+                bind_idents_labels(viewed.clone(), Some(inner_value));
+                //dbg!(&inner_value);
+                /*if inner_value.is_object() {
+                    //inner = serde_json::Value::Object(temp);
+                    inner_object = inner_value.as_object().unwrap().clone();
+                    dbg!(&inner_object);
+                } else if inner_value.is_array() {
+                    //inner = serde_json::Value::Array(temp);
+                    inner_array = Array(inner_value.as_array().unwrap().clone());
+                    dbg!(&inner_array);
+                }*/
+            }
+            // TODO: Handle unbalanced braces
+            x if x.is_ascii() => viewed.push(x),
+            _ => panic!("character is UTF-8 but not ASCII!"),
+        }
+    }
+    return Value::Array(ordered_results);
+}
 // could be cleaned up, and/or broken into cases
 // as opposed to internal conditional logic.
 fn bind_idents_labels(
@@ -340,6 +341,10 @@ fn make_label(raw_label: &str) -> String {
     annotation
 }
 
+fn recurse(mut result_chars: &mut std::str::Chars) -> serde_json::value::Value {
+    annotate_result(&mut result_chars)
+}
+
 fn label_by_position(raw_observed: String) -> Vec<Value> {
     let trimmed = raw_observed
         .trim_end_matches(|c| c != '}')
@@ -376,7 +381,10 @@ mod unit {
         let raw_version =
             r#""version": xxxxx,           (numeric) the server version"#;
         let valid_annotation = ("version".to_string(), "Decimal".to_string());
-        assert_eq!(valid_annotation, label_identifier(raw_version.to_string()));
+        assert_eq!(
+            valid_annotation,
+            label_identifier(raw_version.to_string(), "")
+        );
     }
 
     // ----------------annotate_result---------------
@@ -385,7 +393,13 @@ mod unit {
     fn annotate_result_simple_unnested_generate() {
         let mut simple_unnested = &mut test::SIMPLE_UNNESTED.chars();
         let last_char = simple_unnested.next().expect("Missing first char!");
-        let annotated = annotate_result(last_char, &mut simple_unnested);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_unnested,
+        );
         let expected_result = test::simple_unnested_json_generator();
         assert_eq!(expected_result, annotated);
     }
@@ -394,7 +408,13 @@ mod unit {
     fn annotate_result_simple_unnested_to_string() {
         let mut simple_unnested = &mut test::SIMPLE_UNNESTED.chars();
         let last_char = simple_unnested.next().expect("Missing first char!");
-        let annotated = annotate_result(last_char, &mut simple_unnested);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_unnested,
+        );
         let expected_annotation = test::SIMPLE_UNNESTED_RESULT;
         assert_eq!(expected_annotation, annotated.to_string());
     }
@@ -403,7 +423,13 @@ mod unit {
     fn annotate_result_simple_unnested() {
         let mut simple_unnested = &mut test::SIMPLE_UNNESTED.chars();
         let last_char = simple_unnested.next().expect("Missing first char!");
-        let annotated = annotate_result(last_char, &mut simple_unnested);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_unnested,
+        );
         let expected_annotation: Value =
             serde_json::de::from_str(test::SIMPLE_UNNESTED_RESULT).unwrap();
         assert_eq!(expected_annotation, annotated);
@@ -413,7 +439,13 @@ mod unit {
     fn annotate_result_simple_nested_to_string() {
         let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
         let last_char = simple_nested.next().expect("Missing first char!");
-        let annotated = annotate_result(last_char, &mut simple_nested);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_nested,
+        );
         let expected_annotation = test::SIMPLE_NESTED_RESULT;
         assert_eq!(expected_annotation, annotated.to_string());
     }
@@ -422,7 +454,13 @@ mod unit {
     fn annotate_result_simple_nested() {
         let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
         let last_char = simple_nested.next().expect("Missing first char!");
-        let annotated = annotate_result(last_char, &mut simple_nested);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_nested,
+        );
         let expected_annotation: Value =
             serde_json::de::from_str(test::SIMPLE_NESTED_RESULT).unwrap();
         assert_eq!(expected_annotation, annotated);
@@ -432,7 +470,13 @@ mod unit {
     fn annotate_result_multiple_nested() {
         let mut multiple_nested = &mut test::MULTIPLE_NESTED.chars();
         let last_char = multiple_nested.next().expect("Missing first char!");
-        let annotated = annotate_result(last_char, &mut multiple_nested);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut multiple_nested,
+        );
         let expected_annotation: Value =
             serde_json::de::from_str(test::MULTIPLE_NESTED_ANNOTATION).unwrap();
         assert_eq!(expected_annotation, annotated);
@@ -442,7 +486,13 @@ mod unit {
     fn annotate_result_multiple_nested_2() {
         let mut multiple_nested = &mut test::MULTIPLE_NESTED_2.chars();
         let last_char = multiple_nested.next().expect("Missing first char!");
-        let annotated = annotate_result(last_char, &mut multiple_nested);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut multiple_nested,
+        );
         let expected_annotation: Value =
             serde_json::de::from_str(test::MULTIPLE_NESTED_2_ANNOTATION)
                 .unwrap();
@@ -453,7 +503,13 @@ mod unit {
     fn annotate_result_multiple_nested_3() {
         let mut multiple_nested = &mut test::MULTIPLE_NESTED_3.chars();
         let last_char = multiple_nested.next().expect("Missing first char!");
-        let annotated = annotate_result(last_char, &mut multiple_nested);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut multiple_nested,
+        );
         let expected_annotation: Value =
             serde_json::de::from_str(test::MULTIPLE_NESTED_3_ANNOTATION)
                 .unwrap();
@@ -467,8 +523,13 @@ mod unit {
         let last_char = simple_unnested_blockchaininfo
             .next()
             .expect("Missing first char!");
-        let annotated =
-            annotate_result(last_char, &mut simple_unnested_blockchaininfo);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_unnested_blockchaininfo,
+        );
         let expected_result = test::SIMPLE_UNNESTED_GETBLOCKCHAININFO_RESULT;
         assert_eq!(expected_result, annotated.to_string());
     }
@@ -480,7 +541,13 @@ mod unit {
             extract_name_and_result(test::HELP_GETINFO);
         let data_stream = &mut section_data.chars();
         let last_char = data_stream.next().unwrap();
-        let annotated = annotate_result(last_char, data_stream);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name,
+            },
+            data_stream,
+        );
         assert_eq!(annotated, expected_testdata_annotated);
     }
 
@@ -493,7 +560,13 @@ mod unit {
             .collect::<HashMap<String, Value>>());
         assert_eq!(
             testmap,
-            annotate_result('{', &mut test::ENFORCE_EXTRACTED.chars(),)
+            annotate_result(
+                &mut Context {
+                    last_char: '{',
+                    cmd_name: "getblockchaininfo".to_string()
+                },
+                &mut test::ENFORCE_EXTRACTED.chars(),
+            )
         );
     }
 
@@ -501,7 +574,13 @@ mod unit {
     fn annotate_result_simple_nested_generate() {
         let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
         let last_char = simple_nested.next().expect("Missing first char!");
-        let annotated = annotate_result(last_char, &mut simple_nested);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut simple_nested,
+        );
         let expected_result = test::simple_nested_json_generator();
         assert_eq!(expected_result, annotated);
     }
@@ -510,7 +589,13 @@ mod unit {
     fn annotate_result_nested_obj_fragment_from_getblockchaininfo() {
         let mut expected_nested = test::GETBLOCKCHAININFO_FRAGMENT.chars();
         let last_char = expected_nested.next().expect("Missing first char!");
-        let annotated = annotate_result(last_char, &mut expected_nested);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut expected_nested,
+        );
         let expected_annotation: Value =
             serde_json::de::from_str(test::GETBLOCKCHAININFO_FRAGMENT_JSON)
                 .unwrap();
@@ -527,8 +612,13 @@ mod unit {
         let last_char = special_nested_blockchaininfo
             .next()
             .expect("Missing first char!");
-        let annotated =
-            annotate_result(last_char, &mut special_nested_blockchaininfo);
+        let annotated = annotate_result(
+            &mut Context {
+                last_char,
+                cmd_name: "getblockchaininfo".to_string(),
+            },
+            &mut special_nested_blockchaininfo,
+        );
         let expected_result = test::SPECIAL_NESTED_GETBLOCKCHAININFO_RESULT;
         assert_eq!(expected_result, annotated.to_string());
     }
