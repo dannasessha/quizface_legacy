@@ -464,7 +464,7 @@ mod unit {
     }
 
     #[test]
-    fn annotate_result_from_getinfo_expected() {
+    fn annotate_result_from_getinfo() {
         let expected_testdata_annotated = test::valid_getinfo_annotation();
         let (cmd_name, section_data) =
             extract_name_and_result(test::HELP_GETINFO);
@@ -488,7 +488,7 @@ mod unit {
     }
 
     #[test]
-    fn annotate_result_simple_nested_generate() {
+    fn annotate_result_simple_nested_object_generate() {
         let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
         let annotated = annotate_result(&mut simple_nested);
         let expected_result = test::simple_nested_json_generator();
