@@ -90,12 +90,11 @@ fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
         end_section.split("Examples:\n").collect::<Vec<&str>>();
     // TODO same as last comment.
     assert_eq!(example_sections.len(), 2, "Wrong number of Examples!");
+    // TODO cmd_name still present here, remove and elsewhere
     (cmd_name.to_string(), example_sections[0].trim().to_string())
 }
 
-fn annotate_result(
-    mut result_chars: &mut std::str::Chars,
-) -> serde_json::Value {
+fn annotate_result(result_chars: &mut std::str::Chars) -> serde_json::Value {
     match result_chars.next().unwrap() {
         '{' => annotate_object(result_chars),
         //TODO bring arrays up to speed
@@ -104,9 +103,7 @@ fn annotate_result(
     }
 }
 
-fn annotate_object(
-    mut result_chars: &mut std::str::Chars,
-) -> serde_json::Value {
+fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
     let mut viewed = String::new();
     let mut ident_label_bindings = Map::new();
     let mut partial_ident_label_bindings = Map::new();
@@ -135,27 +132,22 @@ fn annotate_object(
                     _ => unreachable!("last_viewed is either '[' or '{'"),
                 };
                 dbg!(&inner_value);
-                // needs a different funtion to construct
-                // intermediate Map.
-                // bind_ident_labels returns a Map.
                 partial_ident_label_bindings =
                     bind_idents_labels(viewed.clone(), Some(inner_value));
                 viewed.clear();
-
+                // append works, but `.extend()` is more atomic, might
+                // be worth looking at for refinements.
                 ident_label_bindings.append(&mut partial_ident_label_bindings);
-
-                //break;
             }
             // TODO: Handle unbalanced braces
             x if x.is_ascii() => viewed.push(x),
             _ => panic!("character is UTF-8 but not ASCII!"),
         }
     }
-    dbg!(&ident_label_bindings);
     return Value::Object(ident_label_bindings);
 }
 
-fn annotate_array(mut result_chars: &mut std::str::Chars) -> serde_json::Value {
+fn annotate_array(result_chars: &mut std::str::Chars) -> serde_json::Value {
     let mut viewed = String::new();
     let mut ordered_results: Vec<Value> = vec![];
     loop {
@@ -300,7 +292,6 @@ fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let ident = ident_and_metadata[0].trim_matches('"');
     let meta_data = ident_and_metadata[1].trim();
     //dbg!(&meta_data);
-    let mut annotation = String::new();
     /*
     // TODO special case
     // consolodate
@@ -319,7 +310,7 @@ fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let raw_label: &str = meta_data
         .split(|c| c == '(' || c == ')')
         .collect::<Vec<&str>>()[1];
-    annotation = make_label(raw_label);
+    let annotation: String = make_label(raw_label);
     //}
     (ident.to_string(), annotation)
 }
@@ -644,7 +635,7 @@ mod unit {
 
     // ----------------interpret_raw_output : ignored---------------
 
-    // TODO look at these; retool or remove. 
+    // TODO look at these; retool or remove.
     // test::valid_getinfo_annotation() is not correct.
     #[ignore]
     #[test]

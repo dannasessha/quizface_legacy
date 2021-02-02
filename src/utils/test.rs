@@ -549,7 +549,7 @@ b
 
 pub const SIMPLE_NESTED_RESULT: &str = r#"{"outer_id":{"inner_id":"String"}}"#;
 
-// TODO double check strict comma syntax, 
+// TODO double check strict comma syntax,
 // proper serialized JSON string format
 pub fn multiple_nested_json_generator() -> serde_json::Value {
     let multiple_nested_json = serde_json::json!({
