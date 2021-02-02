@@ -549,7 +549,7 @@ b
 
 pub const SIMPLE_NESTED_RESULT: &str = r#"{"outer_id":{"inner_id":"String"}}"#;
 
-// TODO double check strict comma syntax,
+// TODO double check strict comma syntax, 
 // proper serialized JSON string format
 pub fn multiple_nested_json_generator() -> serde_json::Value {
     let multiple_nested_json = serde_json::json!({
@@ -629,6 +629,51 @@ pub const MULTIPLE_NESTED_3: &str = r#"{
 
 pub const MULTIPLE_NESTED_3_ANNOTATION: &str = r#"{"outer_id":{"inner_id":"String"},"second_outer_id":{"second_inner_id_one":"String","second_inner_id_two":"String"},"third_outer_id":{"third_inner_id_one":"String","third_inner_id_two":"String","third_inner_id_three":"String"},"fourth_outer_id":{"fourth_inner_id_with_object_value":{"innermost_id_one":"String","innermost_id_two":"String","innermost_id_three":"String"}}}"#;
 
+pub const MULTIPLE_NESTED_4: &str = r#"{ 
+    "outer_id": {
+        "inner_id": "xxxx",      (string) extra unimportant text
+    }
+    "second_outer_id": {
+        "second_inner_id_one": "xxxx",   (string) extra text
+        "second_inner_id_two": "xxxx",   (string) extra text
+        }
+    "third_outer_id": {
+        "third_inner_id_one": "xxxx",   (string) extra text
+        "third_inner_id_two": "xxxx",   (string) extra text
+        "third_inner_id_three": "xxxx",   (string) extra text
+        }
+    "fourth_outer_id": {
+        "fourth_inner_id_with_object_value": {
+            "innermost_id_one": "xxxx"   (string) extra text
+            "innermost_id_two": "xxxx"   (string) extra text
+            "innermost_id_three": "xxxx"   (string) extra extra
+        }
+    }
+    "fifth_outer_id": {
+        "fifth_inner_id_with_object_value": {
+            "fifth_second_layer_inner_id_with_object_value_one": {
+                "fifth_innermost_one": "xxxxx" (string) more text
+                "fifth_innermost_two": "xxxxxx" (string) more text
+                "fifth_innermost_three": "xxxx" (string) more text
+            }
+            "fifth_second_layer_inner_id_with_object_value_two": {
+                "fifth_second_innermost_one": "xxxxx" (string) more text
+                "fifth_second_innermost_two": "xxxxxx" (string) more text
+                "fifth_second_innermost_three": "xxxx" (string) more text
+            }
+            "fifth_second_layer_inner_no_object": "xxxx" (string) extra
+            "fifth_second_layer_inner_id_with_object_value_three": {
+                "fifth_third_innermost_one": "xxxxx" (string) more text
+                "fifth_third_innermost_two": "xxxxxx" (string) more text
+                "fifth_third_innermost_three": "xxxx" (string) more text
+            }
+        }
+        "fifth_inner_id_no_object_value": "xxxx" (string) extra extra
+    }
+}"#;
+
+pub const MULTIPLE_NESTED_4_ANNOTATION: &str = r#"{"outer_id":{"inner_id":"String"},"second_outer_id":{"second_inner_id_one":"String","second_inner_id_two":"String"},"third_outer_id":{"third_inner_id_one":"String","third_inner_id_two":"String","third_inner_id_three":"String"},"fourth_outer_id":{"fourth_inner_id_with_object_value":{"innermost_id_one":"String","innermost_id_two":"String","innermost_id_three":"String"}},"fifth_outer_id":{"fifth_inner_id_with_object_value":{"fifth_second_layer_inner_id_with_object_value_one":{"fifth_innermost_one":"String","fifth_innermost_two":"String","fifth_innermost_three":"String"},"fifth_second_layer_inner_id_with_object_value_two":{"fifth_second_innermost_one":"String","fifth_second_innermost_two":"String","fifth_second_innermost_three":"String"},"fifth_second_layer_inner_no_object":"String","fifth_second_layer_inner_id_with_object_value_three":{"fifth_third_innermost_one":"String","fifth_third_innermost_two":"String","fifth_third_innermost_three":"String"}},"fifth_inner_id_no_object_value":"String"}}"#;
+
 pub const SIMPLE_UNNESTED_GETBLOCKCHAININFO: &str = r#"{ 
      "name": "xxxx",        (string) name of upgrade
 }
@@ -694,6 +739,9 @@ pub fn getinfo_export() -> serde_json::Value {
     });
     getinfo_serde_json_value
 }
+
+// seems well formed as an expected interpretation for getblockchaininfo
+// TODO: confirm.
 pub fn getblockchaininfo_export() -> serde_json::Value {
     let getblockchaininfo_serde_json_value = serde_json::json!({
     "chain": "String",

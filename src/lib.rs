@@ -93,10 +93,6 @@ fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
     (cmd_name.to_string(), example_sections[0].trim().to_string())
 }
 
-// TODO consider need for struct; related to 'special cases' revisions
-// also, last_char changes within parsing individual command but
-// cmd_name doesn't, why bind a variable and a 'constant' in a struct?
-
 fn annotate_result(
     mut result_chars: &mut std::str::Chars,
 ) -> serde_json::Value {
@@ -458,6 +454,16 @@ mod unit {
     }
 
     #[test]
+    fn annotate_result_multiple_nested_4() {
+        let mut multiple_nested = &mut test::MULTIPLE_NESTED_4.chars();
+        let annotated = annotate_result(&mut multiple_nested);
+        let expected_annotation: Value =
+            serde_json::de::from_str(test::MULTIPLE_NESTED_4_ANNOTATION)
+                .unwrap();
+        assert_eq!(expected_annotation, annotated);
+    }
+
+    #[test]
     fn annotate_result_simple_unnested_getblockchaininfo() {
         let mut simple_unnested_blockchaininfo =
             &mut test::SIMPLE_UNNESTED_GETBLOCKCHAININFO.chars();
@@ -638,8 +644,8 @@ mod unit {
 
     // ----------------interpret_raw_output : ignored---------------
 
-    // TODO look at these first few
-    // what is test::valid_getinfo_annotation()
+    // TODO look at these; retool or remove. 
+    // test::valid_getinfo_annotation() is not correct.
     #[ignore]
     #[test]
     fn interpret_raw_output_expected_input_valid() {
@@ -715,7 +721,8 @@ mod unit {
     }
 
     // ----------------serde_json_value : ignored---------------
-    // TODO need to be retooled or deprecated
+    // TODO may pass after 'scrubbing' function in place
+    // else needs to be retooled
     #[ignore]
     #[test]
     fn serde_json_value_help_getblockchaininfo() {
