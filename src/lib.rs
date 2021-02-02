@@ -399,7 +399,7 @@ mod unit {
     }
 
     #[test]
-    fn annotate_result_simple_nested_to_string() {
+    fn annotate_result_simple_nested_object_to_string() {
         let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
         let annotated = annotate_result(&mut simple_nested);
         let expected_annotation = test::SIMPLE_NESTED_RESULT;
@@ -407,7 +407,7 @@ mod unit {
     }
 
     #[test]
-    fn annotate_result_simple_nested() {
+    fn annotate_result_simple_nested_object() {
         let mut simple_nested = &mut test::SIMPLE_NESTED.chars();
         let annotated = annotate_result(&mut simple_nested);
         let expected_annotation: Value =
@@ -416,7 +416,7 @@ mod unit {
     }
 
     #[test]
-    fn annotate_result_multiple_nested() {
+    fn annotate_result_multiple_nested_objects() {
         let mut multiple_nested = &mut test::MULTIPLE_NESTED.chars();
         let annotated = annotate_result(&mut multiple_nested);
         let expected_annotation: Value =
@@ -425,7 +425,7 @@ mod unit {
     }
 
     #[test]
-    fn annotate_result_multiple_nested_2() {
+    fn annotate_result_multiple_nested_objects_2() {
         let mut multiple_nested = &mut test::MULTIPLE_NESTED_2.chars();
         let annotated = annotate_result(&mut multiple_nested);
         let expected_annotation: Value =
@@ -435,7 +435,7 @@ mod unit {
     }
 
     #[test]
-    fn annotate_result_multiple_nested_3() {
+    fn annotate_result_multiple_nested_objects_3() {
         let mut multiple_nested = &mut test::MULTIPLE_NESTED_3.chars();
         let annotated = annotate_result(&mut multiple_nested);
         let expected_annotation: Value =
@@ -445,7 +445,7 @@ mod unit {
     }
 
     #[test]
-    fn annotate_result_multiple_nested_4() {
+    fn annotate_result_multiple_nested_objects_4() {
         let mut multiple_nested = &mut test::MULTIPLE_NESTED_4.chars();
         let annotated = annotate_result(&mut multiple_nested);
         let expected_annotation: Value =
@@ -471,6 +471,7 @@ mod unit {
         let data_stream = &mut section_data.chars();
         let annotated = annotate_result(data_stream);
         assert_eq!(annotated, expected_testdata_annotated);
+        assert_eq!(cmd_name, "getinfo");
     }
 
     #[test]
