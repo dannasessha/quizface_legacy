@@ -191,6 +191,7 @@ fn annotate_array(result_chars: &mut std::str::Chars) -> serde_json::Value {
     }
     return Value::Array(ordered_results);
 }
+
 // could be cleaned up, and/or broken into cases
 // as opposed to internal conditional logic.
 fn bind_idents_labels(
@@ -199,43 +200,34 @@ fn bind_idents_labels(
 ) -> Map<String, Value> {
     dbg!("bind_idents_labels called");
     dbg!(&viewed);
-    //let cleaned = clean_viewed(viewed);
-    let mut cleaned = viewed
+    // let cleaned = clean_viewed(viewed);
+    // TODO rename cleaned
+    let mut viewed_lines = viewed
         .trim_end()
         .lines()
         .map(|line| line.to_string())
         .collect::<Vec<String>>();
-    dbg!(&cleaned);
-    dbg!(&cleaned.len());
-    if cleaned[0].trim().is_empty() || !cleaned[0].trim().contains(":") {
-        cleaned.remove(0);//.trim();
+    dbg!(&viewed_lines);
+    // ignoring the first line if it only whitespace or does not 
+    // contain a `:` char.
+    if viewed_lines[0].trim().is_empty() || !viewed_lines[0].trim().contains(":") {
+        viewed_lines.remove(0);//.trim();
     }
-    //cleaned is now a Vec of strings (that were lines in viewed).
-    dbg!(&cleaned.len());
-    dbg!(&cleaned);
-    /*
-    // TODO consolodate special cases
-    if cleaned[0] == "...".to_string()
-        && cmd_name == "getblockchaininfo".to_string()
-    {
-        special_cases::getblockchaininfo_reject::create_bindings()
-    } else { ...
-     }
-    */
+    //viewed_lines is now a Vec of strings that were lines in viewed.
     dbg!(&inner_value);
     if inner_value != None {
         // possible if/let
-        let mut cleaned_mutable = cleaned.clone();
-        dbg!(&cleaned_mutable);
-        let last_ident_untrimmed = cleaned_mutable.pop().unwrap();
+        let mut viewed_lines_mutable = viewed_lines.clone();
+        dbg!(&viewed_lines_mutable);
+        let last_ident_untrimmed = viewed_lines_mutable.pop().unwrap();
         let last_ident = last_ident_untrimmed
             .trim()
             .splitn(2, ':')
             .collect::<Vec<&str>>()[0]
             .trim_matches('"');
         let mut begin_map = Map::new();
-        if cleaned_mutable.len() > 0 {
-            begin_map = cleaned_mutable
+        if viewed_lines_mutable.len() > 0 {
+            begin_map = viewed_lines_mutable
                 .iter()
                 .map(|ident_rawlabel| {
                     label_identifier(ident_rawlabel.to_string())
@@ -253,7 +245,7 @@ fn bind_idents_labels(
         begin_map.append(&mut end_map);
         begin_map
     } else {
-        return cleaned
+        return viewed_lines
             .iter() // back into iter, could streamline?
             .map(|ident_rawlabel| label_identifier(ident_rawlabel.to_string()))
             .map(|(ident, annotation)| {
@@ -312,35 +304,10 @@ fn make_label(raw_label: &str) -> String {
     annotation
 }
 
-/*
-// TODO consolodate with other preparation?
-fn clean_viewed(raw_viewed: String) -> Vec<String> {
-    dbg!(&raw_viewed);
-    let mut ident_labels = raw_viewed
-        .trim_end()
-        .lines()
-        .map(|line| line.to_string())
-        .collect::<Vec<String>>();
-    dbg!(&ident_labels);
-    /*
-    match ident_labels.remove(0).trim() {
-        //TODO these are special cases
-        empty if empty.is_empty() => (),
-        description if description.contains("(object)") => (),
-        i if i == "...".to_string() => ident_labels = vec![String::from(i)],
-        catchall @ _ => {
-            dbg!(catchall);
-        }
-    }
-    */
-    //if ident_labels.len() != 1 {
-        ident_labels.remove(0)//.trim();
-    //}
-    dbg!(&ident_labels);
-    ident_labels
-}
-*/
 // TODO consolidate special cases
+// the following line is the last remanant (as a 'special case hint')
+// of `fn clean_viewed()` :
+//    description if description.contains("(object)") => (),
 /*mod special_cases {
     pub(crate) mod getblockchaininfo_reject {
         pub const TRAILING_TRASH: &str = "      (object)";
