@@ -704,18 +704,55 @@ pub fn simple_array_json_generator() -> serde_json::Value {
 
 pub const SIMPLE_ARRAY_IN_OBJECT: &str = r#"{"id": [      (array) text
 {
-   "outer_id": "xxxx.xxx", (string) extra unimportant text
+   "inner_id": "xxxx.xxx", (string) extra unimportant text
 }
 ]}"#;
 
 pub fn simple_array_in_object_json_generator() -> serde_json::Value {
     let simple_array_in_object_json = serde_json::json!({"id": 
-        [{"outer_id":"String"}]
+        [{"inner_id":"String"}]
     });
     dbg!(&simple_array_in_object_json);
     simple_array_in_object_json
 }
 
+pub const SIMPLE_ARRAY_IN_NESTED_OBJECT: &str = r#"{"outer_id:" {"id": [      (array) text
+{
+   "innermost_id": "xxxx.xxx", (string) extra unimportant text
+}
+]}}"#;
+
+pub fn simple_array_in_nested_object_json_generator() -> serde_json::Value {
+    let simple_array_in_object_json = serde_json::json!({"outer_id":{"id": 
+        [{"innermost_id":"String"}]
+    }});
+    dbg!(&simple_array_in_object_json);
+    simple_array_in_object_json
+}
+
+pub const COMPLEX_ARRAY_IN_NESTED_OBJECT: &str = r#"{"outer_id:" {"id": [      (array) text
+{
+   "innermost_id_one": "xxxx.xxx", (string) extra unimportant text
+   }
+   {
+   "innermost_id_two": "xxxx.xxx", (string) extra unimportant text
+   }
+   {
+   "innermost_id_three": "xxxx.xxx", (string) extra unimportant text
+}
+]}}"#;
+
+pub fn complex_array_in_nested_object_json_generator() -> serde_json::Value {
+    let complex_array_in_object_json = serde_json::json!({"outer_id":{"id": 
+        [
+        {"innermost_id_one":"String"},
+        {"innermost_id_two":"String"},
+        {"innermost_id_three":"String"}
+        ]
+    }});
+    dbg!(&complex_array_in_object_json);
+    complex_array_in_object_json
+}
 //TODO review this function and its tests
 // I do not believe this is valid getinfo info.
 pub fn valid_getinfo_annotation() -> serde_json::Value {

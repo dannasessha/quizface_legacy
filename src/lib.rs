@@ -110,8 +110,8 @@ fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
     loop {
         match result_chars.next().unwrap() {
             '}' => {
-                dbg!("end brace");
-                dbg!(&viewed);
+                //dbg!("end brace");
+                //dbg!(&viewed);
                 if viewed.trim().is_empty() {
                     break;
                 }
@@ -135,13 +135,13 @@ fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
                     '{' => annotate_object(result_chars),
                     _ => unreachable!("last_viewed is either '[' or '{'"),
                 };
-                dbg!(&inner_value);
+                //dbg!(&inner_value);
                 partial_ident_label_bindings =
                     bind_idents_labels(viewed.clone(), Some(inner_value));
                 viewed.clear();
                 ident_label_bindings.append(&mut partial_ident_label_bindings);
             }
-            // TODO: Handle unbalanced braces
+            // TODO: Handle unbalanced braces? Create test.
             x if x.is_ascii() => viewed.push(x),
             _ => panic!("character is UTF-8 but not ASCII!"),
         }
@@ -180,19 +180,18 @@ fn annotate_array(result_chars: &mut std::str::Chars) -> serde_json::Value {
                 // TODO maybe temporary: to allow detection of `, ...` 
                 ordered_results.push(inner_value)
             }
-            // TODO: Handle unbalanced braces?
-            // add test.
+            // TODO: Handle unbalanced braces? add test.
             x if x.is_ascii() => viewed.push(x),
             // TODO add processing of non-Value members:
             // in the case of z_listaddresses, stings 
-            // must be accepted as array members
+            // must be accepted as array members.
             _ => panic!("character is UTF-8 but not ASCII!"),
         }
     }
     return Value::Array(ordered_results);
 }
 
-// could be cleaned up, and/or broken into cases
+// TODO could be cleaned up, and/or broken into cases
 // as opposed to internal conditional logic.
 fn bind_idents_labels(
     viewed: String,
@@ -235,8 +234,8 @@ fn bind_idents_labels(
                 .map(|(a, b)| (a.to_string(), json!(b.to_string())))
                 .collect::<Map<String, Value>>();
         }
-        //dbg!(&begin_map);
-        //dbg!(&last_ident);
+        dbg!(&begin_map);
+        dbg!(&last_ident);
         let mut end_map = [(last_ident, inner_value.unwrap())]
             .iter()
             .cloned()
@@ -265,8 +264,7 @@ fn label_identifier(ident_with_metadata: String) -> (String, String) {
     let meta_data = ident_and_metadata[1].trim();
     //dbg!(&meta_data);
     /*
-    // TODO special case
-    // consolodate
+    // TODO special case: consolodate
     if meta_data
         .contains(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
         && cmd_name == "getblockchaininfo".to_string()
@@ -507,8 +505,24 @@ mod unit {
         assert_eq!(expected_result, annotated);
     }
 
+    #[test]
+    fn annotate_result_simple_array_in_nested_object_generate() {
+        let mut simple_array_in_nested_object_chars = &mut test::SIMPLE_ARRAY_IN_NESTED_OBJECT.chars();
+        let annotated = annotate_result(&mut simple_array_in_nested_object_chars);
+        let expected_result = test::simple_array_in_nested_object_json_generator();
+        assert_eq!(expected_result, annotated);
+    }
+
+    #[test]
+    fn annotate_result_complex_array_in_nested_object_generate() {
+        let mut complex_array_in_nested_object_chars = &mut test::COMPLEX_ARRAY_IN_NESTED_OBJECT.chars();
+        let annotated = annotate_result(&mut complex_array_in_nested_object_chars);
+        let expected_result = test::complex_array_in_nested_object_json_generator();
+        assert_eq!(expected_result, annotated);
+    }
+
     // ------------------ annotate_result : ignored --------
-    // special case
+    // TODO special case : consolodate
     #[ignore]
     #[test]
     fn annotate_result_special_nested_blockchaininfo() {
@@ -521,8 +535,7 @@ mod unit {
 
     // ----------------sanity_check---------------
 
-    //TODO
-    // make saner sanity checks
+    //TODO make consistantly saner sanity checks
     #[test]
     fn sanity_check_simple_unnested() {
         let simple_unnested_result = test::SIMPLE_UNNESTED_RESULT.to_string();
@@ -549,11 +562,11 @@ mod unit {
     }
 
     /* more complex tests of the preceeding pattern fail
-    due to the macro in
+    due to the macro in use in
     `multiple_nested_2_json_generator().to_string()`
     serializing key-value pairs in a different order than is
     provided as the input to the macro. Therefore the following
-    tests will deserialize str test vectors into Values */
+    test will deserialize str test vectors into Values */
     #[test]
     fn sanity_check_multiple_nested_2() {
         let multiple_nested_2_value = serde_json::de::from_str::<Value>(
