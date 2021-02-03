@@ -1,7 +1,7 @@
 pub mod utils;
 use crate::logging::create_log_dirs;
 use crate::logging::log_masterhelp_output;
-use serde_json::{json, map::Map, Value, Value::Array};
+use serde_json::{json, map::Map, Value};
 use std::path::Path;
 use utils::logging;
 
@@ -115,6 +115,9 @@ fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
                 if viewed.trim().is_empty() {
                     break;
                 }
+                if viewed.trim() == ", ..."{
+                    dbg!("trailing dots in Object");
+                }
                 partial_ident_label_bindings =
                     bind_idents_labels(viewed.clone(), None);
                 viewed.clear();
@@ -155,11 +158,10 @@ fn annotate_array(result_chars: &mut std::str::Chars) -> serde_json::Value {
                 dbg!("end square bracket! ']' ");   
                 dbg!(&viewed);
                 if viewed.trim().is_empty() {
-                    dbg!("yup");
                     break;
                 }
                 if viewed.trim() == ", ..."{
-                    dbg!("woww");
+                    dbg!("trailing dots in Array");
                 }
                 dbg!(&viewed);
                 viewed.clear();
@@ -175,7 +177,7 @@ fn annotate_array(result_chars: &mut std::str::Chars) -> serde_json::Value {
                 };
                 dbg!(&inner_value);
                 viewed.clear();
-                // maybe temporary: to allow detection of `, ...` 
+                // TODO maybe temporary: to allow detection of `, ...` 
                 ordered_results.push(inner_value)
             }
             // TODO: Handle unbalanced braces?
@@ -197,11 +199,22 @@ fn bind_idents_labels(
 ) -> Map<String, Value> {
     dbg!("bind_idents_labels called");
     dbg!(&viewed);
-    let cleaned = clean_viewed(viewed);
+    //let cleaned = clean_viewed(viewed);
+    let mut cleaned = viewed
+        .trim_end()
+        .lines()
+        .map(|line| line.to_string())
+        .collect::<Vec<String>>();
     dbg!(&cleaned);
+    dbg!(&cleaned.len());
+    if cleaned[0].trim().is_empty() || !cleaned[0].trim().contains(":") {
+        cleaned.remove(0);//.trim();
+    }
     //cleaned is now a Vec of strings (that were lines in viewed).
+    dbg!(&cleaned.len());
+    dbg!(&cleaned);
     /*
-    // consolodate special cases
+    // TODO consolodate special cases
     if cleaned[0] == "...".to_string()
         && cmd_name == "getblockchaininfo".to_string()
     {
@@ -230,11 +243,8 @@ fn bind_idents_labels(
                 .map(|(a, b)| (a.to_string(), json!(b.to_string())))
                 .collect::<Map<String, Value>>();
         }
-        dbg!(&begin_map);
-        // TODO create return from begin_map and following;
-        // currently set to `return`
-        // && make acceptable to outer Value
-        dbg!(&last_ident);
+        //dbg!(&begin_map);
+        //dbg!(&last_ident);
         let mut end_map = [(last_ident, inner_value.unwrap())]
             .iter()
             .cloned()
@@ -252,48 +262,6 @@ fn bind_idents_labels(
             .collect::<Map<String, Value>>();
     }
 }
-
-// consolodate with other preparation?
-fn clean_viewed(raw_viewed: String) -> Vec<String> {
-    dbg!(&raw_viewed);
-    let mut ident_labels = raw_viewed
-        .trim_end()
-        .lines()
-        .map(|line| line.to_string())
-        .collect::<Vec<String>>();
-    match ident_labels.remove(0).trim() {
-        //TODO these are special cases
-        empty if empty.is_empty() => (),
-        description if description.contains("(object)") => (),
-        i if i == "...".to_string() => ident_labels = vec![String::from(i)],
-        catchall @ _ => {
-            dbg!(catchall);
-        }
-    }
-    dbg!(&ident_labels);
-    ident_labels
-}
-
-// TODO consolidate special cases
-/*mod special_cases {
-    pub(crate) mod getblockchaininfo_reject {
-        pub const TRAILING_TRASH: &str = "      (object)";
-        use serde_json::{json, Map, Value};
-        pub const BINDINGS: [(&str, &str); 4] = [
-            ("found", "Decimal"),
-            ("required", "Decimal"),
-            ("status", "bool"),
-            ("window", "Decimal"),
-        ];
-        pub fn create_bindings() -> Map<String, Value> {
-            BINDINGS
-                .iter()
-                .map(|(a, b)| (a.to_string(), json!(b)))
-                .collect()
-        }
-    }
-}
-*/
 
 // assumes well-formed `ident_with_metadata`
 fn label_identifier(ident_with_metadata: String) -> (String, String) {
@@ -343,6 +311,55 @@ fn make_label(raw_label: &str) -> String {
     }
     annotation
 }
+
+/*
+// TODO consolodate with other preparation?
+fn clean_viewed(raw_viewed: String) -> Vec<String> {
+    dbg!(&raw_viewed);
+    let mut ident_labels = raw_viewed
+        .trim_end()
+        .lines()
+        .map(|line| line.to_string())
+        .collect::<Vec<String>>();
+    dbg!(&ident_labels);
+    /*
+    match ident_labels.remove(0).trim() {
+        //TODO these are special cases
+        empty if empty.is_empty() => (),
+        description if description.contains("(object)") => (),
+        i if i == "...".to_string() => ident_labels = vec![String::from(i)],
+        catchall @ _ => {
+            dbg!(catchall);
+        }
+    }
+    */
+    //if ident_labels.len() != 1 {
+        ident_labels.remove(0)//.trim();
+    //}
+    dbg!(&ident_labels);
+    ident_labels
+}
+*/
+// TODO consolidate special cases
+/*mod special_cases {
+    pub(crate) mod getblockchaininfo_reject {
+        pub const TRAILING_TRASH: &str = "      (object)";
+        use serde_json::{json, Map, Value};
+        pub const BINDINGS: [(&str, &str); 4] = [
+            ("found", "Decimal"),
+            ("required", "Decimal"),
+            ("status", "bool"),
+            ("window", "Decimal"),
+        ];
+        pub fn create_bindings() -> Map<String, Value> {
+            BINDINGS
+                .iter()
+                .map(|(a, b)| (a.to_string(), json!(b)))
+                .collect()
+        }
+    }
+}
+*/
 
 // ------------------- tests ----------------------------------------
 
