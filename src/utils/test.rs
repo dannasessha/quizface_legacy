@@ -572,7 +572,6 @@ pub const MULTIPLE_NESTED: &str = r#"{
 
 pub const MULTIPLE_NESTED_ANNOTATION: &str = r#"{"outer_id":{"inner_id":"String"},"second_outer_id":{"second_inner_id":"String"}}"#;
 
-// TODO conform tests to test for valid JSON objects, not JSON strings?
 pub fn multiple_nested_2_json_generator() -> serde_json::Value {
     let multiple_nested_2_json = serde_json::json!({
     "outer_id":
@@ -691,6 +690,31 @@ pub const SPECIAL_NESTED_GETBLOCKCHAININFO: &str = r#"{
 
 pub const SPECIAL_NESTED_GETBLOCKCHAININFO_RESULT: &str =
     r#"{"String":{"name":"String"}}"#;
+
+pub const SIMPLE_ARRAY: &str = r#"[{
+   "outer_id": "xxxx.xxx", (string) extra unimportant text
+}]"#;
+
+pub fn simple_array_json_generator() -> serde_json::Value {
+    let simple_unnested_array_json = serde_json::json!([
+        {"outer_id":"String"}
+    ]);
+    simple_unnested_array_json
+}
+
+pub const SIMPLE_ARRAY_IN_OBJECT: &str = r#"{"id": [      (array) text
+{
+   "outer_id": "xxxx.xxx", (string) extra unimportant text
+}
+]}"#;
+
+pub fn simple_array_in_object_json_generator() -> serde_json::Value {
+    let simple_array_in_object_json = serde_json::json!({"id": 
+        [{"outer_id":"String"}]
+    });
+    dbg!(&simple_array_in_object_json);
+    simple_array_in_object_json
+}
 
 //TODO review this function and its tests
 // I do not believe this is valid getinfo info.

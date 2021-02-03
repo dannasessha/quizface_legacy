@@ -118,14 +118,15 @@ fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
                 partial_ident_label_bindings =
                     bind_idents_labels(viewed.clone(), None);
                 viewed.clear();
-                dbg!(&partial_ident_label_bindings);
+                //dbg!(&partial_ident_label_bindings);
+                // append works, but `.extend()` is more atomic, might
+                // be worth looking at for refinements.
                 ident_label_bindings.append(&mut partial_ident_label_bindings);
-
-                dbg!(&ident_label_bindings);
+                //dbg!(&ident_label_bindings);
                 break;
             }
             last_viewed if last_viewed == '[' || last_viewed == '{' => {
-                dbg!("recursing");
+                //dbg!("recursing");
                 let inner_value = match last_viewed {
                     '[' => annotate_array(result_chars),
                     '{' => annotate_object(result_chars),
@@ -135,8 +136,6 @@ fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
                 partial_ident_label_bindings =
                     bind_idents_labels(viewed.clone(), Some(inner_value));
                 viewed.clear();
-                // append works, but `.extend()` is more atomic, might
-                // be worth looking at for refinements.
                 ident_label_bindings.append(&mut partial_ident_label_bindings);
             }
             // TODO: Handle unbalanced braces
@@ -153,29 +152,38 @@ fn annotate_array(result_chars: &mut std::str::Chars) -> serde_json::Value {
     loop {
         match result_chars.next().unwrap() {
             ']' => {
-                ordered_results = label_by_position(viewed.clone());
+                dbg!("end square bracket! ']' ");   
+                dbg!(&viewed);
+                if viewed.trim().is_empty() {
+                    dbg!("yup");
+                    break;
+                }
+                if viewed.trim() == ", ..."{
+                    dbg!("woww");
+                }
+                dbg!(&viewed);
+                viewed.clear();
+                dbg!(&ordered_results);
                 break;
             }
             last_viewed if last_viewed == '[' || last_viewed == '{' => {
+                dbg!("recursing in annotate_array");
                 let inner_value = if last_viewed == '[' {
                     annotate_array(result_chars)
                 } else {
                     annotate_object(result_chars)
                 };
-                bind_idents_labels(viewed.clone(), Some(inner_value));
-                //dbg!(&inner_value);
-                /*if inner_value.is_object() {
-                    //inner = serde_json::Value::Object(temp);
-                    inner_object = inner_value.as_object().unwrap().clone();
-                    dbg!(&inner_object);
-                } else if inner_value.is_array() {
-                    //inner = serde_json::Value::Array(temp);
-                    inner_array = Array(inner_value.as_array().unwrap().clone());
-                    dbg!(&inner_array);
-                }*/
+                dbg!(&inner_value);
+                viewed.clear();
+                // maybe temporary: to allow detection of `, ...` 
+                ordered_results.push(inner_value)
             }
-            // TODO: Handle unbalanced braces
+            // TODO: Handle unbalanced braces?
+            // add test.
             x if x.is_ascii() => viewed.push(x),
+            // TODO add processing of non-Value members:
+            // in the case of z_listaddresses, stings 
+            // must be accepted as array members
             _ => panic!("character is UTF-8 but not ASCII!"),
         }
     }
@@ -188,6 +196,7 @@ fn bind_idents_labels(
     inner_value: Option<Value>,
 ) -> Map<String, Value> {
     dbg!("bind_idents_labels called");
+    dbg!(&viewed);
     let cleaned = clean_viewed(viewed);
     dbg!(&cleaned);
     //cleaned is now a Vec of strings (that were lines in viewed).
@@ -204,6 +213,7 @@ fn bind_idents_labels(
     if inner_value != None {
         // possible if/let
         let mut cleaned_mutable = cleaned.clone();
+        dbg!(&cleaned_mutable);
         let last_ident_untrimmed = cleaned_mutable.pop().unwrap();
         let last_ident = last_ident_untrimmed
             .trim()
@@ -245,6 +255,7 @@ fn bind_idents_labels(
 
 // consolodate with other preparation?
 fn clean_viewed(raw_viewed: String) -> Vec<String> {
+    dbg!(&raw_viewed);
     let mut ident_labels = raw_viewed
         .trim_end()
         .lines()
@@ -259,6 +270,7 @@ fn clean_viewed(raw_viewed: String) -> Vec<String> {
             dbg!(catchall);
         }
     }
+    dbg!(&ident_labels);
     ident_labels
 }
 
@@ -330,16 +342,6 @@ fn make_label(raw_label: &str) -> String {
         return format!("Option<{}>", annotation);
     }
     annotation
-}
-
-fn label_by_position(raw_observed: String) -> Vec<Value> {
-    let trimmed = raw_observed
-        .trim_end_matches(|c| c != '}')
-        .trim_start_matches(|c| c != '{');
-    vec![Value::Object(
-        serde_json::from_str::<Map<String, Value>>(trimmed)
-            .expect("Couldn't map into a Map<String, Value>!"),
-    )]
 }
 
 // ------------------- tests ----------------------------------------
@@ -503,6 +505,22 @@ mod unit {
             serde_json::de::from_str(test::GETBLOCKCHAININFO_FRAGMENT_JSON)
                 .unwrap();
         assert_eq!(expected_annotation, annotated);
+    }
+
+    #[test]
+    fn annotate_result_simple_array_generate() {
+        let mut simple_array_chars = &mut test::SIMPLE_ARRAY.chars();
+        let annotated = annotate_result(&mut simple_array_chars);
+        let expected_result = test::simple_array_json_generator();
+        assert_eq!(expected_result, annotated);
+    }
+
+    #[test]
+    fn annotate_result_simple_array_in_global_object_generate() {
+        let mut simple_array_in_object_chars = &mut test::SIMPLE_ARRAY_IN_OBJECT.chars();
+        let annotated = annotate_result(&mut simple_array_in_object_chars);
+        let expected_result = test::simple_array_in_object_json_generator();
+        assert_eq!(expected_result, annotated);
     }
 
     // ------------------ annotate_result : ignored --------
