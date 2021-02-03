@@ -753,6 +753,39 @@ pub fn complex_array_in_nested_object_json_generator() -> serde_json::Value {
     dbg!(&complex_array_in_object_json);
     complex_array_in_object_json
 }
+
+pub const COMPLEX_ARRAY_WITH_NESTED_OBJECTS_IN_NESTED_OBJECT: &str = r#"{"outer_id:" {"id": [      (array) text
+{ "nested_outer_one": {
+   "innermost_id_one": "xxxx.xxx", (string) extra unimportant text
+   }
+   }
+{ "nested_outer_two": {
+   "innermost_id_two": "xxxx.xxx", (string) extra unimportant text
+   "innermost_id_two_B": "xxxx.xxx", (string) extra unimportant text
+}
+}
+   {
+   "innermost_id_three": "xxxx.xxx", (string) extra unimportant text
+}
+{ "nested_outer_four": {
+   "innermost_id_four": "xxxx.xxx", (string) extra unimportant text
+}
+}
+]}}"#;
+
+pub fn complex_array_with_nested_objects_in_nested_object_json_generator() -> serde_json::Value {
+    let complex_array_with_nested_objects_in_object_json = serde_json::json!({"outer_id":{"id": 
+        [
+        {"nested_outer_one":{"innermost_id_one":"String"}},
+        {"nested_outer_two":{"innermost_id_two":"String","innermost_id_two_B":"String"}},
+        {"innermost_id_three":"String"},
+        {"nested_outer_four":{"innermost_id_four":"String"}}
+        ]
+    }});
+    dbg!(&complex_array_with_nested_objects_in_object_json);
+    complex_array_with_nested_objects_in_object_json
+}
+
 //TODO review this function and its tests
 // I do not believe this is valid getinfo info.
 pub fn valid_getinfo_annotation() -> serde_json::Value {
