@@ -720,10 +720,16 @@ mod unit {
         assert_eq!(interpreted, expected_results);
     }
 
+    #[test]
+    fn interpret_raw_output_getblockchaininfo_complete_does_not_panic() {
+        dbg!(interpret_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE));
+    }
+// TODO make expected interpreted Value. 
     #[ignore]
     #[test]
     fn interpret_raw_output_getblockchaininfo_complete() {
-        dbg!(interpret_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE));
+        let expected = test::getblockchaininfo_export();
+        assert_eq!(expected, interpret_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE));
     }
 
     // ----------------serde_json_value----------------
