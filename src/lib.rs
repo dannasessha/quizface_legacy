@@ -106,7 +106,6 @@ fn annotate_result(result_chars: &mut std::str::Chars) -> serde_json::Value {
 fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
     let mut viewed = String::new();
     let mut ident_label_bindings = Map::new();
-    let mut partial_ident_label_bindings = Map::new();
     loop {
         match result_chars.next().unwrap() {
             '}' => {
@@ -118,7 +117,7 @@ fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
                 if viewed.trim() == ", ..."{
                     dbg!("trailing dots in Object");
                 }
-                partial_ident_label_bindings =
+                let mut partial_ident_label_bindings =
                     bind_idents_labels(viewed.clone(), None);
                 viewed.clear();
                 //dbg!(&partial_ident_label_bindings);
@@ -136,7 +135,7 @@ fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
                     _ => unreachable!("last_viewed is either '[' or '{'"),
                 };
                 //dbg!(&inner_value);
-                partial_ident_label_bindings =
+                let mut partial_ident_label_bindings =
                     bind_idents_labels(viewed.clone(), Some(inner_value));
                 viewed.clear();
                 ident_label_bindings.append(&mut partial_ident_label_bindings);
