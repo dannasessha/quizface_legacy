@@ -786,6 +786,21 @@ pub fn complex_array_with_nested_objects_in_nested_object_json_generator() -> se
     complex_array_with_nested_objects_in_object_json
 }
 
+pub const NESTED_ARRAYS_IN_NESTED_OBJECT: &str = r#"{"outer_id:" {"id": [      (array) text
+{
+            "nested_array_id": (array) more text 
+    [
+    {"innermost": "xxxx", (string) exxxxxtra text}
+    ]
+}
+]
+}}"#;
+
+pub fn nested_arrays_in_nested_object_json_generator() -> serde_json::Value {
+    let nested_arrays_in_object_json = serde_json::json!({"outer_id":{"id":[{"nested_array_id":[{"innermost":"String"}]}]}});
+    nested_arrays_in_object_json
+}
+
 //TODO review this function and its tests
 // I do not believe this is valid getinfo info.
 pub fn valid_getinfo_annotation() -> serde_json::Value {

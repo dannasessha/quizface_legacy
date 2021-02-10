@@ -528,6 +528,14 @@ mod unit {
         assert_eq!(expected_result, annotated);
     }
 
+    #[test]
+    fn annotate_result_nested_arrays_in_nested_object_generate() {
+        let mut nested_arrays_in_nested_object_chars = &mut test::NESTED_ARRAYS_IN_NESTED_OBJECT.chars();
+        let annotated = annotate_result(&mut nested_arrays_in_nested_object_chars);
+        let expected_result = test::nested_arrays_in_nested_object_json_generator();
+        assert_eq!(expected_result, annotated);
+    }
+
     // ------------------ annotate_result : ignored --------
     // TODO special case : consolodate
     #[ignore]
