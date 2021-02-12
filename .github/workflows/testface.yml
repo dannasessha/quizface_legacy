@@ -1,0 +1,19 @@
+name: cargo-test-quizface
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+ 
+    - name: Pull image
+      run: docker pull ghcr.io/zingolabs/zcashrpc:latest
+    
+    - name: Run Tests
+      run:  docker run  -v /home/runner/work/quizface/quizface:/quizface ghcr.io/zingolabs/zcashrpc:latest bash -c "PATH=/zcash/src:\$PATH && zcashd -daemon && sleep 2 && cd quizface && cargo test"
