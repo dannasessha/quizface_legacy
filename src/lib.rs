@@ -61,7 +61,7 @@ pub fn interpret_raw_output(raw_command_help: &str) -> String {
     // without complicating helper function with lifetime annotations
     let result_string_temp = scrub_result(result_data);
     // quick name change to not change subsequent instances of
-    // `result_char` 
+    // `result_char`
     // TODO rename result_chars to scrubbed_chars or similar ?
     let result_chars = &mut result_string_temp.chars();
     let annotated_json_text = annotate_result(result_chars).to_string();
@@ -88,23 +88,26 @@ fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
 }
 
 fn scrub_result(result_data: String) -> String {
-    // TODO pass in command name here to scrub differently for 
+    // TODO pass in command name here to scrub differently for
     // differing commands.
-    // currently tooled only for getblockchaininfo 
+    // currently tooled only for getblockchaininfo
     // if cmd_name == "getblockchaininfo".to_string() {
     let scrub_1 = result_data.replace("[0..1]", "");
-    let scrub_2 = scrub_1.replace("{ ... }      (object) progress toward rejecting pre-softfork blocks", "{
+    let scrub_2 = scrub_1.replace(
+        "{ ... }      (object) progress toward rejecting pre-softfork blocks",
+        "{
 \"status\": (boolean)
 \"found\": (numeric)
 \"required\": (numeric)
 \"window\": (numeric)
-}");
+}",
+    );
     let scrub_3 = scrub_2.replace("(same fields as \"enforce\")", "");
     let scrub_4 = scrub_3.replace(", ...", "");
     scrub_4
-    // TODO note: "xxxx" ID in upgrades : possibly change to 
+    // TODO note: "xxxx" ID in upgrades : possibly change to
     // nuparams_hash or something similar?
-    // TODO note: possible need for commas with multiple members of 
+    // TODO note: possible need for commas with multiple members of
     // softforks and upgrades
 }
 
@@ -127,7 +130,7 @@ fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
                 if viewed.trim().is_empty() {
                     break;
                 }
-                if viewed.trim() == ", ..."{
+                if viewed.trim() == ", ..." {
                     dbg!("trailing dots in Object");
                 }
                 let mut partial_ident_label_bindings =
@@ -167,12 +170,12 @@ fn annotate_array(result_chars: &mut std::str::Chars) -> serde_json::Value {
     loop {
         match result_chars.next().unwrap() {
             ']' => {
-                dbg!("end square bracket! ']' ");   
+                dbg!("end square bracket! ']' ");
                 dbg!(&viewed);
                 if viewed.trim().is_empty() {
                     break;
                 }
-                if viewed.trim() == ", ..."{
+                if viewed.trim() == ", ..." {
                     dbg!("trailing dots in Array");
                 }
                 dbg!(&viewed);
@@ -189,13 +192,13 @@ fn annotate_array(result_chars: &mut std::str::Chars) -> serde_json::Value {
                 };
                 dbg!(&inner_value);
                 viewed.clear();
-                // TODO maybe temporary: to allow detection of `, ...` 
+                // TODO maybe temporary: to allow detection of `, ...`
                 ordered_results.push(inner_value)
             }
             // TODO: Handle unbalanced braces? add test.
             x if x.is_ascii() => viewed.push(x),
             // TODO add processing of non-Value members:
-            // in the case of z_listaddresses, stings 
+            // in the case of z_listaddresses, stings
             // must be accepted as array members.
             _ => panic!("character is UTF-8 but not ASCII!"),
         }
@@ -219,10 +222,12 @@ fn bind_idents_labels(
         .map(|line| line.to_string())
         .collect::<Vec<String>>();
     dbg!(&viewed_lines);
-    // ignoring the first line if it only whitespace or does not 
+    // ignoring the first line if it only whitespace or does not
     // contain a `:` char.
-    if viewed_lines[0].trim().is_empty() || !viewed_lines[0].trim().contains(":") {
-        viewed_lines.remove(0);//.trim();
+    if viewed_lines[0].trim().is_empty()
+        || !viewed_lines[0].trim().contains(":")
+    {
+        viewed_lines.remove(0); //.trim();
     }
     //viewed_lines is now a Vec of strings that were lines in viewed.
     dbg!(&inner_value);
@@ -321,11 +326,11 @@ mod unit {
     // ----------------scrub_result-------------------
     #[test]
     fn scrub_result_getblockchaininfo_scrubbed() {
-         let expected_result = test::HELP_GETBLOCKCHAININFO_RESULT_SCRUBBED;
-         let result = scrub_result(test::HELP_GETBLOCKCHAININFO_RESULT.to_string());
-         assert_eq!(expected_result, result);
+        let expected_result = test::HELP_GETBLOCKCHAININFO_RESULT_SCRUBBED;
+        let result =
+            scrub_result(test::HELP_GETBLOCKCHAININFO_RESULT.to_string());
+        assert_eq!(expected_result, result);
     }
-
 
     // ----------------label_identifier---------------
 
@@ -481,7 +486,8 @@ mod unit {
 
     #[test]
     fn annotate_result_simple_array_in_global_object_generate() {
-        let mut simple_array_in_object_chars = &mut test::SIMPLE_ARRAY_IN_OBJECT.chars();
+        let mut simple_array_in_object_chars =
+            &mut test::SIMPLE_ARRAY_IN_OBJECT.chars();
         let annotated = annotate_result(&mut simple_array_in_object_chars);
         let expected_result = test::simple_array_in_object_json_generator();
         assert_eq!(expected_result, annotated);
@@ -489,33 +495,47 @@ mod unit {
 
     #[test]
     fn annotate_result_simple_array_in_nested_object_generate() {
-        let mut simple_array_in_nested_object_chars = &mut test::SIMPLE_ARRAY_IN_NESTED_OBJECT.chars();
-        let annotated = annotate_result(&mut simple_array_in_nested_object_chars);
-        let expected_result = test::simple_array_in_nested_object_json_generator();
+        let mut simple_array_in_nested_object_chars =
+            &mut test::SIMPLE_ARRAY_IN_NESTED_OBJECT.chars();
+        let annotated =
+            annotate_result(&mut simple_array_in_nested_object_chars);
+        let expected_result =
+            test::simple_array_in_nested_object_json_generator();
         assert_eq!(expected_result, annotated);
     }
 
     #[test]
     fn annotate_result_complex_array_in_nested_object_generate() {
-        let mut complex_array_in_nested_object_chars = &mut test::COMPLEX_ARRAY_IN_NESTED_OBJECT.chars();
-        let annotated = annotate_result(&mut complex_array_in_nested_object_chars);
-        let expected_result = test::complex_array_in_nested_object_json_generator();
+        let mut complex_array_in_nested_object_chars =
+            &mut test::COMPLEX_ARRAY_IN_NESTED_OBJECT.chars();
+        let annotated =
+            annotate_result(&mut complex_array_in_nested_object_chars);
+        let expected_result =
+            test::complex_array_in_nested_object_json_generator();
         assert_eq!(expected_result, annotated);
     }
 
     #[test]
-    fn annotate_result_complex_array_with_nested_objects_in_nested_object_generate() {
-        let mut complex_array_with_nested_objects_in_nested_object_chars = &mut test::COMPLEX_ARRAY_WITH_NESTED_OBJECTS_IN_NESTED_OBJECT.chars();
-        let annotated = annotate_result(&mut complex_array_with_nested_objects_in_nested_object_chars);
+    fn annotate_result_complex_array_with_nested_objects_in_nested_object_generate(
+    ) {
+        let mut complex_array_with_nested_objects_in_nested_object_chars =
+            &mut test::COMPLEX_ARRAY_WITH_NESTED_OBJECTS_IN_NESTED_OBJECT
+                .chars();
+        let annotated = annotate_result(
+            &mut complex_array_with_nested_objects_in_nested_object_chars,
+        );
         let expected_result = test::complex_array_with_nested_objects_in_nested_object_json_generator();
         assert_eq!(expected_result, annotated);
     }
 
     #[test]
     fn annotate_result_nested_arrays_in_nested_object_generate() {
-        let mut nested_arrays_in_nested_object_chars = &mut test::NESTED_ARRAYS_IN_NESTED_OBJECT.chars();
-        let annotated = annotate_result(&mut nested_arrays_in_nested_object_chars);
-        let expected_result = test::nested_arrays_in_nested_object_json_generator();
+        let mut nested_arrays_in_nested_object_chars =
+            &mut test::NESTED_ARRAYS_IN_NESTED_OBJECT.chars();
+        let annotated =
+            annotate_result(&mut nested_arrays_in_nested_object_chars);
+        let expected_result =
+            test::nested_arrays_in_nested_object_json_generator();
         assert_eq!(expected_result, annotated);
     }
 
@@ -714,12 +734,15 @@ mod unit {
     fn interpret_raw_output_getblockchaininfo_complete_does_not_panic() {
         dbg!(interpret_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE));
     }
-// TODO make expected interpreted Value. 
+    // TODO make expected interpreted Value.
     #[ignore]
     #[test]
     fn interpret_raw_output_getblockchaininfo_complete() {
         let expected = test::getblockchaininfo_export();
-        assert_eq!(expected, interpret_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE));
+        assert_eq!(
+            expected,
+            interpret_raw_output(test::HELP_GETBLOCKCHAININFO_COMPLETE)
+        );
     }
 
     // ----------------serde_json_value----------------

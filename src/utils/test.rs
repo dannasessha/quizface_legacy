@@ -754,7 +754,7 @@ pub const SIMPLE_ARRAY_IN_OBJECT: &str = r#"{"id": [      (array) text
 ]}"#;
 
 pub fn simple_array_in_object_json_generator() -> serde_json::Value {
-    let simple_array_in_object_json = serde_json::json!({"id": 
+    let simple_array_in_object_json = serde_json::json!({"id":
         [{"inner_id":"String"}]
     });
     dbg!(&simple_array_in_object_json);
@@ -768,7 +768,7 @@ pub const SIMPLE_ARRAY_IN_NESTED_OBJECT: &str = r#"{"outer_id:" {"id": [      (a
 ]}}"#;
 
 pub fn simple_array_in_nested_object_json_generator() -> serde_json::Value {
-    let simple_array_in_object_json = serde_json::json!({"outer_id":{"id": 
+    let simple_array_in_object_json = serde_json::json!({"outer_id":{"id":
         [{"innermost_id":"String"}]
     }});
     dbg!(&simple_array_in_object_json);
@@ -788,7 +788,7 @@ pub const COMPLEX_ARRAY_IN_NESTED_OBJECT: &str = r#"{"outer_id:" {"id": [      (
 ]}}"#;
 
 pub fn complex_array_in_nested_object_json_generator() -> serde_json::Value {
-    let complex_array_in_object_json = serde_json::json!({"outer_id":{"id": 
+    let complex_array_in_object_json = serde_json::json!({"outer_id":{"id":
         [
         {"innermost_id_one":"String"},
         {"innermost_id_two":"String"},
@@ -818,8 +818,9 @@ pub const COMPLEX_ARRAY_WITH_NESTED_OBJECTS_IN_NESTED_OBJECT: &str = r#"{"outer_
 }
 ]}}"#;
 
-pub fn complex_array_with_nested_objects_in_nested_object_json_generator() -> serde_json::Value {
-    let complex_array_with_nested_objects_in_object_json = serde_json::json!({"outer_id":{"id": 
+pub fn complex_array_with_nested_objects_in_nested_object_json_generator(
+) -> serde_json::Value {
+    let complex_array_with_nested_objects_in_object_json = serde_json::json!({"outer_id":{"id":
         [
         {"nested_outer_one":{"innermost_id_one":"String"}},
         {"nested_outer_two":{"innermost_id_two":"String","innermost_id_two_B":"String"}},
