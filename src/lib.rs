@@ -536,16 +536,13 @@ mod unit {
         assert_eq!(expected_result, annotated);
     }
 
-    // ------------------ annotate_result : ignored --------
-    // TODO special case : consolodate
-    #[ignore]
     #[test]
     fn annotate_result_special_nested_blockchaininfo() {
         let mut special_nested_blockchaininfo =
             &mut test::SPECIAL_NESTED_GETBLOCKCHAININFO.chars();
         let annotated = annotate_result(&mut special_nested_blockchaininfo);
-        let expected_result = test::SPECIAL_NESTED_GETBLOCKCHAININFO_RESULT;
-        assert_eq!(expected_result, annotated.to_string());
+        let expected_result = serde_json::json!({"xxxx":{"name":"String"}});
+        assert_eq!(expected_result, annotated);
     }
 
     // ----------------sanity_check---------------
