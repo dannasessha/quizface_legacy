@@ -57,11 +57,13 @@ pub fn check_success(output: &std::process::ExitStatus) {
 
 pub fn interpret_raw_output(raw_command_help: &str) -> String {
     let (cmd_name, result_data) = extract_name_and_result(raw_command_help);
+    // defining a temp value to allow &mut on the following line
+    // without complicating helper function with lifetime annotations
+    let result_string_temp = scrub_result(result_data);
     // quick name change to not change subsequent instances of
     // `result_char` 
-    let prescrub_result_chars = &mut result_data.chars();
     // TODO rename result_chars to scrubbed_chars or similar ?
-    let result_chars = scrub_result(prescrub_result_chars);
+    let result_chars = &mut result_string_temp.chars();
     let annotated_json_text = annotate_result(result_chars).to_string();
     annotated_json_text
 }
@@ -85,58 +87,25 @@ fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
     (cmd_name.to_string(), example_sections[0].trim().to_string())
 }
 
-fn scrub_result<'a>(prescrub_result_chars: &'a mut std::str::Chars<'a>) -> &'a mut std::str::Chars<'a> {
-prescrub_result_chars
-    /*
-    if cmd_name == "getblockchaininfo".to_string() {
-        // TODO this token does appear, but it is read?
-        result_data = result_data.replace("[0..1]", "ZZZZZZ");
-        // TODO this token seems to be meaningful, therefore should
-        // be used or incorporated elsewhere
-        result_data = result_data.replace("}, ...", "}");
-        // TODO consider also, "reject" (same fields as "enforce")
-        // special case? `{ ... }` on line
-    }
-    */
-    /*
-    // TODO special case: consolodate
-    if meta_data
-        .contains(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
-        && cmd_name == "getblockchaininfo".to_string()
-    {
-        meta_data = meta_data
-            .split(special_cases::getblockchaininfo_reject::TRAILING_TRASH)
-            .collect::<Vec<&str>>()[0]
-            .trim();
-    }
-    if meta_data.starts_with('{') || meta_data.starts_with('[') {
-        annotation = meta_data.to_string();
-    } else {
-    }
-    */
-// TODO consolidate special cases
-// the following line is the last remanant (as a 'special case hint')
-// of `fn clean_viewed()` :
-//    description if description.contains("(object)") => (),
-/*mod special_cases {
-    pub(crate) mod getblockchaininfo_reject {
-        pub const TRAILING_TRASH: &str = "      (object)";
-        use serde_json::{json, Map, Value};
-        pub const BINDINGS: [(&str, &str); 4] = [
-            ("found", "Decimal"),
-            ("required", "Decimal"),
-            ("status", "bool"),
-            ("window", "Decimal"),
-        ];
-        pub fn create_bindings() -> Map<String, Value> {
-            BINDINGS
-                .iter()
-                .map(|(a, b)| (a.to_string(), json!(b)))
-                .collect()
-        }
-    }
-}
-*/
+fn scrub_result(result_data: String) -> String {
+    // TODO pass in command name here to scrub differently for 
+    // differing commands.
+    // currently tooled only for getblockchaininfo 
+    // if cmd_name == "getblockchaininfo".to_string() {
+    let scrub_1 = result_data.replace("[0..1]", "");
+    let scrub_2 = scrub_1.replace("{ ... }      (object) progress toward rejecting pre-softfork blocks", "{
+\"status\": (boolean)
+\"found\": (numeric)
+\"required\": (numeric)
+\"window\": (numeric)
+}");
+    let scrub_3 = scrub_2.replace("(same fields as \"enforce\")", "");
+    let scrub_4 = scrub_3.replace(", ...", "");
+    scrub_4
+    // TODO note: "xxxx" ID in upgrades : possibly change to 
+    // nuparams_hash or something similar?
+    // TODO note: possible need for commas with multiple members of 
+    // softforks and upgrades
 }
 
 fn annotate_result(result_chars: &mut std::str::Chars) -> serde_json::Value {
@@ -348,6 +317,15 @@ mod unit {
         assert_eq!(cmd_name, "getblockchaininfo".to_string());
         assert_eq!(result, expected_result);
     }
+
+    // ----------------scrub_result-------------------
+    #[test]
+    fn scrub_result_getblockchaininfo_scrubbed() {
+         let expected_result = test::HELP_GETBLOCKCHAININFO_RESULT_SCRUBBED;
+         let result = scrub_result(test::HELP_GETBLOCKCHAININFO_RESULT.to_string());
+         assert_eq!(expected_result, result);
+    }
+
 
     // ----------------label_identifier---------------
 
