@@ -57,14 +57,9 @@ pub fn check_success(output: &std::process::ExitStatus) {
 
 pub fn interpret_raw_output(raw_command_help: &str) -> String {
     let (cmd_name, result_data) = extract_name_and_result(raw_command_help);
-    // defining a temp value to allow &mut on the following line
-    // without complicating helper function with lifetime annotations
-    let result_string_temp = scrub_result(result_data);
-    // quick name change to not change subsequent instances of
-    // `result_char`
-    // TODO rename result_chars to scrubbed_chars or similar ?
-    let result_chars = &mut result_string_temp.chars();
-    let annotated_json_text = annotate_result(result_chars).to_string();
+    let scrubbed_result = scrub_result(result_data);
+    let annotated_json_text =
+        annotate_result(&mut scrubbed_result.chars()).to_string();
     annotated_json_text
 }
 
@@ -105,8 +100,8 @@ fn scrub_result(result_data: String) -> String {
     let scrub_3 = scrub_2.replace("(same fields as \"enforce\")", "");
     let scrub_4 = scrub_3.replace(", ...", "");
     scrub_4
-    // TODO note: "xxxx" ID in upgrades : possibly change to
-    // nuparams_hash or something similar?
+    // Note: "xxxx" ID in upgrades. This represents the hash value
+    // of nuparams, for example `5ba81b19`
     // TODO note: possible need for commas with multiple members of
     // softforks and upgrades
 }
@@ -161,7 +156,7 @@ fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
             _ => panic!("character is UTF-8 but not ASCII!"),
         }
     }
-    return Value::Object(ident_label_bindings);
+    Value::Object(ident_label_bindings)
 }
 
 fn annotate_array(result_chars: &mut std::str::Chars) -> serde_json::Value {
@@ -203,7 +198,7 @@ fn annotate_array(result_chars: &mut std::str::Chars) -> serde_json::Value {
             _ => panic!("character is UTF-8 but not ASCII!"),
         }
     }
-    return Value::Array(ordered_results);
+    Value::Array(ordered_results)
 }
 
 // TODO could be cleaned up, and/or broken into cases
@@ -261,13 +256,13 @@ fn bind_idents_labels(
         begin_map.append(&mut end_map);
         begin_map
     } else {
-        return viewed_lines
+        viewed_lines
             .iter() // back into iter, could streamline?
             .map(|ident_rawlabel| label_identifier(ident_rawlabel.to_string()))
             .map(|(ident, annotation)| {
                 (ident.to_string(), json!(annotation.to_string()))
             })
-            .collect::<Map<String, Value>>();
+            .collect::<Map<String, Value>>()
     }
 }
 
@@ -288,16 +283,13 @@ fn label_identifier(ident_with_metadata: String) -> (String, String) {
 }
 
 fn make_label(raw_label: &str) -> String {
-    let mut annotation = String::new();
-    if raw_label.starts_with("numeric") {
-        annotation.push_str("Decimal");
-    } else if raw_label.starts_with("string") {
-        annotation.push_str("String");
-    } else if raw_label.starts_with("boolean") {
-        annotation.push_str("bool");
-    } else {
-        panic!("annotation should have a value at this point.");
+    let annotation = match raw_label {
+        label if label.starts_with("numeric") => "Decimal",
+        label if label.starts_with("string") => "String",
+        label if label.starts_with("boolean") => "bool",
+        label => panic!("Label '{}' is invalid", label),
     }
+    .to_string();
     if raw_label.contains(", optional") {
         return format!("Option<{}>", annotation);
     }
