@@ -700,14 +700,21 @@ mod unit {
         );
     }
 
-    #[ignore]
     #[test]
     fn interpret_help_message_getblockchaininfo_enforce_and_reject_fragment() {
         let expected_incoming =
             test::GETBLOCKCHAININFO_ENFORCE_AND_REJECT_FRAGMENT;
-        let expected_results = r#"{"enforce":"{\"found\":\"Decimal\",\"required\":\"Decimal\",\"status\":\"bool\",\"window\":\"Decimal\"},","id":"String","reject":"{\"found\":\"Decimal\",\"required\":\"Decimal\",\"status\":\"bool\",\"window\":\"Decimal\"}","version":"Decimal"}"#;
-        let interpreted =
-            format!("{}", interpret_help_message(expected_incoming));
+        let expected_results = serde_json::json!({"enforce":{"found":"Decimal",
+                                                             "required":"Decimal",
+                                                             "status":"bool",
+                                                             "window":"Decimal"},
+                                                  "id":"String",
+                                                  "reject":{"found":"Decimal",
+                                                            "required":"Decimal",
+                                                            "status":"bool",
+                                                            "window":"Decimal"},
+                                                  "version":"Decimal"});
+        let interpreted = interpret_help_message(expected_incoming);
         assert_eq!(interpreted, expected_results);
     }
 
