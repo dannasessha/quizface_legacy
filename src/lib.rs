@@ -212,6 +212,7 @@ fn bind_idents_labels(
             .trim()
             .splitn(2, ':')
             .collect::<Vec<&str>>()[0]
+            .trim()
             .trim_matches('"');
         let end_map = [(last_ident, inner_value.unwrap())]
             .iter()
@@ -510,7 +511,7 @@ mod unit {
         let mut special_nested_blockchaininfo =
             &mut test::SPECIAL_NESTED_GETBLOCKCHAININFO.chars();
         let annotated = annotate_result(&mut special_nested_blockchaininfo);
-        let expected_result = serde_json::json!({"xxxx":{"name":"String"}});
+        let expected_result = serde_json::json!({"xxxx" :{"name":"String"}});
         assert_eq!(expected_result, annotated);
     }
 
