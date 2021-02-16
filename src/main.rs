@@ -15,7 +15,7 @@ fn main() {
         // TODO : make more general and remove `if`
         if command == "getinfo".to_string() {
             let interpreted_command_help =
-                quizface::annotate_help_output(raw_command_help);
+                quizface::interpret_help_message(raw_command_help);
             dbg!(&interpreted_command_help);
         }
     }
