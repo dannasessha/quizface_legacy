@@ -121,8 +121,6 @@ fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
                 if viewed.trim().is_empty() {
                     break;
                 }
-                if viewed.trim() == ", ..." {
-                }
                 let mut partial_ident_label_bindings =
                     bind_idents_labels(viewed.clone(), None);
                 viewed.clear();
