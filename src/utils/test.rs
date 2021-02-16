@@ -682,7 +682,7 @@ pub const SIMPLE_UNNESTED_GETBLOCKCHAININFO_RESULT: &str =
     r#"{"name":"String"}"#;
 
 pub const SPECIAL_NESTED_GETBLOCKCHAININFO: &str = r#"{ 
-     "xxxx" : {                (string) branch ID of the upgrade
+     "xxxx": {                (string) branch ID of the upgrade
         "name": "xxxx",        (string) name of upgrade
    }
 }
