@@ -56,7 +56,7 @@ pub fn check_success(output: &std::process::ExitStatus) {
 }
 
 pub fn interpret_help_message(raw_command_help: &str) -> serde_json::Value {
-    let (cmd_name, result_data) = extract_name_and_result(raw_command_help);
+    let (_cmd_name, result_data) = extract_name_and_result(raw_command_help);
     let scrubbed_result = scrub_result(result_data);
     annotate_result(&mut scrubbed_result.chars())
 }
