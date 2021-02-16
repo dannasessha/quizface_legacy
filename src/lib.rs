@@ -683,7 +683,6 @@ mod unit {
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 
-    #[ignore]
     #[test]
     fn interpret_help_message_late_extrabrackets_input() {
         let valid_help_in =
