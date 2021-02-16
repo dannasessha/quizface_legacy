@@ -654,17 +654,14 @@ mod unit {
         dbg!(interpret_help_message(test::UPGRADES_IN_OBJ_EXTRACTED));
     }
 
-    // ----------------interpret_help_message : ignored---------------
+    // ----------------interpret_help_message---------------
 
-    // TODO look at these; retool or remove.
-    // test::valid_getinfo_annotation() is not correct.
     #[test]
     fn interpret_help_message_expected_input_valid() {
         let valid_help_in = interpret_help_message(test::HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 
-    #[ignore]
     #[test]
     fn interpret_help_message_early_lbracket_input() {
         let valid_help_in =
@@ -672,7 +669,6 @@ mod unit {
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 
-    #[ignore]
     #[test]
     fn interpret_help_message_early_rbracket_input() {
         let valid_help_in =
@@ -680,7 +676,6 @@ mod unit {
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 
-    #[ignore]
     #[test]
     fn interpret_help_message_early_extrabrackets_input() {
         let valid_help_in =
