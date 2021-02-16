@@ -239,7 +239,7 @@ fn bind_idents_labels(
             .cloned()
             .map(|(a, b)| (a.to_string(), b))
             .collect::<Map<String, Value>>();
-        let map = if viewed_lines_mutable.len() > 0 {
+        if viewed_lines_mutable.len() > 0 {
             viewed_lines_mutable
                 .iter()
                 .map(|ident_rawlabel| {
@@ -250,10 +250,7 @@ fn bind_idents_labels(
                 .collect::<Map<String, Value>>()
         } else {
             end_map
-        };
-        dbg!(&map);
-        dbg!(&last_ident);
-        map
+        }
     } else {
         viewed_lines
             .iter() // back into iter, could streamline?
