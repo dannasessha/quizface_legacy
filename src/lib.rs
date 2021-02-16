@@ -724,15 +724,36 @@ mod unit {
             test::HELP_GETBLOCKCHAININFO_COMPLETE
         ));
     }
-    // TODO make expected interpreted Value.
-    #[ignore]
     #[test]
     fn interpret_help_message_getblockchaininfo_complete() {
-        let expected = test::getblockchaininfo_export();
-        assert_eq!(
-            expected,
-            interpret_help_message(test::HELP_GETBLOCKCHAININFO_COMPLETE)
-        );
+        let expected = serde_json::json!({"bestblockhash":"String",
+                                          "blocks":"Decimal",
+                                          "chain":"String",
+                                          "chainwork":"String",
+                                          "commitments":"Decimal",
+                                          "consensus":{"chaintip":"String",
+                                                       "nextblock":"String"},
+                                          "difficulty":"Decimal",
+                                          "estimatedheight":"Decimal",
+                                          "headers":"Decimal",
+                                          "initial_block_download_complete":"bool",
+                                          "size_on_disk":"Decimal",
+                                          "softforks":[{"enforce":{"found":"Decimal",
+                                                                   "required":"Decimal",
+                                                                   "status":"bool",
+                                                                   "window":"Decimal"},
+                                                        "id":"String",
+                                                        "reject":{"found":"Decimal",
+                                                                  "required":"Decimal",
+                                                                  "status":"bool",
+                                                                  "window":"Decimal"},
+                                                        "version":"Decimal"}],
+                                          "upgrades":{"xxxx":{"activationheight":"Decimal",
+                                                              "info":"String",
+                                                              "name":"String",
+                                                              "status":"String"}},
+                                          "verificationprogress":"Decimal"});
+        assert_eq!(expected, interpret_help_message(test::HELP_GETBLOCKCHAININFO_COMPLETE));
     }
 
     // ----------------serde_json_value----------------

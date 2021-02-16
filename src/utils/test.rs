@@ -39,7 +39,7 @@ Result:
      }, ...
   ],
   "upgrades": {                (object) status of network upgrades
-     "xxxx" : {                (string) branch ID of the upgrade
+     "xxxx": {                (string) branch ID of the upgrade
         "name": "xxxx",        (string) name of upgrade
         "activationheight": xxxxxx,  (numeric) block height of activation
         "status": "xxxx",      (string) status of upgrade
