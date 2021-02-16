@@ -234,25 +234,26 @@ fn bind_idents_labels(
             .splitn(2, ':')
             .collect::<Vec<&str>>()[0]
             .trim_matches('"');
-        let mut begin_map = Map::new();
-        if viewed_lines_mutable.len() > 0 {
-            begin_map = viewed_lines_mutable
+        let end_map = [(last_ident, inner_value.unwrap())]
+            .iter()
+            .cloned()
+            .map(|(a, b)| (a.to_string(), b))
+            .collect::<Map<String, Value>>();
+        let map = if viewed_lines_mutable.len() > 0 {
+            viewed_lines_mutable
                 .iter()
                 .map(|ident_rawlabel| {
                     label_identifier(ident_rawlabel.to_string())
                 })
                 .map(|(a, b)| (a.to_string(), json!(b.to_string())))
-                .collect::<Map<String, Value>>();
-        }
-        dbg!(&begin_map);
+                .chain(end_map)
+                .collect::<Map<String, Value>>()
+        } else {
+            end_map
+        };
+        dbg!(&map);
         dbg!(&last_ident);
-        let mut end_map = [(last_ident, inner_value.unwrap())]
-            .iter()
-            .cloned()
-            .map(|(a, b)| (a.to_string(), b))
-            .collect::<Map<String, Value>>();
-        begin_map.append(&mut end_map);
-        begin_map
+        map
     } else {
         viewed_lines
             .iter() // back into iter, could streamline?
@@ -596,7 +597,7 @@ mod unit {
         use serde_json::json;
         let simple_nested_full = test::SIMPLE_NESTED_FULL;
         let interpreted = interpret_help_message(simple_nested_full);
- let expected_result = json!({"outer_id":{"inner_id":"String"}});
+        let expected_result = json!({"outer_id":{"inner_id":"String"}});
         assert_eq!(interpreted, expected_result);
     }
 
@@ -632,7 +633,8 @@ mod unit {
     #[test]
     #[should_panic]
     fn interpret_help_message_no_results_input() {
-        let valid_help_in = interpret_help_message(test::NO_RESULT_HELP_GETINFO);
+        let valid_help_in =
+            interpret_help_message(test::NO_RESULT_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
     #[test]
@@ -668,14 +670,16 @@ mod unit {
     #[ignore]
     #[test]
     fn interpret_help_message_early_lbracket_input() {
-        let valid_help_in = interpret_help_message(test::LBRACKETY_HELP_GETINFO);
+        let valid_help_in =
+            interpret_help_message(test::LBRACKETY_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 
     #[ignore]
     #[test]
     fn interpret_help_message_early_rbracket_input() {
-        let valid_help_in = interpret_help_message(test::RBRACKETY_HELP_GETINFO);
+        let valid_help_in =
+            interpret_help_message(test::RBRACKETY_HELP_GETINFO);
         assert_eq!(valid_help_in, test::valid_getinfo_annotation());
     }
 
@@ -719,14 +723,19 @@ mod unit {
 
     #[test]
     fn interpret_help_message_getblockchaininfo_complete_does_not_panic() {
-        dbg!(interpret_help_message(test::HELP_GETBLOCKCHAININFO_COMPLETE));
+        dbg!(interpret_help_message(
+            test::HELP_GETBLOCKCHAININFO_COMPLETE
+        ));
     }
     // TODO make expected interpreted Value.
     #[ignore]
     #[test]
     fn interpret_help_message_getblockchaininfo_complete() {
         let expected = test::getblockchaininfo_export();
-        assert_eq!(expected, interpret_help_message(test::HELP_GETBLOCKCHAININFO_COMPLETE));
+        assert_eq!(
+            expected,
+            interpret_help_message(test::HELP_GETBLOCKCHAININFO_COMPLETE)
+        );
     }
 
     // ----------------serde_json_value----------------
