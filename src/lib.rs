@@ -118,32 +118,25 @@ fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
     loop {
         match result_chars.next().unwrap() {
             '}' => {
-                //dbg!("end brace");
-                //dbg!(&viewed);
                 if viewed.trim().is_empty() {
                     break;
                 }
                 if viewed.trim() == ", ..." {
-                    dbg!("trailing dots in Object");
                 }
                 let mut partial_ident_label_bindings =
                     bind_idents_labels(viewed.clone(), None);
                 viewed.clear();
-                //dbg!(&partial_ident_label_bindings);
                 // append works, but `.extend()` is more atomic, might
                 // be worth looking at for refinements.
                 ident_label_bindings.append(&mut partial_ident_label_bindings);
-                //dbg!(&ident_label_bindings);
                 break;
             }
             last_viewed if last_viewed == '[' || last_viewed == '{' => {
-                //dbg!("recursing");
                 let inner_value = match last_viewed {
                     '[' => annotate_array(result_chars),
                     '{' => annotate_object(result_chars),
                     _ => unreachable!("last_viewed is either '[' or '{'"),
                 };
-                //dbg!(&inner_value);
                 let mut partial_ident_label_bindings =
                     bind_idents_labels(viewed.clone(), Some(inner_value));
                 viewed.clear();
@@ -163,27 +156,18 @@ fn annotate_array(result_chars: &mut std::str::Chars) -> serde_json::Value {
     loop {
         match result_chars.next().unwrap() {
             ']' => {
-                dbg!("end square bracket! ']' ");
-                dbg!(&viewed);
                 if viewed.trim().is_empty() {
                     break;
                 }
-                if viewed.trim() == ", ..." {
-                    dbg!("trailing dots in Array");
-                }
-                dbg!(&viewed);
                 viewed.clear();
-                dbg!(&ordered_results);
                 break;
             }
             last_viewed if last_viewed == '[' || last_viewed == '{' => {
-                dbg!("recursing in annotate_array");
                 let inner_value = if last_viewed == '[' {
                     annotate_array(result_chars)
                 } else {
                     annotate_object(result_chars)
                 };
-                dbg!(&inner_value);
                 viewed.clear();
                 // TODO maybe temporary: to allow detection of `, ...`
                 ordered_results.push(inner_value)
@@ -205,8 +189,6 @@ fn bind_idents_labels(
     viewed: String,
     inner_value: Option<Value>,
 ) -> Map<String, Value> {
-    dbg!("bind_idents_labels called");
-    dbg!(&viewed);
     // let cleaned = clean_viewed(viewed);
     // TODO rename cleaned
     let mut viewed_lines = viewed
@@ -214,7 +196,6 @@ fn bind_idents_labels(
         .lines()
         .map(|line| line.to_string())
         .collect::<Vec<String>>();
-    dbg!(&viewed_lines);
     // ignoring the first line if it only whitespace or does not
     // contain a `:` char.
     if viewed_lines[0].trim().is_empty()
@@ -223,11 +204,9 @@ fn bind_idents_labels(
         viewed_lines.remove(0); //.trim();
     }
     //viewed_lines is now a Vec of strings that were lines in viewed.
-    dbg!(&inner_value);
     if inner_value != None {
         // possible if/let
         let mut viewed_lines_mutable = viewed_lines.clone();
-        dbg!(&viewed_lines_mutable);
         let last_ident_untrimmed = viewed_lines_mutable.pop().unwrap();
         let last_ident = last_ident_untrimmed
             .trim()
@@ -270,7 +249,6 @@ fn label_identifier(ident_with_metadata: String) -> (String, String) {
         .collect::<Vec<&str>>();
     let ident = ident_and_metadata[0].trim_matches('"');
     let meta_data = ident_and_metadata[1].trim();
-    //dbg!(&meta_data);
     let raw_label: &str = meta_data
         .split(|c| c == '(' || c == ')')
         .collect::<Vec<&str>>()[1];
