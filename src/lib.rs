@@ -764,20 +764,4 @@ mod unit {
         let help_getinfo = interpret_help_message(test::HELP_GETINFO);
         assert_eq!(getinfo_serde_json_value, help_getinfo);
     }
-
-    // ----------------serde_json_value : ignored---------------
-    // TODO may pass after 'scrubbing' function in place
-    // else needs to be retooled
-    #[ignore]
-    #[test]
-    fn serde_json_value_help_getblockchaininfo() {
-        let getblockchaininfo_serde_json_value =
-            test::getblockchaininfo_export();
-        let help_getblockchaininfo =
-            interpret_help_message(test::HELP_GETBLOCKCHAININFO_COMPLETE);
-        assert_eq!(
-            getblockchaininfo_serde_json_value.to_string(),
-            help_getblockchaininfo
-        );
-    }
 }
