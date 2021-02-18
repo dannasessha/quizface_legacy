@@ -56,8 +56,8 @@ pub fn check_success(output: &std::process::ExitStatus) {
 }
 
 pub fn interpret_help_message(raw_command_help: &str) -> serde_json::Value {
-    let (_cmd_name, result_data) = extract_name_and_result(raw_command_help);
-    let scrubbed_result = scrub_result(result_data);
+    let (cmd_name, result_data) = extract_name_and_result(raw_command_help);
+    let scrubbed_result = scrub_result(cmd_name.clone(), result_data);
     annotate_result(&mut scrubbed_result.chars())
 }
 
@@ -80,13 +80,11 @@ fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
     (cmd_name.to_string(), example_sections[0].trim().to_string())
 }
 
-fn scrub_result(result_data: String) -> String {
-    // TODO pass in command name here to scrub differently for
-    // differing commands.
+fn scrub_result(cmd_name: String, result_data: String) -> String {
     // currently tooled only for getblockchaininfo
-    // if cmd_name == "getblockchaininfo".to_string() {
-    let scrub_1 = result_data.replace("[0..1]", "");
-    let scrub_2 = scrub_1.replace(
+    if cmd_name == "getblockchaininfo".to_string() {
+        let scrub_1 = result_data.replace("[0..1]", "");
+        let scrub_2 = scrub_1.replace(
         "{ ... }      (object) progress toward rejecting pre-softfork blocks",
         "{
 \"status\": (boolean)
@@ -95,13 +93,15 @@ fn scrub_result(result_data: String) -> String {
 \"window\": (numeric)
 }",
     );
-    let scrub_3 = scrub_2.replace("(same fields as \"enforce\")", "");
-    let scrub_4 = scrub_3.replace(", ...", "");
-    scrub_4
+        let scrub_3 = scrub_2.replace("(same fields as \"enforce\")", "");
+        let scrub_4 = scrub_3.replace(", ...", "");
+        return scrub_4
     // Note: "xxxx" ID in upgrades. This represents the hash value
     // of nuparams, for example `5ba81b19`
     // TODO note: possible need for commas with multiple members of
     // softforks and upgrades
+    }
+    result_data
 }
 
 fn annotate_result(result_chars: &mut std::str::Chars) -> serde_json::Value {
@@ -293,7 +293,7 @@ mod unit {
     fn scrub_result_getblockchaininfo_scrubbed() {
         let expected_result = test::HELP_GETBLOCKCHAININFO_RESULT_SCRUBBED;
         let result =
-            scrub_result(test::HELP_GETBLOCKCHAININFO_RESULT.to_string());
+            scrub_result("getblockchaininfo".to_string(), test::HELP_GETBLOCKCHAININFO_RESULT.to_string());
         assert_eq!(expected_result, result);
     }
 

@@ -12,10 +12,14 @@ fn main() {
 
         log_raw_output(command.clone(), raw_command_help.to_string());
 
-        // TODO : make more general and remove `if`
-        if command == "getinfo".to_string() {
+        if command == "getinfo".to_string() || command == "getblockchaininfo".to_string() {
             let interpreted_command_help =
                 quizface::interpret_help_message(raw_command_help);
+            //  write this value, serialized, to file
+            //  where each file in the directory is 
+            //  NAME_OF_RPC_CALL.json
+            //  and zcash version and quizface version are in the path
+            //  to the output files
             dbg!(&interpreted_command_help);
         }
     }
