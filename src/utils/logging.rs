@@ -30,7 +30,7 @@ fn get_zcashd_version() -> String {
         .to_string()
 }
 
-fn create_version_name() -> String {
+pub(crate) fn create_version_name() -> String {
     format!("{}_{}", get_zcashd_version(), QUIZFACE_VERSION)
 }
 
