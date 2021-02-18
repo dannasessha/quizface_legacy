@@ -2,21 +2,9 @@ use std::fs;
 use std::path::Path;
 const QUIZFACE_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
-pub fn create_log_dirs() {
-    fs::create_dir_all(Path::new(&name_logdirs().0))
-        .expect("error crating master dir!");
-    fs::create_dir_all(Path::new(&name_logdirs().1))
-        .expect("error creating commands dir!");
-    fs::create_dir_all(Path::new(&name_logdirs().2))
-        .expect("error creating blessed dir!");
-}
-
-pub fn name_logdirs() -> (String, String, String) {
-    let log_parent_template: String = format!(
-        "./logs/{zdver}_{qfver}/",
-        zdver = get_zcashd_version(),
-        qfver = QUIZFACE_VERSION
-    );
+fn name_logdirs() -> (String, String, String) {
+    let log_parent_template: String =
+        format!("./logs/{}/", create_version_name());
     let master_name: String =
         format!("{}masterhelp_output/raw/", log_parent_template);
     let base_name: String = format!("{}help_output/raw/", log_parent_template);
@@ -25,7 +13,7 @@ pub fn name_logdirs() -> (String, String, String) {
     (master_name, base_name, blessed_name)
 }
 
-pub fn get_zcashd_version() -> String {
+fn get_zcashd_version() -> String {
     let version = std::process::Command::new("zcash-cli")
         .arg("--version")
         .output()
@@ -40,6 +28,19 @@ pub fn get_zcashd_version() -> String {
         .last()
         .unwrap()
         .to_string()
+}
+
+fn create_version_name() -> String {
+    format!("{}_{}", get_zcashd_version(), QUIZFACE_VERSION)
+}
+
+pub fn create_log_dirs() {
+    fs::create_dir_all(Path::new(&name_logdirs().0))
+        .expect("error crating master dir!");
+    fs::create_dir_all(Path::new(&name_logdirs().1))
+        .expect("error creating commands dir!");
+    fs::create_dir_all(Path::new(&name_logdirs().2))
+        .expect("error creating blessed dir!");
 }
 
 pub fn log_masterhelp_output(raw_help: &str) {
