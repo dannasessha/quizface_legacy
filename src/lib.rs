@@ -70,7 +70,10 @@ fn record_interpretation(cmd: String, interpretation: serde_json::Value) {
         cmd
     );
     let output = std::path::Path::new(&location);
-    std::fs::write(output, interpretation.to_string());
+    if !output.parent().unwrap().is_dir() {
+        std::fs::create_dir_all(output.parent().unwrap()).unwrap();
+    }
+    std::fs::write(output, interpretation.to_string()).unwrap();
 }
 
 pub fn produce_interpretation(raw_command_help: &str) {
@@ -720,9 +723,8 @@ mod unit {
             test::HELP_GETBLOCKCHAININFO_COMPLETE
         ));
     }
-    #[test]
-    fn interpret_help_message_getblockchaininfo_complete() {
-        let expected = serde_json::json!({"bestblockhash":"String",
+    fn getblockchainfo_interpretation() -> serde_json::Value {
+        serde_json::json!({"bestblockhash":"String",
                                           "blocks":"Decimal",
                                           "chain":"String",
                                           "chainwork":"String",
@@ -748,7 +750,11 @@ mod unit {
                                                               "info":"String",
                                                               "name":"String",
                                                               "status":"String"}},
-                                          "verificationprogress":"Decimal"});
+                                          "verificationprogress":"Decimal"})
+    }
+    #[test]
+    fn interpret_help_message_getblockchaininfo_complete() {
+        let expected = getblockchainfo_interpretation();
         assert_eq!(
             expected,
             interpret_help_message(test::HELP_GETBLOCKCHAININFO_COMPLETE).1
@@ -762,5 +768,31 @@ mod unit {
         let getinfo_serde_json_value = test::getinfo_export();
         let help_getinfo = interpret_help_message(test::HELP_GETINFO);
         assert_eq!(getinfo_serde_json_value, help_getinfo.1);
+    }
+
+    #[test]
+    fn record_interpretation_getblockchaininfo() {
+        //! This test simply shows that record_interpretation doesn't mutate-or
+        //! destroy any input.
+        let test_cmd = "TEST_record_interpretation_getblockchaininfo";
+        let location = format!(
+            "./output/{}/{}.json",
+            utils::logging::create_version_name(),
+            test_cmd
+        );
+        let output = std::path::Path::new(&location);
+        record_interpretation(
+            test_cmd.to_string(),
+            getblockchainfo_interpretation(),
+        );
+
+        //Now let's examine the results!
+        let reader =
+            std::io::BufReader::new(std::fs::File::open(output).unwrap());
+
+        // Read the JSON contents of the file as an instance of `User`.
+        let read_in: serde_json::Value =
+            serde_json::from_reader(reader).unwrap();
+        assert_eq!(read_in, getblockchainfo_interpretation());
     }
 }
