@@ -36,7 +36,7 @@ pub(crate) fn create_version_name() -> String {
 
 pub fn create_log_dirs() {
     fs::create_dir_all(Path::new(&name_logdirs().0))
-        .expect("error crating master dir!");
+        .expect("error creating master dir!");
     fs::create_dir_all(Path::new(&name_logdirs().1))
         .expect("error creating commands dir!");
     fs::create_dir_all(Path::new(&name_logdirs().2))
