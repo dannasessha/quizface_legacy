@@ -34,10 +34,10 @@ pub fn ingest_commands() -> Vec<String> {
     commands
 }
 
-pub fn get_command_help(cmd: &str) -> std::process::Output {
+pub fn get_command_help(cmd_name: &str) -> std::process::Output {
     let command_help = std::process::Command::new(Path::new("zcash-cli"))
         .arg("help")
-        .arg(&cmd)
+        .arg(&cmd_name)
         .output()
         .expect("failed to execute command help");
     command_help
@@ -63,11 +63,11 @@ fn interpret_help_message(
     (cmd_name, annotate_result(&mut scrubbed_result.chars()))
 }
 
-fn record_interpretation(cmd: String, interpretation: serde_json::Value) {
+fn record_interpretation(cmd_name: String, interpretation: serde_json::Value) {
     let location = format!(
         "./output/{}/{}.json",
         utils::logging::create_version_name(),
-        cmd
+        cmd_name
     );
     let output = std::path::Path::new(&location);
     if !output.parent().unwrap().is_dir() {
@@ -77,8 +77,8 @@ fn record_interpretation(cmd: String, interpretation: serde_json::Value) {
 }
 
 pub fn produce_interpretation(raw_command_help: &str) {
-    let (cmd, interpretation) = interpret_help_message(raw_command_help);
-    record_interpretation(cmd, interpretation)
+    let (cmd_name, interpretation) = interpret_help_message(raw_command_help);
+    record_interpretation(cmd_name, interpretation)
 }
 
 fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
@@ -774,15 +774,15 @@ mod unit {
     fn record_interpretation_getblockchaininfo() {
         //! This test simply shows that record_interpretation doesn't mutate-or
         //! destroy any input.
-        let test_cmd = "TEST_record_interpretation_getblockchaininfo";
+        let test_cmd_name = "TEST_record_interpretation_getblockchaininfo";
         let location = format!(
             "./output/{}/{}.json",
             utils::logging::create_version_name(),
-            test_cmd
+            test_cmd_name
         );
         let output = std::path::Path::new(&location);
         record_interpretation(
-            test_cmd.to_string(),
+            test_cmd_name.to_string(),
             getblockchainfo_interpretation(),
         );
 
