@@ -790,7 +790,6 @@ mod unit {
         let reader =
             std::io::BufReader::new(std::fs::File::open(output).unwrap());
 
-        // Read the JSON contents of the file as an instance of `User`.
         let read_in: serde_json::Value =
             serde_json::from_reader(reader).unwrap();
         assert_eq!(read_in, getblockchainfo_interpretation());
