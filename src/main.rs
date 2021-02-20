@@ -14,7 +14,10 @@ fn main() {
             .expect("Invalid raw_command_help, error!");
 
         log_raw_output(&command, raw_command_help.to_string());
-        //produce_interpretation(raw_command_help);
+        if &command == "getblockchaininfo" || &command == "getinfo" {
+            produce_interpretation(raw_command_help);
+            dbg!(&command);
+        }
     }
     println!("main() complete!");
 }
