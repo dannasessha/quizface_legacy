@@ -13,9 +13,8 @@ fn main() {
         let raw_command_help = std::str::from_utf8(&command_help_output.stdout)
             .expect("Invalid raw_command_help, error!");
 
-        log_raw_output(command.clone(), raw_command_help.to_string());
-
-        produce_interpretation(raw_command_help);
+        log_raw_output(&command, raw_command_help.to_string());
+        //produce_interpretation(raw_command_help);
     }
     println!("main() complete!");
 }

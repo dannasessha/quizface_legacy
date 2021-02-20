@@ -48,7 +48,7 @@ pub fn log_masterhelp_output(raw_help: &str) {
         .expect("panic during fs:write masterhelp!");
 }
 
-pub fn log_raw_output(command: String, raw_command_help: String) {
+pub fn log_raw_output(command: &str, raw_command_help: String) {
     fs::write(
         format!("{}{}.txt", name_logdirs().1, &command),
         &raw_command_help,
