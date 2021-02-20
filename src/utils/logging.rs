@@ -13,7 +13,7 @@ fn name_logdirs() -> (String, String, String) {
     (master_name, base_name, blessed_name)
 }
 
-fn get_zcashd_version() -> String {
+pub fn get_zcashd_version() -> String {
     let version = std::process::Command::new("zcash-cli")
         .arg("--version")
         .output()
@@ -30,7 +30,7 @@ fn get_zcashd_version() -> String {
         .to_string()
 }
 
-pub(crate) fn create_version_name() -> String {
+pub fn create_version_name() -> String {
     format!("{}_{}", get_zcashd_version(), QUIZFACE_VERSION)
 }
 
