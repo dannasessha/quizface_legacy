@@ -155,51 +155,6 @@ pub const HELP_GETBLOCKCHAININFO_RESULT: &str = r#"{
 }
 "#;
 
-pub const HELP_GETBLOCKCHAININFO_RESULT_SCRUBBED: &str = r#"{
-  "chain": "xxxx",        (string) current network name as defined in BIP70 (main, test, regtest)
-  "blocks": xxxxxx,         (numeric) the current number of blocks processed in the server
-  "initial_block_download_complete": xx, (boolean) true if the initial download of the blockchain is complete
-  "headers": xxxxxx,        (numeric) the current number of headers we have validated
-  "bestblockhash": "...", (string) the hash of the currently best block
-  "difficulty": xxxxxx,     (numeric) the current difficulty
-  "verificationprogress": xxxx, (numeric) estimate of verification progress 
-  "estimatedheight": xxxx,  (numeric) if syncing, the estimated height of the chain, else the current best height
-  "chainwork": "xxxx"     (string) total amount of work in active chain, in hexadecimal
-  "size_on_disk": xxxxxx,       (numeric) the estimated size of the block and undo files on disk
-  "commitments": xxxxxx,    (numeric) the current number of note commitments in the commitment tree
-  "softforks": [            (array) status of softforks in progress
-     {
-        "id": "xxxx",        (string) name of softfork
-        "version": xx,         (numeric) block version
-        "enforce": {           (object) progress toward enforcing the softfork rules for new-version blocks
-           "status": xx,       (boolean) true if threshold reached
-           "found": xx,        (numeric) number of blocks with the new version found
-           "required": xx,     (numeric) number of blocks required to trigger
-           "window": xx,       (numeric) maximum size of examined window of recent blocks
-        },
-        "reject": {
-"status": (boolean)
-"found": (numeric)
-"required": (numeric)
-"window": (numeric)
-} 
-     }
-  ],
-  "upgrades": {                (object) status of network upgrades
-     "xxxx" : {                (string) branch ID of the upgrade
-        "name": "xxxx",        (string) name of upgrade
-        "activationheight": xxxxxx,  (numeric) block height of activation
-        "status": "xxxx",      (string) status of upgrade
-        "info": "xxxx",        (string) additional information about upgrade
-     }
-  },
-  "consensus": {               (object) branch IDs of the current and upcoming consensus rules
-     "chaintip": "xxxxxxxx",   (string) branch ID used to validate the current chain tip
-     "nextblock": "xxxxxxxx"   (string) branch ID that the next block will be validated under
-  }
-}
-"#;
-
 pub const GETBLOCKCHAININFO_FRAGMENT: &str = r#"{
         "id": "xxxx",        (string) name of softfork
         "version": xx,         (numeric) block version
@@ -727,7 +682,7 @@ pub const SIMPLE_UNNESTED_GETBLOCKCHAININFO_RESULT: &str =
     r#"{"name":"String"}"#;
 
 pub const SPECIAL_NESTED_GETBLOCKCHAININFO: &str = r#"{ 
-     "xxxx": {                (string) branch ID of the upgrade
+     "xxxx" : {                (string) branch ID of the upgrade
         "name": "xxxx",        (string) name of upgrade
    }
 }
@@ -754,7 +709,7 @@ pub const SIMPLE_ARRAY_IN_OBJECT: &str = r#"{"id": [      (array) text
 ]}"#;
 
 pub fn simple_array_in_object_json_generator() -> serde_json::Value {
-    let simple_array_in_object_json = serde_json::json!({"id":
+    let simple_array_in_object_json = serde_json::json!({"id": 
         [{"inner_id":"String"}]
     });
     dbg!(&simple_array_in_object_json);
@@ -768,7 +723,7 @@ pub const SIMPLE_ARRAY_IN_NESTED_OBJECT: &str = r#"{"outer_id:" {"id": [      (a
 ]}}"#;
 
 pub fn simple_array_in_nested_object_json_generator() -> serde_json::Value {
-    let simple_array_in_object_json = serde_json::json!({"outer_id":{"id":
+    let simple_array_in_object_json = serde_json::json!({"outer_id":{"id": 
         [{"innermost_id":"String"}]
     }});
     dbg!(&simple_array_in_object_json);
@@ -788,7 +743,7 @@ pub const COMPLEX_ARRAY_IN_NESTED_OBJECT: &str = r#"{"outer_id:" {"id": [      (
 ]}}"#;
 
 pub fn complex_array_in_nested_object_json_generator() -> serde_json::Value {
-    let complex_array_in_object_json = serde_json::json!({"outer_id":{"id":
+    let complex_array_in_object_json = serde_json::json!({"outer_id":{"id": 
         [
         {"innermost_id_one":"String"},
         {"innermost_id_two":"String"},
@@ -818,9 +773,8 @@ pub const COMPLEX_ARRAY_WITH_NESTED_OBJECTS_IN_NESTED_OBJECT: &str = r#"{"outer_
 }
 ]}}"#;
 
-pub fn complex_array_with_nested_objects_in_nested_object_json_generator(
-) -> serde_json::Value {
-    let complex_array_with_nested_objects_in_object_json = serde_json::json!({"outer_id":{"id":
+pub fn complex_array_with_nested_objects_in_nested_object_json_generator() -> serde_json::Value {
+    let complex_array_with_nested_objects_in_object_json = serde_json::json!({"outer_id":{"id": 
         [
         {"nested_outer_one":{"innermost_id_one":"String"}},
         {"nested_outer_two":{"innermost_id_two":"String","innermost_id_two_B":"String"}},

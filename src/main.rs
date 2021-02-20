@@ -1,22 +1,22 @@
+use quizface::utils::logging::log_raw_output;
 fn main() {
-    use quizface::{
-        check_success, get_command_help, ingest_commands,
-        produce_interpretation, utils::logging::log_raw_output,
-    };
-    let commands = ingest_commands();
+    let commands = quizface::ingest_commands();
 
     for command in commands {
-        let command_help_output = get_command_help(&command);
+        let command_help_output = quizface::get_command_help(&command);
 
-        check_success(&command_help_output.status);
+        quizface::check_success(&command_help_output.status);
 
         let raw_command_help = std::str::from_utf8(&command_help_output.stdout)
             .expect("Invalid raw_command_help, error!");
 
-        log_raw_output(&command, raw_command_help.to_string());
-        if &command == "getblockchaininfo" || &command == "getinfo" {
-            produce_interpretation(raw_command_help);
-            dbg!(&command);
+        log_raw_output(command.clone(), raw_command_help.to_string());
+
+        // TODO : make more general and remove `if`
+        if command == "getinfo".to_string() {
+            let interpreted_command_help =
+                quizface::interpret_raw_output(raw_command_help);
+            dbg!(&interpreted_command_help);
         }
     }
     println!("main() complete!");
