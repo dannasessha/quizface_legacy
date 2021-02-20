@@ -723,7 +723,7 @@ mod unit {
             test::HELP_GETBLOCKCHAININFO_COMPLETE
         ));
     }
-    fn getblockchainfo_interpretation() -> serde_json::Value {
+    fn getblockchaininfo_interpretation() -> serde_json::Value {
         serde_json::json!({"bestblockhash":"String",
                                           "blocks":"Decimal",
                                           "chain":"String",
@@ -754,7 +754,7 @@ mod unit {
     }
     #[test]
     fn interpret_help_message_getblockchaininfo_complete() {
-        let expected = getblockchainfo_interpretation();
+        let expected = getblockchaininfo_interpretation();
         assert_eq!(
             expected,
             interpret_help_message(test::HELP_GETBLOCKCHAININFO_COMPLETE).1
@@ -783,7 +783,7 @@ mod unit {
         let output = std::path::Path::new(&location);
         record_interpretation(
             test_cmd_name.to_string(),
-            getblockchainfo_interpretation(),
+            getblockchaininfo_interpretation(),
         );
 
         //Now let's examine the results!
@@ -792,6 +792,6 @@ mod unit {
 
         let read_in: serde_json::Value =
             serde_json::from_reader(reader).unwrap();
-        assert_eq!(read_in, getblockchainfo_interpretation());
+        assert_eq!(read_in, getblockchaininfo_interpretation());
     }
 }
