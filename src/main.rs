@@ -35,6 +35,7 @@ fn main() {
         log_raw_output(&command, raw_command_help.to_string());
         //select just for blessed results.
         if blessed_tome.contains(&command) {
+            dbg!(&command);
             produce_interpretation(raw_command_help);
         }
     }
