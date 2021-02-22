@@ -32,17 +32,13 @@ listlockunspent
 listsinceblock
 z_exportviewingkey
 z_exportwallet
-z_getbalance
 z_getnewaddress
 z_getnotescount
-z_getoperationresult
-z_getoperationstatus
 z_gettotalbalance
 z_importkey
 z_importviewingkey
 z_listaddresses
 z_listoperationids
-z_listreceivedbyaddress
 z_mergetoaddress
 z_sendmany
 z_shieldcoinbase

@@ -137,12 +137,10 @@ fn annotate_result(result_chars: &mut std::str::Chars) -> serde_json::Value {
 }
 
 fn annotate_lonetype(result_chars: &mut std::str::Chars) -> serde_json::Value {
-    dbg!("Inside annotate_lonetype");
     let ident_with_rawlabel = format!(r#""{}"#, result_chars.as_str());
     let (ident, annotation) = label_identifier(ident_with_rawlabel.to_string());
     let mut lonetype = Map::new();
     lonetype.insert(ident, Value::String(annotation));
-    dbg!(&lonetype);
     Value::Object(lonetype)
 }
 
@@ -275,14 +273,11 @@ fn bind_idents_labels(
 }
 
 fn raw_to_ident_and_metadata(ident_with_metadata: String) -> (String, String) {
-    dbg!(&ident_with_metadata);
     let split = &ident_with_metadata
         .trim()
         .splitn(3, '"')
         .collect::<Vec<&str>>()[1..];
-    dbg!(&split);
     let ident = split[0].to_string();
-    dbg!(&split);
     let metadata = split[1].trim_start_matches(":").trim().to_string();
     (ident, metadata)
 }
