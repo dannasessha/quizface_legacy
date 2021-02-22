@@ -260,14 +260,18 @@ fn bind_idents_labels(
     }
 }
 
+fn raw_to_ident_and_metadata(ident_with_metadata: String) -> (String, String) {
+    let split = &ident_with_metadata
+        .trim()
+        .splitn(3, '"')
+        .collect::<Vec<&str>>()[1..];
+    let ident = split[0].to_string();
+    let metadata = split[1].trim_start_matches(":").trim().to_string();
+    (ident, metadata)
+}
 // assumes well-formed `ident_with_metadata`
 fn label_identifier(ident_with_metadata: String) -> (String, String) {
-    let ident_and_metadata = ident_with_metadata
-        .trim()
-        .splitn(2, ':')
-        .collect::<Vec<&str>>();
-    let ident = ident_and_metadata[0].trim_matches('"');
-    let meta_data = ident_and_metadata[1].trim();
+    let (ident, meta_data) = raw_to_ident_and_metadata(ident_with_metadata);
     let raw_label: &str = meta_data
         .split(|c| c == '(' || c == ')')
         .collect::<Vec<&str>>()[1];
