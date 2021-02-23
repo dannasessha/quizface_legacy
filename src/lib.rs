@@ -141,7 +141,11 @@ mod scrubbing {
     }
 
     fn scrub_getspentinfo(raw: String) -> String {
-        raw.replace(r#"number"#, r#"numeric"#)
+        raw.replace(r#"number"#, r#"numeric"#).replace(
+            r#"  ,...
+"#,
+            r#""#,
+        )
     }
 
     pub(crate) fn scrub_result(
