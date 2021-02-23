@@ -131,6 +131,10 @@ mod scrubbing {
 "#)
     }
 
+    fn scrub_getaddressmempool(raw: String) -> String {
+        raw.replace(r#"number"#, r#"numeric"#)
+    }
+
     pub(crate) fn scrub_result(
         cmd_name: String,
         result_data: String,
@@ -140,6 +144,8 @@ mod scrubbing {
             scrub_getblockchaininfo(result_data)
         } else if cmd_name == "getchaintips".to_string() {
             scrub_getchaintips(result_data)
+        } else if cmd_name == "getaddressmempool".to_string() {
+            scrub_getaddressmempool(result_data)
         } else {
             result_data
         }
