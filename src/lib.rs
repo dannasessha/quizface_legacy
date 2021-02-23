@@ -140,6 +140,10 @@ mod scrubbing {
             .replace(r#"hexstring"#, r#"string"#)
     }
 
+    fn scrub_getspentinfo(raw: String) -> String {
+        raw.replace(r#"number"#, r#"numeric"#)
+    }
+
     pub(crate) fn scrub_result(
         cmd_name: String,
         result_data: String,
@@ -153,6 +157,8 @@ mod scrubbing {
             scrub_getaddressmempool(result_data)
         } else if cmd_name == "getblockdeltas".to_string() {
             scrub_getblockdeltas(result_data)
+        } else if cmd_name == "getspentinfo".to_string() {
+            scrub_getspentinfo(result_data)
         } else {
             result_data
         }
