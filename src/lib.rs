@@ -122,6 +122,11 @@ fn scrub_getchaintips(raw: String) -> String {
 3.  "valid-headers"         All blocks are available for this branch, but they were never fully validated
 4.  "valid-fork"            This branch is not part of the active chain, but is fully validated
 5.  "active"                This is the tip of the active main chain, which is certainly valid"#, "")
+.replace(r#""height": xxxx,
+"#, r#""height": xxxx,         (numeric) height of the chain tip
+"#).replace(r#""hash": "xxxx",
+"#, r#""hash": "xxxx",         (string) block hash of the tip
+"#)
 }
 
 fn scrub_result(cmd_name: String, result_data: String) -> String {
@@ -298,7 +303,8 @@ fn raw_to_ident_and_metadata(ident_with_metadata: String) -> (String, String) {
 }
 // assumes well-formed `ident_with_metadata`
 fn label_identifier(ident_with_metadata: String) -> (String, String) {
-    let (ident, meta_data) = raw_to_ident_and_metadata(ident_with_metadata);
+    let (ident, meta_data) =
+        dbg!(raw_to_ident_and_metadata(ident_with_metadata));
     let raw_label: &str = meta_data
         .split(|c| c == '(' || c == ')')
         .collect::<Vec<&str>>()[1];
