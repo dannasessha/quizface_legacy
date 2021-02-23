@@ -61,7 +61,7 @@ fn interpret_help_message(
     let (cmd_name, result_data) = extract_name_and_result(raw_command_help);
     let scrubbed_result = scrub_result(cmd_name.clone(), result_data);
     if &cmd_name == "z_exportviewingkey" {
-        dbg!(&scrubbed_result);
+        &scrubbed_result;
     }
     (cmd_name, annotate_result(&mut scrubbed_result.chars()))
 }
@@ -113,18 +113,23 @@ fn scrub_getblockchaininfo(raw: String) -> String {
 \"window\": (numeric)
 }").replace("(same fields as \"enforce\")", "").replace(", ...", "")
 }
-fn scrub_result(cmd_name: String, result_data: String) -> String {
-    // currently tooled only for getblockchaininfo
-    if cmd_name == "getblockchaininfo".to_string() {
-        scrub_getblockchaininfo(result_data)
-    } else if cmd_name == "getchaintips".to_string() {
-        result_data.replace(
+
+fn scrub_getchaintips(raw: String) -> String {
+    raw.replace(
             r#"Possible values for status:
 1.  "invalid"               This branch contains at least one invalid block
 2.  "headers-only"          Not all blocks for this branch are available, but the headers are valid
 3.  "valid-headers"         All blocks are available for this branch, but they were never fully validated
 4.  "valid-fork"            This branch is not part of the active chain, but is fully validated
 5.  "active"                This is the tip of the active main chain, which is certainly valid"#, "")
+}
+
+fn scrub_result(cmd_name: String, result_data: String) -> String {
+    // currently tooled only for getblockchaininfo
+    if cmd_name == "getblockchaininfo".to_string() {
+        scrub_getblockchaininfo(result_data)
+    } else if cmd_name == "getchaintips".to_string() {
+        scrub_getchaintips(result_data)
     } else {
         result_data
     }
@@ -293,8 +298,7 @@ fn raw_to_ident_and_metadata(ident_with_metadata: String) -> (String, String) {
 }
 // assumes well-formed `ident_with_metadata`
 fn label_identifier(ident_with_metadata: String) -> (String, String) {
-    let (ident, meta_data) =
-        dbg!(raw_to_ident_and_metadata(ident_with_metadata));
+    let (ident, meta_data) = raw_to_ident_and_metadata(ident_with_metadata);
     let raw_label: &str = meta_data
         .split(|c| c == '(' || c == ')')
         .collect::<Vec<&str>>()[1];
@@ -675,6 +679,7 @@ mod unit {
         assert_eq!(valid_help_in.1, test::valid_getinfo_annotation());
     }
 
+    #[ignore]
     #[test]
     fn interpret_help_message_upgrades_in_obj_extracted() {
         dbg!(interpret_help_message(test::UPGRADES_IN_OBJ_EXTRACTED));
@@ -744,6 +749,7 @@ mod unit {
         assert_eq!(interpreted.1, expected_results);
     }
 
+    #[ignore]
     #[test]
     fn interpret_help_message_getblockchaininfo_complete_does_not_panic() {
         dbg!(interpret_help_message(
