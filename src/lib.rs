@@ -303,8 +303,7 @@ fn raw_to_ident_and_metadata(ident_with_metadata: String) -> (String, String) {
 }
 // assumes well-formed `ident_with_metadata`
 fn label_identifier(ident_with_metadata: String) -> (String, String) {
-    let (ident, meta_data) =
-        dbg!(raw_to_ident_and_metadata(ident_with_metadata));
+    let (ident, meta_data) = raw_to_ident_and_metadata(ident_with_metadata);
     let raw_label: &str = meta_data
         .split(|c| c == '(' || c == ')')
         .collect::<Vec<&str>>()[1];
