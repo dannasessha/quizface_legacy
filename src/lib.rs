@@ -127,18 +127,24 @@ fn scrub_result(cmd_name: String, result_data: String) -> String {
     result_data
 }
 
+fn alpha_predicate(c: char) -> bool {
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".contains(c)
+}
 fn annotate_result(result_chars: &mut std::str::Chars) -> serde_json::Value {
     match result_chars.next().unwrap() {
         '{' => annotate_object(result_chars),
         '[' => annotate_array(result_chars),
-        '"' => annotate_lonetype(result_chars),
+        '"' => annotate_lonetype(result_chars.as_str().to_string()),
+        c if alpha_predicate(c) => quote_lonetype(c, result_chars.as_str()),
         _ => todo!(),
     }
 }
 
-fn annotate_lonetype(result_chars: &mut std::str::Chars) -> serde_json::Value {
-    let ident_with_rawlabel = format!(r#""{}"#, result_chars.as_str());
-    let (ident, annotation) = label_identifier(ident_with_rawlabel.to_string());
+fn quote_lonetype(initial_char: char, result_chars: &str) -> serde_json::Value {
+    annotate_lonetype(format!(r#""{}"{}"#, initial_char, result_chars))
+}
+fn annotate_lonetype(result_chars: String) -> serde_json::Value {
+    let (ident, annotation) = label_identifier(result_chars);
     let mut lonetype = Map::new();
     lonetype.insert(ident, Value::String(annotation));
     Value::Object(lonetype)
@@ -273,10 +279,11 @@ fn bind_idents_labels(
 }
 
 fn raw_to_ident_and_metadata(ident_with_metadata: String) -> (String, String) {
-    let split = &ident_with_metadata
-        .trim()
-        .splitn(3, '"')
-        .collect::<Vec<&str>>()[1..];
+    let trimmed = ident_with_metadata.trim().to_string();
+    let mut split = trimmed.splitn(3, '"').collect::<Vec<&str>>();
+    if split[0].is_empty() {
+        split.remove(0);
+    }
     let ident = split[0].to_string();
     let metadata = split[1].trim_start_matches(":").trim().to_string();
     (ident, metadata)
