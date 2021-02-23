@@ -183,6 +183,18 @@ r#"duplicate": (boolean) node already has valid copy of block
             "",
         )
     }
+    fn scrub_listtransactions(raw: String) -> String {
+        raw.lines()
+            .filter(|l| {
+                !l.starts_with("                                         ")
+            })
+            .fold(String::new(), |mut acc, new| {
+                acc.push_str(new);
+                acc.push_str("\n");
+                acc
+            })
+    }
+
     pub(crate) fn scrub_result(
         cmd_name: String,
         result_data: String,
@@ -206,6 +218,8 @@ r#"duplicate": (boolean) node already has valid copy of block
             scrub_listreceivedbyaccount(result_data)
         } else if cmd_name == "listreceivedbyaddress".to_string() {
             scrub_listreceivedbyaddress(result_data)
+        } else if cmd_name == "listtransactions".to_string() {
+            scrub_listtransactions(result_data)
         } else {
             result_data
         }
