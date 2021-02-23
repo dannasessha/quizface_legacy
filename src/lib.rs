@@ -59,7 +59,8 @@ fn interpret_help_message(
     raw_command_help: &str,
 ) -> (String, serde_json::Value) {
     let (cmd_name, result_data) = extract_name_and_result(raw_command_help);
-    let scrubbed_result = scrub_result(cmd_name.clone(), result_data);
+    let scrubbed_result =
+        scrubbing::scrub_result(cmd_name.clone(), result_data);
     if &cmd_name == "z_exportviewingkey" {
         &scrubbed_result;
     }
@@ -103,8 +104,9 @@ fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
     (cmd_name.to_string(), example_sections[0].trim().to_string())
 }
 
-fn scrub_getblockchaininfo(raw: String) -> String {
-    raw.replace("[0..1]", "").replace(
+mod scrubbing {
+    fn scrub_getblockchaininfo(raw: String) -> String {
+        raw.replace("[0..1]", "").replace(
         "{ ... }      (object) progress toward rejecting pre-softfork blocks",
         "{
 \"status\": (boolean)
@@ -112,10 +114,10 @@ fn scrub_getblockchaininfo(raw: String) -> String {
 \"required\": (numeric)
 \"window\": (numeric)
 }").replace("(same fields as \"enforce\")", "").replace(", ...", "")
-}
+    }
 
-fn scrub_getchaintips(raw: String) -> String {
-    raw.replace(
+    fn scrub_getchaintips(raw: String) -> String {
+        raw.replace(
             r#"Possible values for status:
 1.  "invalid"               This branch contains at least one invalid block
 2.  "headers-only"          Not all blocks for this branch are available, but the headers are valid
@@ -127,16 +129,20 @@ fn scrub_getchaintips(raw: String) -> String {
 "#).replace(r#""hash": "xxxx",
 "#, r#""hash": "xxxx",         (string) block hash of the tip
 "#)
-}
+    }
 
-fn scrub_result(cmd_name: String, result_data: String) -> String {
-    // currently tooled only for getblockchaininfo
-    if cmd_name == "getblockchaininfo".to_string() {
-        scrub_getblockchaininfo(result_data)
-    } else if cmd_name == "getchaintips".to_string() {
-        scrub_getchaintips(result_data)
-    } else {
-        result_data
+    pub(crate) fn scrub_result(
+        cmd_name: String,
+        result_data: String,
+    ) -> String {
+        // currently tooled only for getblockchaininfo
+        if cmd_name == "getblockchaininfo".to_string() {
+            scrub_getblockchaininfo(result_data)
+        } else if cmd_name == "getchaintips".to_string() {
+            scrub_getchaintips(result_data)
+        } else {
+            result_data
+        }
     }
 }
 
@@ -348,7 +354,7 @@ mod unit {
     #[test]
     fn scrub_result_getblockchaininfo_scrubbed() {
         let expected_result = test::HELP_GETBLOCKCHAININFO_RESULT_SCRUBBED;
-        let result = scrub_result(
+        let result = scrubbing::scrub_result(
             "getblockchaininfo".to_string(),
             test::HELP_GETBLOCKCHAININFO_RESULT.to_string(),
         );
