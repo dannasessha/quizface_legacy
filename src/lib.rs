@@ -168,6 +168,21 @@ r#"duplicate": (boolean) node already has valid copy of block
 "#, "")
     }
 
+    fn scrub_listreceivedbyaccount(raw: String) -> String {
+        raw.replace(r#"bool"#, "boolean").replace(
+            r#"  ,...
+"#,
+            "",
+        )
+    }
+
+    fn scrub_listreceivedbyaddress(raw: String) -> String {
+        raw.replace(r#"bool"#, "boolean").replace(
+            r#"  ,...
+"#,
+            "",
+        )
+    }
     pub(crate) fn scrub_result(
         cmd_name: String,
         result_data: String,
@@ -187,6 +202,10 @@ r#"duplicate": (boolean) node already has valid copy of block
             scrub_submitblock(result_data)
         } else if cmd_name == "listaccounts".to_string() {
             scrub_listaccounts(result_data)
+        } else if cmd_name == "listreceivedbyaccount".to_string() {
+            scrub_listreceivedbyaccount(result_data)
+        } else if cmd_name == "listreceivedbyaddress".to_string() {
+            scrub_listreceivedbyaddress(result_data)
         } else {
             result_data
         }
