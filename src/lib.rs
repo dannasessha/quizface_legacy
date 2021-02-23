@@ -103,28 +103,31 @@ fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
     (cmd_name.to_string(), example_sections[0].trim().to_string())
 }
 
-fn scrub_result(cmd_name: String, result_data: String) -> String {
-    // currently tooled only for getblockchaininfo
-    if cmd_name == "getblockchaininfo".to_string() {
-        let scrub_1 = result_data.replace("[0..1]", "");
-        let scrub_2 = scrub_1.replace(
+fn scrub_getblockchaininfo(raw: String) -> String {
+    raw.replace("[0..1]", "").replace(
         "{ ... }      (object) progress toward rejecting pre-softfork blocks",
         "{
 \"status\": (boolean)
 \"found\": (numeric)
 \"required\": (numeric)
 \"window\": (numeric)
-}",
-    );
-        let scrub_3 = scrub_2.replace("(same fields as \"enforce\")", "");
-        let scrub_4 = scrub_3.replace(", ...", "");
-        return scrub_4;
-        // Note: "xxxx" ID in upgrades. This represents the hash value
-        // of nuparams, for example `5ba81b19`
-        // TODO note: possible need for commas with multiple members of
-        // softforks and upgrades
+}").replace("(same fields as \"enforce\")", "").replace(", ...", "")
+}
+fn scrub_result(cmd_name: String, result_data: String) -> String {
+    // currently tooled only for getblockchaininfo
+    if cmd_name == "getblockchaininfo".to_string() {
+        scrub_getblockchaininfo(result_data)
+    } else if cmd_name == "getchaintips".to_string() {
+        result_data.replace(
+            r#"Possible values for status:
+1.  "invalid"               This branch contains at least one invalid block
+2.  "headers-only"          Not all blocks for this branch are available, but the headers are valid
+3.  "valid-headers"         All blocks are available for this branch, but they were never fully validated
+4.  "valid-fork"            This branch is not part of the active chain, but is fully validated
+5.  "active"                This is the tip of the active main chain, which is certainly valid"#, "")
+    } else {
+        result_data
     }
-    result_data
 }
 
 fn alpha_predicate(c: char) -> bool {
@@ -290,7 +293,8 @@ fn raw_to_ident_and_metadata(ident_with_metadata: String) -> (String, String) {
 }
 // assumes well-formed `ident_with_metadata`
 fn label_identifier(ident_with_metadata: String) -> (String, String) {
-    let (ident, meta_data) = raw_to_ident_and_metadata(ident_with_metadata);
+    let (ident, meta_data) =
+        dbg!(raw_to_ident_and_metadata(ident_with_metadata));
     let raw_label: &str = meta_data
         .split(|c| c == '(' || c == ')')
         .collect::<Vec<&str>>()[1];
