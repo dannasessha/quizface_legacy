@@ -162,6 +162,12 @@ r#"duplicate": (boolean) node already has valid copy of block
 "rejected": (boolean) block was rejected as invalid"#)
     }
 
+    fn scrub_listaccounts(raw: String) -> String {
+        raw.replace(r#"                      (json object where keys are account names, and values are numeric balances"#, "")
+        .replace(r#"  ...
+"#, "")
+    }
+
     pub(crate) fn scrub_result(
         cmd_name: String,
         result_data: String,
@@ -179,6 +185,8 @@ r#"duplicate": (boolean) node already has valid copy of block
             scrub_getspentinfo(result_data)
         } else if cmd_name == "submitblock".to_string() {
             scrub_submitblock(result_data)
+        } else if cmd_name == "listaccounts".to_string() {
+            scrub_listaccounts(result_data)
         } else {
             result_data
         }
