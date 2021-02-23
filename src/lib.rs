@@ -195,6 +195,11 @@ r#"duplicate": (boolean) node already has valid copy of block
             })
     }
 
+    fn scrub_z_listreceivedbyaddress(raw: String) -> String {
+        raw.replace(r#" (sprout) : n,"#, r#": n, <sprout> "#)
+            .replace(r#" (sapling) : n,"#, r#": n, <sapling> "#)
+    }
+
     pub(crate) fn scrub_result(
         cmd_name: String,
         result_data: String,
@@ -220,6 +225,8 @@ r#"duplicate": (boolean) node already has valid copy of block
             scrub_listreceivedbyaddress(result_data)
         } else if cmd_name == "listtransactions".to_string() {
             scrub_listtransactions(result_data)
+        } else if cmd_name == "z_listreceivedbyaddress".to_string() {
+            scrub_z_listreceivedbyaddress(result_data)
         } else {
             result_data
         }
