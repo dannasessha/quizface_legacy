@@ -135,6 +135,11 @@ mod scrubbing {
         raw.replace(r#"number"#, r#"numeric"#)
     }
 
+    fn scrub_getblockdeltas(raw: String) -> String {
+        raw.replace(r#"hex string"#, r#"string"#)
+            .replace(r#"hexstring"#, r#"string"#)
+    }
+
     pub(crate) fn scrub_result(
         cmd_name: String,
         result_data: String,
@@ -146,6 +151,8 @@ mod scrubbing {
             scrub_getchaintips(result_data)
         } else if cmd_name == "getaddressmempool".to_string() {
             scrub_getaddressmempool(result_data)
+        } else if cmd_name == "getblockdeltas".to_string() {
+            scrub_getblockdeltas(result_data)
         } else {
             result_data
         }
