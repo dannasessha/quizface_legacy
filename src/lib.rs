@@ -185,10 +185,10 @@ r#"duplicate": (boolean) node already has valid copy of block
             .filter(|l| {
                 !l.starts_with("                                         ")
             })
-            .fold(String::new(), |mut acc, new| {
-                acc.push_str(new);
-                acc.push_str("\n");
-                acc
+            .fold(String::new(), |mut accumulator, new| {
+                accumulator.push_str(new);
+                accumulator.push_str("\n");
+                accumulator
             })
     }
 
