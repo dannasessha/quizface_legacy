@@ -61,9 +61,6 @@ fn interpret_help_message(
     let (cmd_name, result_data) = extract_name_and_result(raw_command_help);
     let scrubbed_result =
         scrubbing::scrub_result(cmd_name.clone(), result_data);
-    if &cmd_name == "z_exportviewingkey" {
-        &scrubbed_result;
-    }
     (cmd_name, annotate_result(&mut scrubbed_result.chars()))
 }
 
