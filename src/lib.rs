@@ -217,6 +217,7 @@ r#"duplicate": (boolean) node already has valid copy of block
             .collect::<Vec<&str>>()[1]
             .trim()
             .to_string()
+            .replace(r#""deltas":"#, r#""alsoStandalone<deltas>":"#)
             .replace(
                 r#"        "satoshis"    (number) The difference of zatoshis
         "txid"        (string) The related txid
@@ -236,7 +237,7 @@ r#"duplicate": (boolean) node already has valid copy of block
       "hash"          (string)  The start block hash
       "height"        (numeric) The height of the start block
     }"#,
-                r#"  "Option<start>":
+                r#"  "start":
     {
       "hash":         (string)  The start block hash
       "height":       (numeric) The height of the start block
@@ -248,7 +249,7 @@ r#"duplicate": (boolean) node already has valid copy of block
       "hash"          (string)  The end block hash
       "height"        (numeric) The height of the end block
     }"#,
-                r#"  "Option<end>":
+                r#"  "end":
     {
       "hash":         (string)  The end block hash
       "height":       (numeric) The height of the end block
