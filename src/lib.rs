@@ -133,8 +133,8 @@ mod scrubbing {
     }
 
     fn scrub_getblockdeltas(raw: String) -> String {
-        raw.replace(r#"hex string"#, r#"string"#)
-            .replace(r#"hexstring"#, r#"string"#)
+        raw.replace(r#"hex string"#, r#"hexadecimal"#)
+            .replace(r#"hexstring"#, r#"hexadecimal"#)
     }
 
     fn scrub_getspentinfo(raw: String) -> String {
@@ -426,6 +426,7 @@ fn make_label(raw_label: &str) -> String {
         label if label.starts_with("numeric") => "Decimal",
         label if label.starts_with("string") => "String",
         label if label.starts_with("boolean") => "bool",
+        label if label.starts_with("hexadecimal") => "hexadecimal",
         label if label.starts_with("INSUFFICIENT") => "INSUFFICIENT",
         label => panic!("Label '{}' is invalid", label),
     }
