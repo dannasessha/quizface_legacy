@@ -426,6 +426,7 @@ fn make_label(raw_label: &str) -> String {
         label if label.starts_with("numeric") => "Decimal",
         label if label.starts_with("string") => "String",
         label if label.starts_with("boolean") => "bool",
+        label if label.starts_with("INSUFFICIENT") => "INSUFFICIENT",
         label => panic!("Label '{}' is invalid", label),
     }
     .to_string();
