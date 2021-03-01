@@ -180,6 +180,7 @@ r#"duplicate": (boolean) node already has valid copy of block
             "",
         )
     }
+
     fn scrub_listtransactions(raw: String) -> String {
         raw.lines()
             .filter(|l| {
@@ -195,6 +196,20 @@ r#"duplicate": (boolean) node already has valid copy of block
     fn scrub_z_listreceivedbyaddress(raw: String) -> String {
         raw.replace(r#" (sprout) : n,"#, r#": n, <sprout> "#)
             .replace(r#" (sapling) : n,"#, r#": n, <sapling> "#)
+    }
+
+    fn scrub_z_getoperationstatus(raw: String) -> String {
+        raw.replace(
+            r#"(array) A list of JSON objects"#,
+            r#"(INSUFFICIENT) A list of JSON objects"#,
+        )
+    }
+
+    fn scrub_z_getoperationresult(raw: String) -> String {
+        raw.replace(
+            r#"(array) A list of JSON objects"#,
+            r#"(INSUFFICIENT) A list of JSON objects"#,
+        )
     }
 
     pub(crate) fn scrub_result(
@@ -224,6 +239,10 @@ r#"duplicate": (boolean) node already has valid copy of block
             scrub_listtransactions(result_data)
         } else if cmd_name == "z_listreceivedbyaddress".to_string() {
             scrub_z_listreceivedbyaddress(result_data)
+        } else if cmd_name == "z_getoperationstatus".to_string() {
+            scrub_z_getoperationstatus(result_data)
+        } else if cmd_name == "z_getoperationresult".to_string() {
+            scrub_z_getoperationresult(result_data)
         } else {
             result_data
         }
@@ -233,6 +252,7 @@ r#"duplicate": (boolean) node already has valid copy of block
 fn alpha_predicate(c: char) -> bool {
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".contains(c)
 }
+
 fn annotate_result(result_chars: &mut std::str::Chars) -> serde_json::Value {
     match result_chars.next().unwrap() {
         '{' => annotate_object(result_chars),
