@@ -212,6 +212,51 @@ r#"duplicate": (boolean) node already has valid copy of block
         )
     }
 
+    fn scrub_getaddressdeltas(raw: String) -> String {
+        raw.split(r#"(or, if chainInfo is true):"#)
+            .collect::<Vec<&str>>()[1]
+            .trim()
+            .to_string()
+            .replace(r#""deltas":"#, r#""alsoStandalone<deltas>":"#)
+            .replace(
+                r#"        "satoshis"    (number) The difference of zatoshis
+        "txid"        (string) The related txid
+        "index"       (number) The related input or output index
+        "height"      (number) The block height
+        "address"     (string)  The address base58check encoded"#,
+                r#"        "satoshis":   (numeric) The difference of zatoshis
+        "txid":       (string) The related txid
+        "index":      (numeric) The related input or output index
+        "height":     (numeric) The block height
+        "address":    (string)  The address base58check encoded"#,
+            )
+            .replace(", ...", "")
+            .replace(
+                r#"  "start":
+    {
+      "hash"          (string)  The start block hash
+      "height"        (numeric) The height of the start block
+    }"#,
+                r#"  "start":
+    {
+      "hash":         (string)  The start block hash
+      "height":       (numeric) The height of the start block
+    }"#,
+            )
+            .replace(
+                r#"  "end":
+    {
+      "hash"          (string)  The end block hash
+      "height"        (numeric) The height of the end block
+    }"#,
+                r#"  "end":
+    {
+      "hash":         (string)  The end block hash
+      "height":       (numeric) The height of the end block
+    }"#,
+            )
+    }
+
     pub(crate) fn scrub_result(
         cmd_name: String,
         result_data: String,
@@ -243,6 +288,8 @@ r#"duplicate": (boolean) node already has valid copy of block
             scrub_z_getoperationstatus(result_data)
         } else if cmd_name == "z_getoperationresult".to_string() {
             scrub_z_getoperationresult(result_data)
+        } else if cmd_name == "getaddressdeltas".to_string() {
+            scrub_getaddressdeltas(result_data)
         } else {
             result_data
         }
@@ -413,16 +460,21 @@ fn raw_to_ident_and_metadata(ident_with_metadata: String) -> (String, String) {
 }
 // assumes well-formed `ident_with_metadata`
 fn label_identifier(ident_with_metadata: String) -> (String, String) {
-    let (ident, meta_data) = raw_to_ident_and_metadata(ident_with_metadata);
-    let raw_label: &str = meta_data
+    let (mut ident, meta_data) = raw_to_ident_and_metadata(ident_with_metadata);
+    let mut raw_label = meta_data
         .split(|c| c == '(' || c == ')')
-        .collect::<Vec<&str>>()[1];
+        .collect::<Vec<&str>>()[1]
+        .to_string();
+    if raw_label.contains(", optional") {
+        ident = format!("Option<{}>", ident);
+        raw_label = raw_label.replace(", optional", "");
+    };
     let annotation: String = make_label(raw_label);
     (ident.to_string(), annotation)
 }
 
-fn make_label(raw_label: &str) -> String {
-    let annotation = match raw_label {
+fn make_label(raw_label: String) -> String {
+    match raw_label {
         label if label.starts_with("numeric") => "Decimal",
         label if label.starts_with("string") => "String",
         label if label.starts_with("boolean") => "bool",
@@ -430,11 +482,7 @@ fn make_label(raw_label: &str) -> String {
         label if label.starts_with("INSUFFICIENT") => "INSUFFICIENT",
         label => panic!("Label '{}' is invalid", label),
     }
-    .to_string();
-    if raw_label.contains(", optional") {
-        return format!("Option<{}>", annotation);
-    }
-    annotation
+    .to_string()
 }
 
 // ------------------- tests ----------------------------------------

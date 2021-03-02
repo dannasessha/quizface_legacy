@@ -1,4 +1,5 @@
 getaddressbalance
+getaddressdeltas
 getaddressmempool
 getaddresstxids
 getblockchaininfo
