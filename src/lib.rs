@@ -261,7 +261,6 @@ r#"duplicate": (boolean) node already has valid copy of block
         cmd_name: String,
         result_data: String,
     ) -> String {
-        // currently tooled only for getblockchaininfo
         if cmd_name == "getblockchaininfo".to_string() {
             scrub_getblockchaininfo(result_data)
         } else if cmd_name == "getchaintips".to_string() {
@@ -395,15 +394,13 @@ fn bind_idents_labels(
     viewed: String,
     inner_value: Option<Value>,
 ) -> Map<String, Value> {
-    // let cleaned = clean_viewed(viewed);
-    // TODO rename cleaned
     let mut viewed_lines = viewed
         .trim_end()
         .lines()
         .map(|line| line.to_string())
         .collect::<Vec<String>>();
-    // ignoring the first line if it only whitespace or does not
-    // contain a `:` char.
+    // ignoring the first line if it is only whitespace or 
+    // does not contain a `:` char.
     if viewed_lines[0].trim().is_empty()
         || !viewed_lines[0].trim().contains(":")
     {
@@ -844,7 +841,6 @@ mod unit {
         assert_eq!(valid_help_in.1, test::valid_getinfo_annotation());
     }
 
-    #[ignore]
     #[test]
     fn interpret_help_message_upgrades_in_obj_extracted() {
         dbg!(interpret_help_message(test::UPGRADES_IN_OBJ_EXTRACTED));
@@ -914,7 +910,6 @@ mod unit {
         assert_eq!(interpreted.1, expected_results);
     }
 
-    #[ignore]
     #[test]
     fn interpret_help_message_getblockchaininfo_complete_does_not_panic() {
         dbg!(interpret_help_message(
