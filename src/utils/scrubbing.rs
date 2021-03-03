@@ -1,8 +1,8 @@
-pub mod scrubbing {
+#[macro_use]
 pub fn blah() {
     // do nothing
 }
-
+/*
 #[macro_export]
 macro_rules! foo {
     () => ()
@@ -21,7 +21,7 @@ macro_rules! scrub {
 }
 
 //scrub!(cmd_name, raw_data);
-/*
+
         } else if cmd_name == "getchaintips".to_string() {
             scrub_getchaintips(result_data)
         } else if cmd_name == "getaddressmempool".to_string() {
@@ -205,4 +205,5 @@ r#"duplicate": (boolean) node already has valid copy of block
     }"#,
                 )
     }
-}
+*/
+
