@@ -1,6 +1,7 @@
 pub mod utils;
 use crate::logging::create_log_dirs;
 use crate::logging::log_masterhelp_output;
+use crate::utils::scrubbing::*;
 use serde_json::{json, map::Map, Value};
 use std::path::Path;
 use utils::logging;
@@ -55,14 +56,6 @@ pub fn check_success(output: &std::process::ExitStatus) {
     }
 }
 
-fn interpret_help_message(
-    raw_command_help: &str,
-) -> (String, serde_json::Value) {
-    let (cmd_name, result_data) = extract_name_and_result(raw_command_help);
-    let scrubbed_result = scrub_result(cmd_name.clone(), result_data);
-    (cmd_name, annotate_result(&mut scrubbed_result.chars()))
-}
-
 fn record_interpretation(cmd_name: String, interpretation: serde_json::Value) {
     let location = format!(
         "./output/{}/{}.json",
@@ -100,36 +93,38 @@ fn extract_name_and_result(raw_command_help: &str) -> (String, String) {
     (cmd_name.to_string(), example_sections[0].trim().to_string())
 }
 
-fn scrub_result(cmd_name: String, result_data: String) -> String {
-    // currently tooled only for getblockchaininfo
-    if cmd_name == "getblockchaininfo".to_string() {
-        let scrub_1 = result_data.replace("[0..1]", "");
-        let scrub_2 = scrub_1.replace(
-        "{ ... }      (object) progress toward rejecting pre-softfork blocks",
-        "{
-\"status\": (boolean)
-\"found\": (numeric)
-\"required\": (numeric)
-\"window\": (numeric)
-}",
-    );
-        let scrub_3 = scrub_2.replace("(same fields as \"enforce\")", "");
-        let scrub_4 = scrub_3.replace(", ...", "");
-        return scrub_4;
-        // Note: "xxxx" ID in upgrades. This represents the hash value
-        // of nuparams, for example `5ba81b19`
-        // TODO note: possible need for commas with multiple members of
-        // softforks and upgrades
-    }
-    result_data
+fn interpret_help_message(
+    raw_command_help: &str,
+) -> (String, serde_json::Value) {
+    let (cmd_name, result_data) = extract_name_and_result(raw_command_help);
+    let scrubbed_result =
+      //scrubbing::scrub_result(cmd_name.clone(), result_data);
+      scrub!(cmd_name.clone(), result_data);
+    (cmd_name, annotate_result(&mut scrubbed_result.chars()))
+}
+
+fn alpha_predicate(c: char) -> bool {
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".contains(c)
 }
 
 fn annotate_result(result_chars: &mut std::str::Chars) -> serde_json::Value {
     match result_chars.next().unwrap() {
         '{' => annotate_object(result_chars),
         '[' => annotate_array(result_chars),
+        '"' => annotate_lonetype(result_chars.as_str().to_string()),
+        c if alpha_predicate(c) => quote_lonetype(c, result_chars.as_str()),
         _ => todo!(),
     }
+}
+
+fn quote_lonetype(initial_char: char, result_chars: &str) -> serde_json::Value {
+    annotate_lonetype(format!(r#""{}"{}"#, initial_char, result_chars))
+}
+fn annotate_lonetype(result_chars: String) -> serde_json::Value {
+    let (ident, annotation) = label_identifier(result_chars);
+    let mut lonetype = Map::new();
+    lonetype.insert(ident, Value::String(annotation));
+    Value::Object(lonetype)
 }
 
 fn annotate_object(result_chars: &mut std::str::Chars) -> serde_json::Value {
@@ -207,15 +202,13 @@ fn bind_idents_labels(
     viewed: String,
     inner_value: Option<Value>,
 ) -> Map<String, Value> {
-    // let cleaned = clean_viewed(viewed);
-    // TODO rename cleaned
     let mut viewed_lines = viewed
         .trim_end()
         .lines()
         .map(|line| line.to_string())
         .collect::<Vec<String>>();
-    // ignoring the first line if it only whitespace or does not
-    // contain a `:` char.
+    // ignoring the first line if it is only whitespace or
+    // does not contain a `:` char.
     if viewed_lines[0].trim().is_empty()
         || !viewed_lines[0].trim().contains(":")
     {
@@ -260,33 +253,41 @@ fn bind_idents_labels(
     }
 }
 
+fn raw_to_ident_and_metadata(ident_with_metadata: String) -> (String, String) {
+    let trimmed = ident_with_metadata.trim().to_string();
+    let mut split = trimmed.splitn(3, '"').collect::<Vec<&str>>();
+    if split[0].is_empty() {
+        split.remove(0);
+    }
+    let ident = split[0].to_string();
+    let metadata = split[1].trim_start_matches(":").trim().to_string();
+    (ident, metadata)
+}
 // assumes well-formed `ident_with_metadata`
 fn label_identifier(ident_with_metadata: String) -> (String, String) {
-    let ident_and_metadata = ident_with_metadata
-        .trim()
-        .splitn(2, ':')
-        .collect::<Vec<&str>>();
-    let ident = ident_and_metadata[0].trim_matches('"');
-    let meta_data = ident_and_metadata[1].trim();
-    let raw_label: &str = meta_data
+    let (mut ident, meta_data) = raw_to_ident_and_metadata(ident_with_metadata);
+    let mut raw_label = meta_data
         .split(|c| c == '(' || c == ')')
-        .collect::<Vec<&str>>()[1];
+        .collect::<Vec<&str>>()[1]
+        .to_string();
+    if raw_label.contains(", optional") {
+        ident = format!("Option<{}>", ident);
+        raw_label = raw_label.replace(", optional", "");
+    };
     let annotation: String = make_label(raw_label);
     (ident.to_string(), annotation)
 }
 
-fn make_label(raw_label: &str) -> String {
-    let annotation = match raw_label {
+fn make_label(raw_label: String) -> String {
+    match raw_label {
         label if label.starts_with("numeric") => "Decimal",
         label if label.starts_with("string") => "String",
         label if label.starts_with("boolean") => "bool",
+        label if label.starts_with("hexadecimal") => "hexadecimal",
+        label if label.starts_with("INSUFFICIENT") => "INSUFFICIENT",
         label => panic!("Label '{}' is invalid", label),
     }
-    .to_string();
-    if raw_label.contains(", optional") {
-        return format!("Option<{}>", annotation);
-    }
-    annotation
+    .to_string()
 }
 
 // ------------------- tests ----------------------------------------
@@ -312,9 +313,9 @@ mod unit {
     #[test]
     fn scrub_result_getblockchaininfo_scrubbed() {
         let expected_result = test::HELP_GETBLOCKCHAININFO_RESULT_SCRUBBED;
-        let result = scrub_result(
+        let result = scrub!(
             "getblockchaininfo".to_string(),
-            test::HELP_GETBLOCKCHAININFO_RESULT.to_string(),
+            test::HELP_GETBLOCKCHAININFO_RESULT.to_string()
         );
         assert_eq!(expected_result, result);
     }
