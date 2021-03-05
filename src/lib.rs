@@ -1,14 +1,12 @@
-mod utils;
-use crate::scrubbing::*;
+pub mod utils;
+use crate::utils::scrubbing::*;
 use crate::logging::create_log_dirs;
 use crate::logging::log_masterhelp_output;
 use serde_json::{json, map::Map, Value};
 use std::path::Path;
-use utils::scrubbing;
 use utils::logging;
 
 pub fn ingest_commands() -> Vec<String> {
-    utils::scrubbing::blah();
     create_log_dirs();
     let cli_help_output = get_command_help("");
     check_success(&cli_help_output.status);
@@ -100,10 +98,9 @@ fn interpret_help_message(
     raw_command_help: &str,
 ) -> (String, serde_json::Value) {
     let (cmd_name, result_data) = extract_name_and_result(raw_command_help);
-    utils::scrubbing::foo!();
     let scrubbed_result =
-      scrubbing::scrub_result(cmd_name.clone(), result_data);
-      //utils::scrubbing::scrub!(cmd_name.clone(), result_data);
+      //scrubbing::scrub_result(cmd_name.clone(), result_data);
+      scrub!(cmd_name.clone(), result_data);
     (cmd_name, annotate_result(&mut scrubbed_result.chars()))
 }
 

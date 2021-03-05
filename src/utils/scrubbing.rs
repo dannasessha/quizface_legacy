@@ -1,25 +1,25 @@
-#[macro_use]
+/*
 pub fn blah() {
     // do nothing
 }
-/*
 #[macro_export]
 macro_rules! foo {
-    () => ()
+    () => {println!("foo");}
 }
+*/
 
 #[macro_export]
 macro_rules! scrub {
-    ($($cmd_name:expr, $result_data:expr)+) => ({
+    ($cmd_name:expr, $result_data:expr) => ({
         match (&$cmd_name) {
             //(target_name) => {do .replace etc to &$result_data}
-            ("getblockchaininfo".to_string()) => {(scrub_getblockchaininfo(&$result_data));}
-            (_) => { panic!("because that's a problem."); }
-        //RETURN MODIFIED raw_data
+        ("getblockchaininfo".to_string()) => {scrub_getblockchaininfo($result_data);}
+            _ => { panic!("because that's a problem."); }
         }
+        $result_data
     });
 }
-
+/*
 //scrub!(cmd_name, raw_data);
 
         } else if cmd_name == "getchaintips".to_string() {
@@ -54,7 +54,7 @@ macro_rules! scrub {
     }
 */
 
-    fn scrub_getblockchaininfo(raw: String) -> String {
+pub fn scrub_getblockchaininfo(raw: String) -> String {
         raw.replace("[0..1]", "").replace(
         "{ ... }      (object) progress toward rejecting pre-softfork blocks",
         "{
@@ -64,7 +64,7 @@ macro_rules! scrub {
 \"window\": (numeric)
 }").replace("(same fields as \"enforce\")", "").replace(", ...", "")
     }
-
+/*
     fn scrub_getchaintips(raw: String) -> String {
         raw.replace(
             r#"Possible values for status:
