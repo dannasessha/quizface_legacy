@@ -315,9 +315,9 @@ mod unit {
     #[test]
     fn scrub_result_getblockchaininfo_scrubbed() {
         let expected_result = test::HELP_GETBLOCKCHAININFO_RESULT_SCRUBBED;
-        let result = utils::scrubbing::scrub_result(
+        let result = scrub!(
             "getblockchaininfo".to_string(),
-            test::HELP_GETBLOCKCHAININFO_RESULT.to_string(),
+            test::HELP_GETBLOCKCHAININFO_RESULT.to_string()
         );
         assert_eq!(expected_result, result);
     }
