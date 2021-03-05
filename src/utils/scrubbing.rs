@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! scrub {
-    ($cmd_name:expr, $result_data:expr) => ({
-        if $cmd_name == "getblockchaininfo".to_string(){
+    ($cmd_name:expr, $result_data:expr) => {{
+        if $cmd_name == "getblockchaininfo".to_string() {
             scrub_getblockchaininfo($result_data)
         } else if $cmd_name == "getchaintips".to_string() {
             scrub_getchaintips($result_data)
@@ -32,11 +32,11 @@ macro_rules! scrub {
         } else {
             $result_data
         }
-    });
+    }};
 }
 
 pub fn scrub_getblockchaininfo(raw: String) -> String {
-        raw.replace("[0..1]", "").replace(
+    raw.replace("[0..1]", "").replace(
         "{ ... }      (object) progress toward rejecting pre-softfork blocks",
         "{
 \"status\": (boolean)
@@ -44,10 +44,10 @@ pub fn scrub_getblockchaininfo(raw: String) -> String {
 \"required\": (numeric)
 \"window\": (numeric)
 }").replace("(same fields as \"enforce\")", "").replace(", ...", "")
-    }
+}
 
 pub fn scrub_getchaintips(raw: String) -> String {
-        raw.replace(
+    raw.replace(
             r#"Possible values for status:
 1.  "invalid"               This branch contains at least one invalid block
 2.  "headers-only"          Not all blocks for this branch are available, but the headers are valid
@@ -59,26 +59,26 @@ pub fn scrub_getchaintips(raw: String) -> String {
 "#).replace(r#""hash": "xxxx",
 "#, r#""hash": "xxxx",         (string) block hash of the tip
 "#)
-    }
+}
 
 pub fn scrub_getaddressmempool(raw: String) -> String {
-        raw.replace(r#"number"#, r#"numeric"#)
-    }
+    raw.replace(r#"number"#, r#"numeric"#)
+}
 
 pub fn scrub_getblockdeltas(raw: String) -> String {
-        raw.replace(r#"hex string"#, r#"hexadecimal"#)
-            .replace(r#"hexstring"#, r#"hexadecimal"#)
-    }
+    raw.replace(r#"hex string"#, r#"hexadecimal"#)
+        .replace(r#"hexstring"#, r#"hexadecimal"#)
+}
 pub fn scrub_getspentinfo(raw: String) -> String {
-        raw.replace(r#"number"#, r#"numeric"#).replace(
-            r#"  ,...
+    raw.replace(r#"number"#, r#"numeric"#).replace(
+        r#"  ,...
 "#,
-            r#""#,
-        )
-    }
+        r#""#,
+    )
+}
 
 pub fn scrub_submitblock(raw: String) -> String {
-        raw.replace(r#"duplicate" - node already has valid copy of block
+    raw.replace(r#"duplicate" - node already has valid copy of block
 "duplicate-invalid" - node already has block, but it is invalid
 "duplicate-inconclusive" - node already has block but has not validated it
 "inconclusive" - node has not validated the block, it may not be on the node's current best chain
@@ -89,101 +89,98 @@ r#"duplicate": (boolean) node already has valid copy of block
 "duplicate-inconclusive": (boolean) node already has block but has not validated it
 "inconclusive": (boolean)node has not validated the block, it may not be on the node's current best chain
 "rejected": (boolean) block was rejected as invalid"#)
-    }
+}
 
 pub fn scrub_listaccounts(raw: String) -> String {
-        raw.replace(r#"                      (json object where keys are account names, and values are numeric balances"#, "")
+    raw.replace(r#"                      (json object where keys are account names, and values are numeric balances"#, "")
         .replace(r#"  ...
 "#, "")
-    }
+}
 
 pub fn scrub_listreceivedbyaccount(raw: String) -> String {
-        raw.replace(r#"bool"#, "boolean").replace(
-            r#"  ,...
+    raw.replace(r#"bool"#, "boolean").replace(
+        r#"  ,...
 "#,
-            "",
-        )
-    }
+        "",
+    )
+}
 pub fn scrub_listreceivedbyaddress(raw: String) -> String {
-        raw.replace(r#"bool"#, "boolean").replace(
-            r#"  ,...
+    raw.replace(r#"bool"#, "boolean").replace(
+        r#"  ,...
 "#,
-            "",
-        )
-    }
+        "",
+    )
+}
 
 pub fn scrub_listtransactions(raw: String) -> String {
-        raw.lines()
-            .filter(|l| {
-                !l.starts_with("                                         ")
-            })
-            .fold(String::new(), |mut accumulator, new| {
-                accumulator.push_str(new);
-                accumulator.push_str("\n");
-                accumulator
-            })
-    }
+    raw.lines()
+        .filter(|l| !l.starts_with("                                         "))
+        .fold(String::new(), |mut accumulator, new| {
+            accumulator.push_str(new);
+            accumulator.push_str("\n");
+            accumulator
+        })
+}
 
 pub fn scrub_z_listreceivedbyaddress(raw: String) -> String {
-        raw.replace(r#" (sprout) : n,"#, r#": n, <sprout> "#)
-            .replace(r#" (sapling) : n,"#, r#": n, <sapling> "#)
-    }
+    raw.replace(r#" (sprout) : n,"#, r#": n, <sprout> "#)
+        .replace(r#" (sapling) : n,"#, r#": n, <sapling> "#)
+}
 
 pub fn scrub_z_getoperationstatus(raw: String) -> String {
-        raw.replace(
-            r#"(array) A list of JSON objects"#,
-            r#"(INSUFFICIENT) A list of JSON objects"#,
-        )
-    }
+    raw.replace(
+        r#"(array) A list of JSON objects"#,
+        r#"(INSUFFICIENT) A list of JSON objects"#,
+    )
+}
 
 pub fn scrub_z_getoperationresult(raw: String) -> String {
-        raw.replace(
-            r#"(array) A list of JSON objects"#,
-            r#"(INSUFFICIENT) A list of JSON objects"#,
-        )
-    }
+    raw.replace(
+        r#"(array) A list of JSON objects"#,
+        r#"(INSUFFICIENT) A list of JSON objects"#,
+    )
+}
 pub fn scrub_getaddressdeltas(raw: String) -> String {
-        raw.split(r#"(or, if chainInfo is true):"#)
-            .collect::<Vec<&str>>()[1]
-            .trim()
-            .to_string()
-            .replace(r#""deltas":"#, r#""alsoStandalone<deltas>":"#)
-            .replace(
-                r#"        "satoshis"    (number) The difference of zatoshis
+    raw.split(r#"(or, if chainInfo is true):"#)
+        .collect::<Vec<&str>>()[1]
+        .trim()
+        .to_string()
+        .replace(r#""deltas":"#, r#""alsoStandalone<deltas>":"#)
+        .replace(
+            r#"        "satoshis"    (number) The difference of zatoshis
         "txid"        (string) The related txid
         "index"       (number) The related input or output index
         "height"      (number) The block height
         "address"     (string)  The address base58check encoded"#,
-                r#"        "satoshis":   (numeric) The difference of zatoshis
+            r#"        "satoshis":   (numeric) The difference of zatoshis
         "txid":       (string) The related txid
         "index":      (numeric) The related input or output index
         "height":     (numeric) The block height
         "address":    (string)  The address base58check encoded"#,
-            )
-            .replace(", ...", "")
-            .replace(
-                r#"  "start":
+        )
+        .replace(", ...", "")
+        .replace(
+            r#"  "start":
     {
       "hash"          (string)  The start block hash
       "height"        (numeric) The height of the start block
     }"#,
-                r#"  "start":
+            r#"  "start":
     {
       "hash":         (string)  The start block hash
       "height":       (numeric) The height of the start block
     }"#,
-            )
-            .replace(
-                r#"  "end":
+        )
+        .replace(
+            r#"  "end":
     {
       "hash"          (string)  The end block hash
       "height"        (numeric) The height of the end block
     }"#,
-                r#"  "end":
+            r#"  "end":
     {
       "hash":         (string)  The end block hash
       "height":       (numeric) The height of the end block
     }"#,
-                )
-    }
-
+        )
+}

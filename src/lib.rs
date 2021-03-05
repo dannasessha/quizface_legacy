@@ -1,7 +1,7 @@
 pub mod utils;
-use crate::utils::scrubbing::*;
 use crate::logging::create_log_dirs;
 use crate::logging::log_masterhelp_output;
+use crate::utils::scrubbing::*;
 use serde_json::{json, map::Map, Value};
 use std::path::Path;
 use utils::logging;
@@ -55,7 +55,6 @@ pub fn check_success(output: &std::process::ExitStatus) {
         None => panic!("error! no exit code"),
     }
 }
-
 
 fn record_interpretation(cmd_name: String, interpretation: serde_json::Value) {
     let location = format!(
@@ -208,7 +207,7 @@ fn bind_idents_labels(
         .lines()
         .map(|line| line.to_string())
         .collect::<Vec<String>>();
-    // ignoring the first line if it is only whitespace or 
+    // ignoring the first line if it is only whitespace or
     // does not contain a `:` char.
     if viewed_lines[0].trim().is_empty()
         || !viewed_lines[0].trim().contains(":")

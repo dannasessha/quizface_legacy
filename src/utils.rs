@@ -1,3 +1,3 @@
-pub mod scrubbing;
 pub mod logging;
+pub mod scrubbing;
 pub mod test;
