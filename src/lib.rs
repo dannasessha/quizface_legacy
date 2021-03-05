@@ -311,7 +311,6 @@ mod unit {
     }
 
     // ----------------scrub_result-------------------
-    #[ignore]
     #[test]
     fn scrub_result_getblockchaininfo_scrubbed() {
         let expected_result = test::HELP_GETBLOCKCHAININFO_RESULT_SCRUBBED;
